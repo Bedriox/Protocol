@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Bedriox\Protocol\Packet;
+
+final class PacketIds
+{
+    public const int LOGIN = 1;
+    public const int PLAY_STATUS = 2;
+    public const int SERVER_TO_CLIENT_HANDSHAKE = 3;
+    public const int CLIENT_TO_SERVER_HANDSHAKE = 4;
+    public const int DISCONNECT = 5;
+    public const int RESOURCE_PACKS_INFO = 6;
+    public const int RESOURCE_PACK_STACK = 7;
+    public const int RESOURCE_PACK_CLIENT_RESPONSE = 8;
+    public const int TEXT = 9;
+    public const int SET_TIME = 10;
+    public const int START_GAME = 11;
+    public const int ADD_PLAYER = 12;
+    public const int REMOVE_ACTOR = 14;
+    public const int MOVE_ACTOR_ABSOLUTE = 18;
+    public const int MOVE_PLAYER = 19;
+    public const int UPDATE_BLOCK = 21;
+    public const int LEVEL_EVENT = 25;
+    public const int UPDATE_ATTRIBUTES = 29;
+    public const int INVENTORY_TRANSACTION = 30;
+    public const int MOB_EQUIPMENT = 31;
+    public const int INTERACT = 33;
+    public const int PLAYER_ACTION = 36;
+    public const int SET_ACTOR_DATA = 39;
+    public const int SET_SPAWN_POSITION = 43;
+    public const int ANIMATE = 44;
+    public const int CONTAINER_OPEN = 46;
+    public const int CONTAINER_CLOSE = 47;
+    public const int INVENTORY_CONTENT = 49;
+    public const int INVENTORY_SLOT = 50;
+    public const int CRAFTING_DATA = 52;
+    public const int LEVEL_CHUNK = 58;
+    public const int SET_COMMANDS_ENABLED = 59;
+    public const int SET_DIFFICULTY = 60;
+    public const int SET_PLAYER_GAME_TYPE = 62;
+    public const int PLAYER_LIST = 63;
+    public const int REQUEST_CHUNK_RADIUS = 69;
+    public const int CHUNK_RADIUS_UPDATED = 70;
+    public const int GAME_RULES_CHANGED = 72;
+    public const int PLAYER_SKIN = 93;
+    public const int SERVER_SETTINGS_REQUEST = 102;
+    public const int SET_LOCAL_PLAYER_AS_INITIALIZED = 113;
+    public const int NETWORK_STACK_LATENCY = 115;
+    public const int AVAILABLE_ACTOR_IDENTIFIERS = 119;
+    public const int NETWORK_CHUNK_PUBLISHER_UPDATE = 121;
+    public const int BIOME_DEFINITION_LIST = 122;
+    public const int CLIENT_CACHE_STATUS = 129;
+    public const int EMOTE = 138;
+    public const int CORRECT_PLAYER_MOVE_PREDICTION = 161;
+    public const int ITEM_REGISTRY = 162;
+    public const int NETWORK_SETTINGS = 143;
+    public const int PLAYER_AUTH_INPUT = 144;
+    public const int CREATIVE_CONTENT = 145;
+    public const int ITEM_STACK_REQUEST = 147;
+    public const int ITEM_STACK_RESPONSE = 148;
+    public const int EMOTE_LIST = 152;
+    public const int SUB_CHUNK = 174;
+    public const int SUB_CHUNK_REQUEST = 175;
+    public const int REQUEST_ABILITY = 184;
+    public const int REQUEST_NETWORK_SETTINGS = 193;
+    public const int UPDATE_ABILITIES = 187;
+    public const int UPDATE_ADVENTURE_SETTINGS = 188;
+    public const int TRIM_DATA = 302;
+    public const int SET_PLAYER_INVENTORY_OPTIONS = 307;
+    public const int SERVERBOUND_LOADING_SCREEN = 312;
+    public const int JIGSAW_STRUCTURE_DATA = 313;
+    public const int VOXEL_SHAPES = 337;
+}
