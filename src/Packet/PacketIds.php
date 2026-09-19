@@ -23,6 +23,7 @@ final class PacketIds
     public const int MOVE_PLAYER = 19;
     public const int UPDATE_BLOCK = 21;
     public const int LEVEL_EVENT = 25;
+    public const int ACTOR_EVENT = 27;
     public const int UPDATE_ATTRIBUTES = 29;
     public const int INVENTORY_TRANSACTION = 30;
     public const int MOB_EQUIPMENT = 31;
@@ -31,6 +32,7 @@ final class PacketIds
     public const int SET_ACTOR_DATA = 39;
     public const int SET_SPAWN_POSITION = 43;
     public const int ANIMATE = 44;
+    public const int RESPAWN = 45;
     public const int CONTAINER_OPEN = 46;
     public const int CONTAINER_CLOSE = 47;
     public const int INVENTORY_CONTENT = 49;
@@ -67,6 +69,7 @@ final class PacketIds
     public const int REQUEST_NETWORK_SETTINGS = 193;
     public const int UPDATE_ABILITIES = 187;
     public const int UPDATE_ADVENTURE_SETTINGS = 188;
+    public const int DEATH_INFO = 189;
     public const int TRIM_DATA = 302;
     public const int SET_PLAYER_INVENTORY_OPTIONS = 307;
     public const int SERVERBOUND_LOADING_SCREEN = 312;

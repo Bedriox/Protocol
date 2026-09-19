@@ -35,3 +35,7 @@ Current `PlayerAuthInput` block actions are target-bearing except `StopDestroyBl
 `BedrockEncryptedEnvelopeCodec` is the safe composition boundary for encrypted traffic. It removes the clear `0xfe` marker before the compressed batch and integrity trailer enter the continuous cipher, then restores the marker outside the ciphertext. The reverse path validates the marker before consuming decryptor state.
 
 Decompression uses bounded incremental input, rejects incomplete streams and bytes after the stream terminator, and checks both absolute output size and expansion ratio before retaining further output.
+Player lifecycle support includes bounded actor hurt, death, and respawn events,
+clientbound death information, and the three-state bidirectional respawn
+conversation. Actor events use the current optional fire-position field;
+unsupported event types and malformed optional values fail closed.

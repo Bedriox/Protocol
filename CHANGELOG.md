@@ -24,6 +24,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Added
 
+- Added bounded protocol-2193 actor lifecycle, death-information, and bidirectional respawn codecs with current optional actor-event fire-position framing.
 - Added typed, bounded protocol-2193 take, place, and swap stack requests in both packet 147 and embedded packet 144, plus authoritative success response containers and slots for packet 148.
 - Added typed non-empty `InventoryContentPacket` snapshots, protocol-2193 `InventorySlotPacket` corrections, optional full-container-name framing, and retained typed inventory actions for packed `PlayerAuthInput` item use.
 - Added one shared bounded actor-metadata collection codec plus current vector metadata for player collision boxes.
