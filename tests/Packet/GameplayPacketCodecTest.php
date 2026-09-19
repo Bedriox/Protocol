@@ -87,14 +87,22 @@ final class GameplayPacketCodecTest extends TestCase
                 UnsignedLong::fromInt(1), 1.0, 2.0, -3.0, 10.0, 20.0, 30.0,
                 MovePlayerMode::NORMAL, true, UnsignedLong::fromInt(0), UnsignedLong::fromInt(5),
             ),
-            '010000803f00000040000040c0000020410000a0410000f0410001000005',
+            '010000803f00000040000040c0000020410000a0410000f04100010005',
         ];
         yield 'move reset correction' => [
             new MovePlayerPacket(
                 UnsignedLong::fromInt(1), 1.0, 2.0, -3.0, 10.0, 20.0, 30.0,
                 MovePlayerMode::RESET, true, UnsignedLong::fromInt(0), UnsignedLong::fromInt(5),
             ),
-            '010000803f00000040000040c0000020410000a0410000f0410101000005',
+            '010000803f00000040000040c0000020410000a0410000f04101010005',
+        ];
+        yield 'move teleport conditional fields' => [
+            new MovePlayerPacket(
+                UnsignedLong::fromInt(1), 1.0, 2.0, -3.0, 10.0, 20.0, 30.0,
+                MovePlayerMode::TELEPORT, true, UnsignedLong::fromInt(0), UnsignedLong::fromInt(5),
+                2, -3,
+            ),
+            '010000803f00000040000040c0000020410000a0410000f04102010002000000fdffffff05',
         ];
         yield 'add player empty gameplay state' => [
             new AddPlayerPacket(
