@@ -40,9 +40,12 @@ final readonly class StartGamePacket implements Packet
         int $worldSpawnX = 0,
         int $worldSpawnY = 64,
         int $worldSpawnZ = 0,
+        float $playerPitch = 0.0,
+        float $playerYaw = 0.0,
     ): self
     {
         foreach ([$x, $y, $z] as $value) { CodecSupport::validateFiniteFloat($value, 'StartGame position'); }
+        foreach ([$playerPitch, $playerYaw] as $value) { CodecSupport::validateFiniteFloat($value, 'StartGame rotation'); }
         foreach ([$worldSpawnX, $worldSpawnY, $worldSpawnZ] as $coordinate) {
             if ($coordinate < -0x80000000 || $coordinate > 0x7fffffff) {
                 throw new InvalidValueException('StartGame world-spawn coordinate must fit a signed 32-bit integer.');
@@ -69,7 +72,7 @@ final readonly class StartGamePacket implements Packet
             $experimentNames[$experiment->name] = true;
         }
         $w = CodecSupport::writer()->writeSignedVarLong($uniqueEntityId)->writeUnsignedVarLong($runtimeEntityId)->writeSignedVarInt(0)
-            ->writeFloatLE($x)->writeFloatLE($y)->writeFloatLE($z)->writeFloatLE(0.0)->writeFloatLE(0.0)
+            ->writeFloatLE($x)->writeFloatLE($y)->writeFloatLE($z)->writeFloatLE($playerPitch)->writeFloatLE($playerYaw)
             ->writeSignedLongLE($worldSeed)->writeUnsignedShortLE(0)->writeString('plains', 16)
             ->writeSignedVarInt(0)->writeSignedVarInt(1)->writeSignedVarInt(0);
         $w = CodecSupport::writeBoolean($w, false)->writeSignedVarInt(0)->writeSignedVarInt($worldSpawnX)

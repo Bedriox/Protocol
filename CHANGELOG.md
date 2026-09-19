@@ -6,6 +6,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Fixed
 
+- Project the authoritative saved pitch and yaw into StartGame instead of resetting the reconnecting player's view to zero rotation.
 - Correct the protocol-2193 hotbar, inventory, cursor, and created-output container-name IDs so authoritative retail inventory requests route to their intended containers.
 - Advertise the authoritative new inventory system in fixed-flat StartGame so retail clients use item-stack requests for inventory moves and splits.
 - Decode and encode current `PlayerAuthInput` stop-destroy actions without nonexistent position and face fields, preserving alignment of following optional input data.

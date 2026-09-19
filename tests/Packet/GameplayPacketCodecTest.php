@@ -381,6 +381,27 @@ final class GameplayPacketCodecTest extends TestCase
         );
     }
 
+    public function testFixedFlatStartGameEncodesTheAuthoritativePlayerRotation(): void
+    {
+        $packet = StartGamePacket::fixedFlat(
+            1,
+            UnsignedLong::fromInt(2),
+            0.5,
+            65.0,
+            -0.5,
+            'level',
+            'Flat',
+            gameRules: new GameRuleSet([]),
+            playerPitch: -30.0,
+            playerYaw: 145.0,
+        );
+
+        self::assertStringStartsWith(
+            '0202000000003f00008242000000bf0000f0c100001143',
+            bin2hex($packet->encode()),
+        );
+    }
+
     public function testFixedFlatStartGameAcceptsSignedLimitsAndRejectsOutOfRangeWorldSpawn(): void
     {
         foreach ([PHP_INT_MIN, PHP_INT_MAX] as $seed) {
