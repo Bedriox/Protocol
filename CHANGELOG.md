@@ -16,6 +16,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Changed
 
+- Default fixed-flat StartGame to 40 ticks of bounded movement rewind history while retaining server-authoritative block breaking.
 - Retain bounded client-reported `DeviceOS` privately while making peer-facing build platform a closed wire value defaulting to unknown (`-1`).
 - Embed a complete initialized player actor-data snapshot directly in `AddPlayerPacket`, with later actor-data packets reserved for changes.
 - Correct the current baseline-player collision and gravity actor-flag indexes to 48 and 49 so survival clients apply ordinary grounded physics.

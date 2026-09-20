@@ -13,6 +13,7 @@ final readonly class StartGamePacket implements Packet
 {
     private const int MAX_BYTES = 1_048_576;
     private const int MAX_BLOCK_PROPERTIES = 1_024;
+    private const int MAX_REWIND_HISTORY_SIZE = 0x7fffffff;
 
     private function __construct(private string $payload)
     {
@@ -42,6 +43,7 @@ final readonly class StartGamePacket implements Packet
         int $worldSpawnZ = 0,
         float $playerPitch = 0.0,
         float $playerYaw = 0.0,
+        int $rewindHistorySize = 40,
     ): self
     {
         foreach ([$x, $y, $z] as $value) { CodecSupport::validateFiniteFloat($value, 'StartGame position'); }
@@ -50,6 +52,9 @@ final readonly class StartGamePacket implements Packet
             if ($coordinate < -0x80000000 || $coordinate > 0x7fffffff) {
                 throw new InvalidValueException('StartGame world-spawn coordinate must fit a signed 32-bit integer.');
             }
+        }
+        if ($rewindHistorySize < 0 || $rewindHistorySize > self::MAX_REWIND_HISTORY_SIZE) {
+            throw new InvalidValueException('StartGame rewind-history size must fit a non-negative signed 32-bit integer.');
         }
         CodecSupport::validateString($levelId, CodecSupport::MAX_SHORT_STRING_BYTES, 'Level ID');
         CodecSupport::validateString($levelName, CodecSupport::MAX_SHORT_STRING_BYTES, 'Level name');
@@ -102,7 +107,7 @@ final readonly class StartGamePacket implements Packet
         $w = CodecSupport::writeBoolean($w, false)->writeUnsignedByte(0); $w = CodecSupport::writeBoolean($w, false);
         $w = $w->writeSignedVarInt(0); $w = CodecSupport::writeBoolean($w, false);
         $w = $w->writeString($levelId, CodecSupport::MAX_SHORT_STRING_BYTES)->writeString($levelName, CodecSupport::MAX_SHORT_STRING_BYTES)->writeString('', 0);
-        $w = CodecSupport::writeBoolean($w, false)->writeSignedVarInt(0); $w = CodecSupport::writeBoolean($w, true)
+        $w = CodecSupport::writeBoolean($w, false)->writeSignedVarInt($rewindHistorySize); $w = CodecSupport::writeBoolean($w, true)
             ->writeSignedLongLE($currentTick)->writeSignedVarInt(0)->writeUnsignedVarInt(count($blockProperties));
         foreach ($blockProperties as $blockProperty) {
             $w = $w->writeString($blockProperty->name, 256)->writeBytes($blockProperty->networkNbt);

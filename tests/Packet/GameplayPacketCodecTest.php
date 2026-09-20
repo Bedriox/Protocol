@@ -390,7 +390,7 @@ final class GameplayPacketCodecTest extends TestCase
             gameRules: new GameRuleSet([]),
         );
         self::assertSame(
-            '0202000000003f00008242000000bf00000000000000000000000000000000000006706c61696e730002000000008001000100000001000000000000000000000000010108080000000300000011646174615f64726976656e5f6974656d7301197570636f6d696e675f63726561746f725f6665617475726573011c6578706572696d656e74616c5f6d6f6c616e675f66656174757265730101000001040000000000000000000000000007312e32362e353010000000100000000000000000000000056c6576656c04466c617400000001000000000000000000000001000a00000000000000000000000000000000000000000000000000000000010000000000',
+            '0202000000003f00008242000000bf00000000000000000000000000000000000006706c61696e730002000000008001000100000001000000000000000000000000010108080000000300000011646174615f64726976656e5f6974656d7301197570636f6d696e675f63726561746f725f6665617475726573011c6578706572696d656e74616c5f6d6f6c616e675f66656174757265730101000001040000000000000000000000000007312e32362e353010000000100000000000000000000000056c6576656c04466c617400005001000000000000000000000001000a00000000000000000000000000000000000000000000000000000000010000000000',
             bin2hex($packet->encode()),
         );
         self::assertStringContainsString("1.26.50", $packet->encode());
@@ -413,7 +413,72 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame('ba21a8681ddfe9fb4bc60282f97423486dcae532336c34ed6d13de910a4f4541', hash('sha256', $defaultRules));
         $defaultStart = StartGamePacket::fixedFlat(1, UnsignedLong::fromInt(2), 0.5, 65.0, -0.5, 'level', 'Flat');
         self::assertSame(984, strlen($defaultStart->encode()));
-        self::assertSame('427a3a3588d184761a8d4c12ea4b9bfaf22dfd4a791123b87a8e30051207ed6e', hash('sha256', $defaultStart->encode()));
+        self::assertSame('de16e9f01c2cfb60f0ff5ded922014bbb0aff888dfe284ff79c59fe467d786c2', hash('sha256', $defaultStart->encode()));
+    }
+
+    public function testFixedFlatStartGameEncodesBoundedRewindHistoryBeforeAuthoritativeBlockBreaking(): void
+    {
+        $default = StartGamePacket::fixedFlat(
+            1,
+            UnsignedLong::fromInt(2),
+            0.5,
+            65.0,
+            -0.5,
+            'level',
+            'Flat',
+            gameRules: new GameRuleSet([]),
+        )->encode();
+        $configured = StartGamePacket::fixedFlat(
+            1,
+            UnsignedLong::fromInt(2),
+            0.5,
+            65.0,
+            -0.5,
+            'level',
+            'Flat',
+            gameRules: new GameRuleSet([]),
+            rewindHistorySize: 300,
+        )->encode();
+
+        // premium template ID, trial, rewind history, authoritative block breaking,
+        // current tick, and enchantment seed in their protocol-2193 order.
+        self::assertSame('00005001000000000000000000', bin2hex(substr($default, 206, 13)));
+        self::assertSame('0000d80401000000000000000000', bin2hex(substr($configured, 206, 14)));
+    }
+
+    public function testFixedFlatStartGameBoundsRewindHistoryToItsNonNegativeWireDomain(): void
+    {
+        foreach ([0, 0x7fffffff] as $rewindHistorySize) {
+            $packet = StartGamePacket::fixedFlat(
+                1,
+                UnsignedLong::fromInt(2),
+                0.0,
+                64.0,
+                0.0,
+                'level',
+                'Flat',
+                rewindHistorySize: $rewindHistorySize,
+            );
+            self::assertNotSame('', $packet->encode());
+        }
+
+        foreach ([-1, 0x80000000] as $rewindHistorySize) {
+            try {
+                StartGamePacket::fixedFlat(
+                    1,
+                    UnsignedLong::fromInt(2),
+                    0.0,
+                    64.0,
+                    0.0,
+                    'level',
+                    'Flat',
+                    rewindHistorySize: $rewindHistorySize,
+                );
+                self::fail('An out-of-range StartGame rewind-history size was accepted.');
+            } catch (InvalidValueException) {
+                self::addToAssertionCount(1);
+            }
+        }
     }
 
     public function testFixedFlatStartGameEncodesConfiguredSeedAndWorldSpawn(): void
@@ -434,7 +499,7 @@ final class GameplayPacketCodecTest extends TestCase
         );
 
         self::assertSame(
-            '0202000000003f00008242000000bf0000000000000000feffffffffffffff000006706c61696e7300020000001743700100000001000000000000000000000000010108080000000300000011646174615f64726976656e5f6974656d7301197570636f6d696e675f63726561746f725f6665617475726573011c6578706572696d656e74616c5f6d6f6c616e675f66656174757265730101000001040000000000000000000000000007312e32362e353010000000100000000000000000000000056c6576656c04466c617400000001000000000000000000000001000a00000000000000000000000000000000000000000000000000000000010000000000',
+            '0202000000003f00008242000000bf0000000000000000feffffffffffffff000006706c61696e7300020000001743700100000001000000000000000000000000010108080000000300000011646174615f64726976656e5f6974656d7301197570636f6d696e675f63726561746f725f6665617475726573011c6578706572696d656e74616c5f6d6f6c616e675f66656174757265730101000001040000000000000000000000000007312e32362e353010000000100000000000000000000000056c6576656c04466c617400005001000000000000000000000001000a00000000000000000000000000000000000000000000000000000000010000000000',
             bin2hex($packet->encode()),
         );
     }
