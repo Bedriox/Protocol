@@ -6,6 +6,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Fixed
 
+- Correct the protocol-2193 command-origin layout for requests and outputs to use a bounded string origin, UUID, request ID, and unconditional signed little-endian 64-bit player actor ID.
 - Restore the protocol-2193 MovePlayer teleport-metadata presence marker and reject marker/mode mismatches before decoding conditional fields.
 - Permit the current optional angular-velocity field for both player and vehicle movement corrections.
 - Project the authoritative saved pitch and yaw into StartGame instead of resetting the reconnecting player's view to zero rotation.

@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-enum CommandOriginType: int
+enum CommandOriginType: string
 {
-    case Player = 0;
-    case Block = 1;
-    case MinecartBlock = 2;
-    case DevConsole = 3;
-    case Test = 4;
-    case AutomationPlayer = 5;
-    case ClientAutomation = 6;
-    case DedicatedServer = 7;
-    case Entity = 8;
-    case Virtual = 9;
-    case GameArgument = 10;
-    case EntityServer = 11;
-    case Precompiled = 12;
-    case GameDirectorEntityServer = 13;
-    case Script = 14;
-    case ExecuteContext = 15;
+    case Player = 'player';
+    case Block = 'commandblock';
+    case MinecartBlock = 'minecartcommandblock';
+    case DevConsole = 'devconsole';
+    case Test = 'test';
+    case AutomationPlayer = 'automationplayer';
+    case ClientAutomation = 'clientautomation';
+    case DedicatedServer = 'dedicatedserver';
+    case Entity = 'entity';
+    case Virtual = 'virtual';
+    case GameArgument = 'gameargument';
+    case EntityServer = 'entityserver';
+    case Precompiled = 'precompiled';
+    case GameDirectorEntityServer = 'gamedirectorentityserver';
+    case Script = 'scripting';
+    case ExecuteContext = 'executecontext';
 }

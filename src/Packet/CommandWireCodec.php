@@ -14,33 +14,27 @@ final class CommandWireCodec
 
     public static function writeOrigin(ByteBufferWriter $writer, CommandOrigin $origin): ByteBufferWriter
     {
-        $writer = $writer->writeUnsignedVarInt($origin->type->value)
+        return $writer->writeString($origin->type->value, CodecSupport::MAX_SHORT_STRING_BYTES)
             ->writeBytes(CodecSupport::uuidToWire($origin->uuid))
-            ->writeString($origin->requestId, CodecSupport::MAX_SHORT_STRING_BYTES);
-        if ($origin->type === CommandOriginType::DevConsole || $origin->type === CommandOriginType::Test) {
-            $writer = $writer->writeSignedVarLong($origin->playerId);
-        }
-        return $writer;
+            ->writeString($origin->requestId, CodecSupport::MAX_SHORT_STRING_BYTES)
+            ->writeSignedLongLE($origin->playerId);
     }
 
     /** @return array{CommandOrigin, ByteBufferReader} */
     public static function readOrigin(ByteBufferReader $reader): array
     {
-        $type = $reader->readUnsignedVarInt();
+        $type = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
         $originType = CommandOriginType::tryFrom($type->value);
         if ($originType === null) {
             throw new MalformedDataException('Command origin type is unknown.');
         }
         $uuid = $type->reader->readBytes(16);
         $requestId = $uuid->reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
-        $playerId = -1;
-        $reader = $requestId->reader;
-        if ($originType === CommandOriginType::DevConsole || $originType === CommandOriginType::Test) {
-            $id = $reader->readSignedVarLong();
-            $playerId = $id->value;
-            $reader = $id->reader;
-        }
-        return [new CommandOrigin($originType, CodecSupport::uuidFromWire($uuid->value), $requestId->value, $playerId), $reader];
+        $playerId = $requestId->reader->readSignedLongLE();
+        return [
+            new CommandOrigin($originType, CodecSupport::uuidFromWire($uuid->value), $requestId->value, $playerId->value),
+            $playerId->reader,
+        ];
     }
 
     public static function argumentSymbol(CommandArgumentType $type): int

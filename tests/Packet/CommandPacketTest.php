@@ -27,28 +27,41 @@ use PHPUnit\Framework\TestCase;
 final class CommandPacketTest extends TestCase
 {
     private const string NIL_UUID = '00000000-0000-0000-0000-000000000000';
+    private const string VECTOR_UUID = '00112233-4455-6677-8899-aabbccddeeff';
 
     public function testCommandRequestMatchesCurrentProtocolVector(): void
     {
         $packet = new CommandRequestPacket(
             '/version',
-            new CommandOrigin(CommandOriginType::Player, self::NIL_UUID, 'abc'),
+            new CommandOrigin(CommandOriginType::Player, self::VECTOR_UUID, 'req-42', 0x0102030405060708),
         );
-        $wire = hex2bin('082f76657273696f6e00' . str_repeat('00', 16) . '0361626300066c6174657374');
+        $wire = hex2bin(
+            '082f76657273696f6e' .
+            '06706c61796572' .
+            '7766554433221100ffeeddccbbaa9988' .
+            '067265712d3432' .
+            '0807060504030201' .
+            '00' .
+            '066c6174657374',
+        );
         self::assertIsString($wire);
         self::assertSame($wire, $packet->encode());
         self::assertEquals($packet, CommandRequestPacket::decode($wire));
         self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::COMMAND_REQUEST, $wire));
     }
 
-    public function testDevelopmentConsoleOriginCarriesSignedPlayerId(): void
+    public function testEveryOriginCarriesSignedPlayerId(): void
     {
-        $packet = new CommandRequestPacket(
-            '/stop',
-            new CommandOrigin(CommandOriginType::DevConsole, self::NIL_UUID, '', 42),
-            true,
-        );
-        self::assertEquals($packet, CommandRequestPacket::decode($packet->encode()));
+        foreach ([CommandOriginType::Player, CommandOriginType::DevConsole, CommandOriginType::Test] as $type) {
+            foreach ([PHP_INT_MIN, -1, 0, 42, PHP_INT_MAX] as $playerId) {
+                $packet = new CommandRequestPacket(
+                    '/stop',
+                    new CommandOrigin($type, self::NIL_UUID, '', $playerId),
+                    true,
+                );
+                self::assertEquals($packet, CommandRequestPacket::decode($packet->encode()));
+            }
+        }
     }
 
     public function testAvailableCommandsMatchesCurrentProtocolVector(): void
@@ -85,6 +98,35 @@ final class CommandPacketTest extends TestCase
         }
     }
 
+    public function testCommandOutputMatchesCurrentProtocolVector(): void
+    {
+        $packet = new CommandOutputPacket(
+            new CommandOrigin(CommandOriginType::Player, self::VECTOR_UUID, 'req-42', -2),
+            CommandOutputType::AllOutput,
+            1,
+            [new CommandOutputMessage('commands.version', false, ['Bedriox', '1.0.0'])],
+        );
+        $wire = hex2bin(
+            '06706c61796572' .
+            '7766554433221100ffeeddccbbaa9988' .
+            '067265712d3432' .
+            'feffffffffffffff' .
+            '09616c6c6f7574707574' .
+            '01000000' .
+            '01' .
+            '10636f6d6d616e64732e76657273696f6e' .
+            '00' .
+            '02' .
+            '0742656472696f78' .
+            '05312e302e30' .
+            '00',
+        );
+        self::assertIsString($wire);
+        self::assertSame($wire, $packet->encode());
+        self::assertEquals($packet, CommandOutputPacket::decode($wire));
+        self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::COMMAND_OUTPUT, $wire));
+    }
+
     /** @return iterable<string, array{callable(): void}> */
     public static function invalidModelProvider(): iterable
     {
@@ -95,9 +137,6 @@ final class CommandPacketTest extends TestCase
         yield 'invalid command name' => [static function (): void {
             new CommandDefinition('Bad Name', 'Invalid');
         }];
-        yield 'non-origin player id' => [static function (): void {
-            new CommandOrigin(CommandOriginType::Player, self::NIL_UUID, '', 1);
-        }];
     }
 
     #[DataProvider('invalidModelProvider')]
@@ -107,11 +146,51 @@ final class CommandPacketTest extends TestCase
         $operation();
     }
 
-    public function testMalformedFiniteValuesAndTrailingDataAreRejected(): void
+    public function testMalformedUtf8OriginIsRejected(): void
     {
-        $originPrefix = "\xff\x01";
+        $originPrefix = "\x01\xff";
         $this->expectException(MalformedDataException::class);
         CommandRequestPacket::decode("\x00" . $originPrefix);
+    }
+
+    public function testCurrentCommandRequestRejectsTrailingData(): void
+    {
+        $packet = new CommandRequestPacket(
+            '/version',
+            new CommandOrigin(CommandOriginType::Player, self::NIL_UUID, 'id', 42),
+        );
+        $this->expectException(MalformedDataException::class);
+        CommandRequestPacket::decode($packet->encode() . "\x00");
+    }
+
+    public function testUnknownCurrentOriginStringIsRejected(): void
+    {
+        $wire = hex2bin(
+            '00' .
+            '06626f67757321' .
+            str_repeat('00', 16) .
+            '00' .
+            str_repeat('00', 8) .
+            '00' .
+            '066c6174657374',
+        );
+        self::assertIsString($wire);
+        $this->expectException(MalformedDataException::class);
+        CommandRequestPacket::decode($wire);
+    }
+
+    public function testObsoleteNumericOriginLayoutIsRejected(): void
+    {
+        $wire = hex2bin('082f76657273696f6e00' . str_repeat('00', 16) . '0361626300066c6174657374');
+        self::assertIsString($wire);
+        $this->expectException(MalformedDataException::class);
+        CommandRequestPacket::decode($wire);
+    }
+
+    public function testOversizedOriginStringIsRejectedBeforeAllocation(): void
+    {
+        $this->expectException(MalformedDataException::class);
+        CommandRequestPacket::decode("\x00\x81\x20");
     }
 
     public function testTruncatedPacketsAreRejectedAtEveryBoundary(): void
