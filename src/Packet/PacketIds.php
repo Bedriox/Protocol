@@ -30,6 +30,7 @@ final class PacketIds
     public const int INTERACT = 33;
     public const int PLAYER_ACTION = 36;
     public const int SET_ACTOR_DATA = 39;
+    public const int SET_ACTOR_MOTION = 40;
     public const int SET_SPAWN_POSITION = 43;
     public const int ANIMATE = 44;
     public const int RESPAWN = 45;
