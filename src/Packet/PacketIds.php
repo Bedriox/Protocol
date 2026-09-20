@@ -74,5 +74,6 @@ final class PacketIds
     public const int SET_PLAYER_INVENTORY_OPTIONS = 307;
     public const int SERVERBOUND_LOADING_SCREEN = 312;
     public const int JIGSAW_STRUCTURE_DATA = 313;
+    public const int MOVEMENT_PREDICTION_SYNC = 322;
     public const int VOXEL_SHAPES = 337;
 }

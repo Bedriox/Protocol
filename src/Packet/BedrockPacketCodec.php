@@ -75,6 +75,7 @@ final class BedrockPacketCodec
             PacketIds::REQUEST_ABILITY => RequestAbilityPacket::decode($payload),
             PacketIds::DEATH_INFO => DeathInfoPacket::decode($payload),
             PacketIds::SERVERBOUND_LOADING_SCREEN => ServerboundLoadingScreenPacket::decode($payload),
+            PacketIds::MOVEMENT_PREDICTION_SYNC => MovementPredictionSyncPacket::decode($payload),
             PacketIds::SET_PLAYER_INVENTORY_OPTIONS => SetPlayerInventoryOptionsPacket::decode($payload),
             default => throw new MalformedDataException('Packet ID is not registered in the Bedrock codec.'),
         };
@@ -150,6 +151,7 @@ final class BedrockPacketCodec
             DeathInfoPacket::class => PacketIds::DEATH_INFO,
             TrimDataPacket::class => PacketIds::TRIM_DATA,
             ServerboundLoadingScreenPacket::class => PacketIds::SERVERBOUND_LOADING_SCREEN,
+            MovementPredictionSyncPacket::class => PacketIds::MOVEMENT_PREDICTION_SYNC,
             JigsawStructureDataPacket::class => PacketIds::JIGSAW_STRUCTURE_DATA,
             VoxelShapesPacket::class => PacketIds::VOXEL_SHAPES,
             SetPlayerInventoryOptionsPacket::class => PacketIds::SET_PLAYER_INVENTORY_OPTIONS,
