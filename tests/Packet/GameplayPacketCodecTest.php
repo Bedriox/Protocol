@@ -87,14 +87,14 @@ final class GameplayPacketCodecTest extends TestCase
                 UnsignedLong::fromInt(1), 1.0, 2.0, -3.0, 10.0, 20.0, 30.0,
                 MovePlayerMode::NORMAL, true, UnsignedLong::fromInt(0), UnsignedLong::fromInt(5),
             ),
-            '010000803f00000040000040c0000020410000a0410000f04100010005',
+            '010000803f00000040000040c0000020410000a0410000f0410001000005',
         ];
-        yield 'move reset correction' => [
+        yield 'move respawn' => [
             new MovePlayerPacket(
                 UnsignedLong::fromInt(1), 1.0, 2.0, -3.0, 10.0, 20.0, 30.0,
-                MovePlayerMode::RESET, true, UnsignedLong::fromInt(0), UnsignedLong::fromInt(5),
+                MovePlayerMode::RESPAWN, true, UnsignedLong::fromInt(0), UnsignedLong::fromInt(5),
             ),
-            '010000803f00000040000040c0000020410000a0410000f04101010005',
+            '010000803f00000040000040c0000020410000a0410000f0410101000005',
         ];
         yield 'move teleport conditional fields' => [
             new MovePlayerPacket(
@@ -102,7 +102,14 @@ final class GameplayPacketCodecTest extends TestCase
                 MovePlayerMode::TELEPORT, true, UnsignedLong::fromInt(0), UnsignedLong::fromInt(5),
                 2, -3,
             ),
-            '010000803f00000040000040c0000020410000a0410000f04102010002000000fdffffff05',
+            '010000803f00000040000040c0000020410000a0410000f0410201000102000000fdffffff05',
+        ];
+        yield 'move head rotation' => [
+            new MovePlayerPacket(
+                UnsignedLong::fromInt(1), 1.0, 2.0, -3.0, 10.0, 20.0, 30.0,
+                MovePlayerMode::HEAD_ROTATION, false, UnsignedLong::fromInt(0), UnsignedLong::fromInt(5),
+            ),
+            '010000803f00000040000040c0000020410000a0410000f0410300000005',
         ];
         yield 'add player empty gameplay state' => [
             new AddPlayerPacket(
@@ -236,6 +243,49 @@ final class GameplayPacketCodecTest extends TestCase
     {
         $this->expectException(CodecException::class);
         BedrockPacketCodec::decode($packetId, $wire);
+    }
+
+    public function testMovePlayerTeleportPresenceMustMatchMode(): void
+    {
+        $normal = hex2bin('010000803f00000040000040c0000020410000a0410000f0410001000005');
+        $teleport = hex2bin('010000803f00000040000040c0000020410000a0410000f0410201000102000000fdffffff05');
+        self::assertIsString($normal);
+        self::assertIsString($teleport);
+
+        foreach ([
+            substr($normal, 0, -2) . "\1" . substr($normal, -1),
+            substr($teleport, 0, 28) . "\0" . substr($teleport, 29),
+            substr($normal, 0, -2) . "\2" . substr($normal, -1),
+        ] as $wire) {
+            try {
+                MovePlayerPacket::decode($wire);
+                self::fail('Inconsistent move-player teleport presence was accepted.');
+            } catch (CodecException) {
+                self::addToAssertionCount(1);
+            }
+        }
+
+        foreach ([
+            static fn (): MovePlayerPacket => new MovePlayerPacket(
+                UnsignedLong::fromInt(1), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                MovePlayerMode::NORMAL, false, UnsignedLong::fromInt(0), UnsignedLong::fromInt(0), 1,
+            ),
+            static fn (): MovePlayerPacket => new MovePlayerPacket(
+                UnsignedLong::fromInt(1), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                MovePlayerMode::RESPAWN, false, UnsignedLong::fromInt(0), UnsignedLong::fromInt(0), 0, 1,
+            ),
+            static fn (): MovePlayerPacket => new MovePlayerPacket(
+                UnsignedLong::fromInt(1), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                MovePlayerMode::TELEPORT, false, UnsignedLong::fromInt(0), UnsignedLong::fromInt(0), 5,
+            ),
+        ] as $createInvalid) {
+            try {
+                $createInvalid();
+                self::fail('Move-player teleport metadata outside teleport mode was accepted.');
+            } catch (InvalidValueException) {
+                self::addToAssertionCount(1);
+            }
+        }
     }
 
     public function testPlayerAuthInputProjectsMovementAndRejectableEmptyStackRequest(): void

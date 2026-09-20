@@ -7,7 +7,7 @@ namespace Bedriox\Protocol\Packet;
 final class MovePlayerMode
 {
     public const int NORMAL = 0;
-    public const int RESET = 1;
+    public const int RESPAWN = 1;
     public const int TELEPORT = 2;
     public const int HEAD_ROTATION = 3;
 }

@@ -6,7 +6,8 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Fixed
 
-- Remove the nonexistent teleport-presence byte from MovePlayer framing and emit teleport metadata only for teleport mode.
+- Restore the protocol-2193 MovePlayer teleport-metadata presence marker and reject marker/mode mismatches before decoding conditional fields.
+- Permit the current optional angular-velocity field for both player and vehicle movement corrections.
 - Project the authoritative saved pitch and yaw into StartGame instead of resetting the reconnecting player's view to zero rotation.
 - Correct the protocol-2193 hotbar, inventory, cursor, and created-output container-name IDs so authoritative retail inventory requests route to their intended containers.
 - Advertise the authoritative new inventory system in fixed-flat StartGame so retail clients use item-stack requests for inventory moves and splits.
@@ -80,7 +81,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 - Matched the current Cloudburst terrain envelope by encoding one biome palette followed by copy-last sentinels and deriving the request limit from fixed-world section bounds.
 - Corrected `PlayerAuthInputPacket` conditional-payload indexes and nested presence decoding, and accept the valid absent input-data representation as an empty flag set.
 - Accept the bounded Interact action-byte domain shared by current schema ordinals and retail legacy-valued notifications while retaining exact structural validation.
-- Name MovePlayer mode 1 `RESET`, matching its current movement-reconciliation role; teleport mode 2 remains distinct.
+- Name MovePlayer mode 1 `RESPAWN`, matching the current packet schema; teleport mode 2 remains distinct.
 - Replaced parallel versioned packet and encryption APIs with the sole unversioned `Packet` namespace, `BedrockPacketCodec`, `BedrockEncryptor`, `BedrockDecryptor`, and `BedrockEncryptedEnvelopeCodec`; compatibility is centralized in `ProtocolVersion`.
 - Aligned protocol-2169 startup state with independently verified wire behavior: ItemV4 empty descriptors now include the required empty stack-network ID, StartGame uses signed block-position coordinates, the byte-sized member permission field, and current vanilla defaults, and player spawn uses the player-spawn discriminator.
 - Aligned protocol-2169 admission data with the retail schema: retain and emit the signed client `ProfileHash`, build the available-actor network NBT from admitted server actor types, and encode full-column biome storage with the conservative V2 palette shape.

@@ -40,9 +40,6 @@ final readonly class CorrectPlayerMovePredictionPacket implements Packet
         if ($vehicleAngularVelocity !== null) {
             CodecSupport::validateFiniteFloat($vehicleAngularVelocity, 'Movement correction vehicle angular velocity');
         }
-        if ($predictionType === PredictionType::Player && $vehicleAngularVelocity !== null) {
-            throw new InvalidValueException('Player prediction cannot carry vehicle angular velocity.');
-        }
     }
 
     public function packetId(): int { return PacketIds::CORRECT_PLAYER_MOVE_PREDICTION; }
@@ -81,9 +78,6 @@ final readonly class CorrectPlayerMovePredictionPacket implements Packet
         [$hasAngularVelocity, $reader] = CodecSupport::readBoolean($reader);
         $vehicleAngularVelocity = null;
         if ($hasAngularVelocity) {
-            if ($predictionType !== PredictionType::Vehicle) {
-                throw new MalformedDataException('Player prediction cannot carry vehicle angular velocity.');
-            }
             $angularVelocity = $reader->readFloatLE();
             CodecSupport::validateFiniteFloat($angularVelocity->value, 'Movement correction vehicle angular velocity', true);
             $vehicleAngularVelocity = $angularVelocity->value;

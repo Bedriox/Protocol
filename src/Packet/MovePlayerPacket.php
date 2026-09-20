@@ -54,6 +54,7 @@ final readonly class MovePlayerPacket implements Packet
         $writer = $writer->writeUnsignedByte($this->mode);
         $writer = CodecSupport::writeBoolean($writer, $this->onGround)
             ->writeUnsignedVarLong($this->ridingRuntimeEntityId);
+        $writer = CodecSupport::writeBoolean($writer, $this->mode === MovePlayerMode::TELEPORT);
         if ($this->mode === MovePlayerMode::TELEPORT) {
             $writer = $writer->writeSignedIntLE($this->teleportationCause)->writeSignedIntLE($this->teleportEntityType);
         }
@@ -78,9 +79,13 @@ final readonly class MovePlayerPacket implements Packet
         [$onGround, $reader] = CodecSupport::readBoolean($mode->reader);
         $riding = $reader->readUnsignedVarLong();
         $reader = $riding->reader;
+        [$hasTeleportMetadata, $reader] = CodecSupport::readBoolean($reader);
+        if ($hasTeleportMetadata !== ($mode->value === MovePlayerMode::TELEPORT)) {
+            throw new MalformedDataException('Move-player teleport metadata presence does not match the packet mode.');
+        }
         $cause = 0;
         $entityType = 0;
-        if ($mode->value === MovePlayerMode::TELEPORT) {
+        if ($hasTeleportMetadata) {
             $causeRead = $reader->readSignedIntLE();
             if ($causeRead->value < 0 || $causeRead->value > 4) {
                 throw new MalformedDataException('Teleportation cause is not defined by the supported Bedrock protocol.');
