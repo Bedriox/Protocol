@@ -26,6 +26,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Added
 
+- Added the complete current command packet conversation with typed packet IDs, command origins, permissions, output modes, standard argument types, bounded command declarations, requests, and responses.
 - Added a typed, bounded protocol-2193 `MovementPredictionSyncPacket` for the current client movement-property notification, including its complete actor-flag bitset, finite property values, unsigned runtime actor ID, and flying marker.
 - Added bounded protocol-2193 actor lifecycle, death-information, and bidirectional respawn codecs with current optional actor-event fire-position framing.
 - Added typed, bounded protocol-2193 take, place, and swap stack requests in both packet 147 and embedded packet 144, plus authoritative success response containers and slots for packet 148.

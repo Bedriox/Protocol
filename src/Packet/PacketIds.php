@@ -46,6 +46,9 @@ final class PacketIds
     public const int REQUEST_CHUNK_RADIUS = 69;
     public const int CHUNK_RADIUS_UPDATED = 70;
     public const int GAME_RULES_CHANGED = 72;
+    public const int AVAILABLE_COMMANDS = 76;
+    public const int COMMAND_REQUEST = 77;
+    public const int COMMAND_OUTPUT = 79;
     public const int PLAYER_SKIN = 93;
     public const int SERVER_SETTINGS_REQUEST = 102;
     public const int SET_LOCAL_PLAYER_AS_INITIALIZED = 113;
