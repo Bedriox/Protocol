@@ -6,6 +6,7 @@ namespace Bedriox\Protocol\Tests\Packet;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Bedriox\Protocol\Codec\ByteBufferReader;
 use Bedriox\Protocol\Codec\SignedVarInt;
 use Bedriox\Protocol\Exception\CodecException;
 use Bedriox\Protocol\Exception\InvalidValueException;
@@ -24,6 +25,7 @@ use Bedriox\Protocol\Packet\BlockPosition;
 use Bedriox\Protocol\Packet\ChatPacket;
 use Bedriox\Protocol\Packet\ChunkPosition;
 use Bedriox\Protocol\Packet\ChunkRadiusUpdatedPacket;
+use Bedriox\Protocol\Packet\CommandPermissionLevel;
 use Bedriox\Protocol\Packet\CreativeContentPacket;
 use Bedriox\Protocol\Packet\CraftingDataPacket;
 use Bedriox\Protocol\Packet\ContainerClosePacket;
@@ -45,6 +47,7 @@ use Bedriox\Protocol\Packet\PacketIds;
 use Bedriox\Protocol\Packet\PlayerListRemovePacket;
 use Bedriox\Protocol\Packet\PlayerListAddEntry;
 use Bedriox\Protocol\Packet\PlayerListAddPacket;
+use Bedriox\Protocol\Packet\PlayerPermission;
 use Bedriox\Protocol\Packet\PlayerSkin;
 use Bedriox\Protocol\Packet\PlayerSkinPacket;
 use Bedriox\Protocol\Packet\PlayerAbilities;
@@ -115,7 +118,7 @@ final class GameplayPacketCodecTest extends TestCase
             new AddPlayerPacket(
                 '00112233-4455-6677-8899-aabbccddeeff', 'P', UnsignedLong::fromInt(2), '',
                 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 10.0, 20.0, 30.0, 0,
-                new PlayerAbilities(1, 1, 0, [new AbilityLayer(0, 0, 0, 0.05000000074505806, 1.0, 0.10000000149011612)]),
+                new PlayerAbilities(1, PlayerPermission::Member, CommandPermissionLevel::Normal, [new AbilityLayer(0, 0, 0, 0.05000000074505806, 1.0, 0.10000000149011612)]),
             ),
             '7766554433221100ffeeddccbbaa9988015002000000803f0000004000004040000000000000000000000000000020410000a0410000f041000000000000000000000000010000000000000001000100000000000000000000cdcc4c3d0000803fcdcccc3d0000ffffffff',
         ];
@@ -123,7 +126,7 @@ final class GameplayPacketCodecTest extends TestCase
             new AddPlayerPacket(
                 '00112233-4455-6677-8899-aabbccddeeff', 'P', UnsignedLong::fromInt(2), '',
                 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 10.0, 20.0, 30.0, 0,
-                new PlayerAbilities(1, 1, 0, [new AbilityLayer(0, 0, 0, 0.05000000074505806, 1.0, 0.10000000149011612)]),
+                new PlayerAbilities(1, PlayerPermission::Member, CommandPermissionLevel::Normal, [new AbilityLayer(0, 0, 0, 0.05000000074505806, 1.0, 0.10000000149011612)]),
                 metadata: PlayerActorMetadata::baseline('Player'),
             ),
             '7766554433221100ffeeddccbbaa9988015002000000803f0000004000004040000000000000000000000000000020410000a0410000f0410000000000000000000e0007078080c28080828003010202280300000004040406506c617965720701019001250707012603030000803f2a010190013503039a99193f3603036666e63f510000015c07070078030300000000820108089a99193f6666e63f9a99193f0000010000000000000001000100000000000000000000cdcc4c3d0000803fcdcccc3d0000ffffffff',
@@ -667,6 +670,8 @@ final class GameplayPacketCodecTest extends TestCase
             '07000000000000000100010100ffff0f003f000000cdcc4c3d0000803fcdcccc3d',
             bin2hex($abilities->encode()),
         );
+        self::assertSame(PlayerPermission::Member, $abilities->abilities->playerPermission);
+        self::assertSame(CommandPermissionLevel::Normal, $abilities->abilities->commandPermission);
         $layer = $abilities->abilities->layers[0];
         self::assertSame(0x000fffff, $layer->abilitiesSet);
         self::assertSame(0x3f, $layer->abilityValues);
@@ -681,6 +686,34 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame('07', bin2hex($attributes->encode()[0]));
         self::assertSame('05', bin2hex($attributes->encode()[1]));
         self::assertSame('00', bin2hex(substr($attributes->encode(), -1)));
+    }
+
+    public function testSurvivalOperatorAbilitiesUseExactPermissionAndCapabilityFields(): void
+    {
+        $abilities = UpdateAbilitiesPacket::survival(7, true);
+
+        self::assertSame(
+            '07000000000000000201010100ffff0f00ff000000cdcc4c3d0000803fcdcccc3d',
+            bin2hex($abilities->encode()),
+        );
+        self::assertSame(PlayerPermission::Operator, $abilities->abilities->playerPermission);
+        self::assertSame(CommandPermissionLevel::Operator, $abilities->abilities->commandPermission);
+        self::assertSame(0x000fffff, $abilities->abilities->layers[0]->abilitiesSet);
+        self::assertSame(0x000000ff, $abilities->abilities->layers[0]->abilityValues);
+    }
+
+    #[DataProvider('invalidAbilityPermissionVectors')]
+    public function testUnknownAbilityPermissionLevelsAreRejected(string $wire): void
+    {
+        $this->expectException(MalformedDataException::class);
+        PlayerAbilities::read(ByteBufferReader::fromString($wire, strlen($wire)));
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidAbilityPermissionVectors(): iterable
+    {
+        yield 'player permission' => [str_repeat("\0", 8) . "\x04\x00"];
+        yield 'command permission' => [str_repeat("\0", 8) . "\x01\x06"];
     }
 
     public function testModernInteractActionsAndOptionalPositionAreExact(): void
@@ -785,7 +818,7 @@ final class GameplayPacketCodecTest extends TestCase
 
     public function testPeerPlatformZeroIsRejectedInBothSpawnPackets(): void
     {
-        $abilities = new PlayerAbilities(1, 1, 0, [new AbilityLayer(1, 0, 0, 0.05, 1.0, 0.1)]);
+        $abilities = new PlayerAbilities(1, PlayerPermission::Member, CommandPermissionLevel::Normal, [new AbilityLayer(1, 0, 0, 0.05, 1.0, 0.1)]);
         $addPlayer = new AddPlayerPacket(
             '00112233-4455-6677-8899-aabbccddeeff', 'P', UnsignedLong::fromInt(2), '',
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, $abilities,
