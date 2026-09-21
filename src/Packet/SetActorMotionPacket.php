@@ -13,6 +13,7 @@ final readonly class SetActorMotionPacket implements Packet
         public float $motionX,
         public float $motionY,
         public float $motionZ,
+        public UnsignedLong $tick,
     ) {
         CodecSupport::validateFiniteFloat($motionX, 'Actor motion X');
         CodecSupport::validateFiniteFloat($motionY, 'Actor motion Y');
@@ -27,6 +28,7 @@ final readonly class SetActorMotionPacket implements Packet
             ->writeFloatLE($this->motionX)
             ->writeFloatLE($this->motionY)
             ->writeFloatLE($this->motionZ)
+            ->writeUnsignedVarLong($this->tick)
             ->toString();
     }
 
@@ -36,10 +38,11 @@ final readonly class SetActorMotionPacket implements Packet
         $motionX = $runtimeEntityId->reader->readFloatLE();
         $motionY = $motionX->reader->readFloatLE();
         $motionZ = $motionY->reader->readFloatLE();
+        $tick = $motionZ->reader->readUnsignedVarLong();
         CodecSupport::validateFiniteFloat($motionX->value, 'Actor motion X', true);
         CodecSupport::validateFiniteFloat($motionY->value, 'Actor motion Y', true);
         CodecSupport::validateFiniteFloat($motionZ->value, 'Actor motion Z', true);
-        CodecSupport::requireEnd($motionZ->reader);
-        return new self($runtimeEntityId->value, $motionX->value, $motionY->value, $motionZ->value);
+        CodecSupport::requireEnd($tick->reader);
+        return new self($runtimeEntityId->value, $motionX->value, $motionY->value, $motionZ->value, $tick->value);
     }
 }

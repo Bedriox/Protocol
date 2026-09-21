@@ -14,11 +14,17 @@ use PHPUnit\Framework\TestCase;
 
 final class SetActorMotionPacketTest extends TestCase
 {
-    private const string VECTOR = '070000c03f000080be00000000';
+    private const string VECTOR = '070000c03f000080be000000002a';
 
     public function testMatchesIndependentCurrentProtocolVector(): void
     {
-        $packet = new SetActorMotionPacket(UnsignedLong::fromInt(7), 1.5, -0.25, 0.0);
+        $packet = new SetActorMotionPacket(
+            UnsignedLong::fromInt(7),
+            1.5,
+            -0.25,
+            0.0,
+            UnsignedLong::fromInt(42),
+        );
         self::assertSame(self::VECTOR, bin2hex($packet->encode()));
         self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::SET_ACTOR_MOTION, hex2bin(self::VECTOR) ?: ''));
         self::assertSame(PacketIds::SET_ACTOR_MOTION, BedrockPacketCodec::packetId($packet));
@@ -27,7 +33,7 @@ final class SetActorMotionPacketTest extends TestCase
     public function testRejectsNonFiniteConstruction(): void
     {
         $this->expectException(InvalidValueException::class);
-        new SetActorMotionPacket(UnsignedLong::fromInt(1), NAN, 0.0, 0.0);
+        new SetActorMotionPacket(UnsignedLong::fromInt(1), NAN, 0.0, 0.0, UnsignedLong::fromInt(0));
     }
 
     public function testRejectsEveryTruncationAndTrailingData(): void

@@ -6,6 +6,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Fixed
 
+- Include the required unsigned client tick in protocol-2193 `SetActorMotionPacket` encoding and decoding.
 - Correct the protocol-2193 command-origin layout for requests and outputs to use a bounded string origin, UUID, request ID, and unconditional signed little-endian 64-bit player actor ID.
 - Restore the protocol-2193 MovePlayer teleport-metadata presence marker and reject marker/mode mismatches before decoding conditional fields.
 - Permit the current optional angular-velocity field for both player and vehicle movement corrections.
@@ -28,6 +29,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Added
 
+- Added bounded protocol-2193 system and translated text packet shapes with typed union and text-type discriminators.
 - Added the bounded current `SetActorMotionPacket` used for authoritative entity velocity and combat knockback projection.
 - Added the complete current command packet conversation with typed packet IDs, command origins, permissions, output modes, standard argument types, bounded command declarations, requests, and responses.
 - Added a typed, bounded protocol-2193 `MovementPredictionSyncPacket` for the current client movement-property notification, including its complete actor-flag bitset, finite property values, unsigned runtime actor ID, and flying marker.

@@ -6,7 +6,7 @@ namespace Bedriox\Protocol\Packet;
 
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Bedrock AuthorAndMessage/CHAT text variant used by the MVP. */
+/** Bedrock AuthorAndMessage/CHAT text variant. */
 final readonly class ChatPacket implements Packet
 {
     public function __construct(
@@ -31,8 +31,8 @@ final readonly class ChatPacket implements Packet
     public function encode(): string
     {
         $writer = CodecSupport::writeBoolean(CodecSupport::writer(), false)
-            ->writeUnsignedByte(1)
-            ->writeUnsignedByte(1)
+            ->writeUnsignedByte(TextPayloadVariant::AuthorAndMessage->value)
+            ->writeUnsignedByte(TextPacketType::Chat->value)
             ->writeString($this->sourceName, CodecSupport::MAX_PLAYER_NAME_BYTES)
             ->writeString($this->message, CodecSupport::MAX_CHAT_BYTES)
             ->writeString($this->xuid, CodecSupport::MAX_SHORT_STRING_BYTES)
@@ -52,7 +52,7 @@ final readonly class ChatPacket implements Packet
         }
         $variant = $reader->readUnsignedByte();
         $type = $variant->reader->readUnsignedByte();
-        if ($variant->value !== 1 || $type->value !== 1) {
+        if ($variant->value !== TextPayloadVariant::AuthorAndMessage->value || $type->value !== TextPacketType::Chat->value) {
             throw new MalformedDataException('Text payload is not the Bedrock CHAT AuthorAndMessage variant.');
         }
         $source = $type->reader->readString(CodecSupport::MAX_PLAYER_NAME_BYTES);
