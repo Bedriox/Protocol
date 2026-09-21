@@ -36,7 +36,7 @@ final readonly class CreativeContentPacket implements Packet
             if (isset($networkIds[$entry->networkId])) {
                 throw new InvalidValueException('Creative item network IDs must be unique.');
             }
-            if ($entry->groupId > count($groups)) {
+            if ($entry->groupId >= count($groups)) {
                 throw new InvalidValueException('Creative item group ID does not identify a declared group.');
             }
             $networkIds[$entry->networkId] = true;

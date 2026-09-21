@@ -1,5 +1,7 @@
 # Changelog
 
+- Corrected creative-content group references to use the current zero-based wire index.
+
 All notable changes will be documented here. The format follows Keep a Changelog and releases will use Semantic Versioning.
 
 ## [0.1.0-alpha.1] - 2026-09-17

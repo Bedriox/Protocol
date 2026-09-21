@@ -79,9 +79,9 @@ final class GameplayMilestonePacketTest extends TestCase
         $item = new InventoryItemStack(5, 2, 3, null, 7, '');
         $packet = new CreativeContentPacket(
             [new CreativeItemGroup(CreativeItemCategory::Nature, 'nature', $item)],
-            [new CreativeItemEntry(9, $item, 1)],
+            [new CreativeItemEntry(9, $item, 0)],
         );
-        self::assertSame('0102066e61747572650a0200030e0001090a0200030e0001', bin2hex($packet->encode()));
+        self::assertSame('0102066e61747572650a0200030e0001090a0200030e0000', bin2hex($packet->encode()));
         self::assertPacketRoundTrips($packet);
         $this->assertRejectsEveryTruncation(CreativeContentPacket::decode(...), $packet->encode());
     }
@@ -99,7 +99,7 @@ final class GameplayMilestonePacketTest extends TestCase
 
         $this->expectException(InvalidValueException::class);
         $item = new InventoryItemStack(5, 1, 0, null, 0, '');
-        new CreativeContentPacket([], [new CreativeItemEntry(1, $item, 1)]);
+        new CreativeContentPacket([new CreativeItemGroup(CreativeItemCategory::Items, '', $item)], [new CreativeItemEntry(1, $item, 1)]);
     }
 
     public function testCurrentInventoryActionsHaveKnownVectorAndRoundTrip(): void
