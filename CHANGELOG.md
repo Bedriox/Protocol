@@ -29,6 +29,13 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Added
 
+- Added the typed current ability domain and safe ability-layer mask construction and query helpers.
+- Added typed fixed-flat StartGame player and level game modes while preserving the survival default payload.
+- Added the bounded protocol-2193 named level-sound event packet with verified hit, break, and place sound names.
+- Added typed, bounded protocol-2193 creative-content groups and entries with the current one-byte category layout.
+- Added closed game-type and block-interaction level-event semantics plus update-game-type and request-permissions packet codecs.
+- Added typed drop, destroy, consume, create, mine-block, and creative-craft item-stack request actions without changing the established take/place/swap API.
+- Added the bounded dropped-item actor spawn, delta-movement, collection, and removal packet conversation.
 - Added every remaining protocol-2193 text display variant plus complete title, subtitle, action-bar, timing, clear/reset, JSON-title, and toast-notification packet support.
 - Added bounded protocol-2193 system and translated text packet shapes with typed union and text-type discriminators.
 - Added the bounded current `SetActorMotionPacket` used for authoritative entity velocity and combat knockback projection.

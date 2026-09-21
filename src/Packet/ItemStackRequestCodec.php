@@ -63,8 +63,8 @@ final class ItemStackRequestCodec
     private static function readAction(ByteBufferReader $reader): array
     {
         $type = $reader->readUnsignedVarInt();
-        if ($type->value > 5) {
-            throw new MalformedDataException('Item-stack request action type is outside the supported rejection slice.');
+        if (!in_array($type->value, [0, 1, 2, 3, 4, 5, 6, 9, 12], true)) {
+            throw new MalformedDataException('Item-stack request action type is unsupported.');
         }
         $duplicateType = $type->reader->readUnsignedByte();
         if ($duplicateType->value !== $type->value) {
@@ -86,13 +86,34 @@ final class ItemStackRequestCodec
                 [$destination, $reader] = self::readSlot($reader);
                 return [new SwapItemStackRequestAction($source, $destination), $reader];
             }
-            $amount = $reader->readUnsignedByte();
-            [$source, $reader] = self::readSlot($amount->reader);
-            $randomly = null;
-            if ($type->value === 3) {
-                [$randomly, $reader] = CodecSupport::readBoolean($reader);
+            if ($type->value <= 5) {
+                $amount = $reader->readUnsignedByte();
+                [$source, $reader] = self::readSlot($amount->reader);
+                if ($type->value === 3) {
+                    [$randomly, $reader] = CodecSupport::readBoolean($reader);
+                    return [new DropItemStackRequestAction($amount->value, $source, $randomly), $reader];
+                }
+                return [$type->value === 4
+                    ? new DestroyItemStackRequestAction($amount->value, $source)
+                    : new ConsumeItemStackRequestAction($amount->value, $source), $reader];
             }
-            return [new RejectedItemStackRequestAction($type->value, $amount->value, $source, $randomly), $reader];
+            if ($type->value === 6) {
+                $slot = $reader->readUnsignedByte();
+                return [new CreateItemStackRequestAction($slot->value), $slot->reader];
+            }
+            if ($type->value === 9) {
+                $hotbarSlot = $reader->readSignedVarInt();
+                $predictedDurability = $hotbarSlot->reader->readSignedVarInt();
+                $stackNetworkId = $predictedDurability->reader->readSignedIntLE();
+                return [new MineBlockItemStackRequestAction(
+                    $hotbarSlot->value,
+                    $predictedDurability->value,
+                    $stackNetworkId->value,
+                ), $stackNetworkId->reader];
+            }
+            $networkId = $reader->readUnsignedVarInt();
+            $requestedCrafts = $networkId->reader->readUnsignedByte();
+            return [new CraftCreativeItemStackRequestAction($networkId->value, $requestedCrafts->value), $requestedCrafts->reader];
         } catch (InvalidValueException $e) {
             throw new MalformedDataException('Item-stack request action is invalid.', previous: $e);
         }
@@ -115,6 +136,27 @@ final class ItemStackRequestCodec
         }
         if ($action instanceof SwapItemStackRequestAction) {
             return self::writeSlot(self::writeSlot($writer, $action->source), $action->destination);
+        }
+        if ($action instanceof DropItemStackRequestAction) {
+            return CodecSupport::writeBoolean(
+                self::writeSlot($writer->writeUnsignedByte($action->amount), $action->source),
+                $action->isRandomlySelected(),
+            );
+        }
+        if ($action instanceof DestroyItemStackRequestAction || $action instanceof ConsumeItemStackRequestAction) {
+            return self::writeSlot($writer->writeUnsignedByte($action->amount), $action->source);
+        }
+        if ($action instanceof CreateItemStackRequestAction) {
+            return $writer->writeUnsignedByte($action->slot);
+        }
+        if ($action instanceof MineBlockItemStackRequestAction) {
+            return $writer->writeSignedVarInt($action->hotbarSlot)
+                ->writeSignedVarInt($action->predictedDurability)
+                ->writeSignedIntLE($action->stackNetworkId);
+        }
+        if ($action instanceof CraftCreativeItemStackRequestAction) {
+            return $writer->writeUnsignedVarInt($action->creativeItemNetworkId)
+                ->writeUnsignedByte($action->requestedCrafts);
         }
         if ($action instanceof RejectedItemStackRequestAction) {
             $writer = self::writeSlot($writer->writeUnsignedByte($action->amount), $action->source);

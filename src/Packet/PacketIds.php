@@ -20,6 +20,8 @@ final class PacketIds
     public const int START_GAME = 11;
     public const int ADD_PLAYER = 12;
     public const int REMOVE_ACTOR = 14;
+    public const int ADD_ITEM_ACTOR = 15;
+    public const int TAKE_ITEM_ACTOR = 17;
     public const int MOVE_ACTOR_ABSOLUTE = 18;
     public const int MOVE_PLAYER = 19;
     public const int UPDATE_BLOCK = 21;
@@ -53,11 +55,13 @@ final class PacketIds
     public const int COMMAND_OUTPUT = 79;
     public const int PLAYER_SKIN = 93;
     public const int SERVER_SETTINGS_REQUEST = 102;
+    public const int MOVE_ACTOR_DELTA = 111;
     public const int SET_LOCAL_PLAYER_AS_INITIALIZED = 113;
     public const int NETWORK_STACK_LATENCY = 115;
     public const int AVAILABLE_ACTOR_IDENTIFIERS = 119;
     public const int NETWORK_CHUNK_PUBLISHER_UPDATE = 121;
     public const int BIOME_DEFINITION_LIST = 122;
+    public const int LEVEL_SOUND_EVENT = 123;
     public const int CLIENT_CACHE_STATUS = 129;
     public const int EMOTE = 138;
     public const int CORRECT_PLAYER_MOVE_PREDICTION = 161;
@@ -67,10 +71,12 @@ final class PacketIds
     public const int CREATIVE_CONTENT = 145;
     public const int ITEM_STACK_REQUEST = 147;
     public const int ITEM_STACK_RESPONSE = 148;
+    public const int UPDATE_PLAYER_GAME_TYPE = 151;
     public const int EMOTE_LIST = 152;
     public const int SUB_CHUNK = 174;
     public const int SUB_CHUNK_REQUEST = 175;
     public const int REQUEST_ABILITY = 184;
+    public const int REQUEST_PERMISSIONS = 185;
     public const int TOAST_REQUEST = 186;
     public const int REQUEST_NETWORK_SETTINGS = 193;
     public const int UPDATE_ABILITIES = 187;

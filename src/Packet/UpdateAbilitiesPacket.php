@@ -10,11 +10,23 @@ final readonly class UpdateAbilitiesPacket implements Packet
 
     public static function survival(int $uniqueEntityId, bool $operator = false): self
     {
+        $enabled = [
+            Ability::Build,
+            Ability::Mine,
+            Ability::DoorsAndSwitches,
+            Ability::OpenContainers,
+            Ability::AttackPlayers,
+            Ability::AttackMobs,
+        ];
+        if ($operator) {
+            $enabled[] = Ability::OperatorCommands;
+            $enabled[] = Ability::Teleport;
+        }
         return new self(new PlayerAbilities(
             $uniqueEntityId,
             $operator ? PlayerPermission::Operator : PlayerPermission::Member,
             $operator ? CommandPermissionLevel::Operator : CommandPermissionLevel::Normal,
-            [new AbilityLayer(1, 0x000fffff, $operator ? 0x000000ff : 0x0000003f, 0.05, 1.0, 0.1)],
+            [AbilityLayer::fromAbilities(1, Ability::cases(), $enabled, 0.05, 1.0, 0.1)],
         ));
     }
 

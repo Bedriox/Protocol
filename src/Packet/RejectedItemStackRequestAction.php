@@ -7,7 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Exception\InvalidValueException;
 
 /** A structurally known common action retained so consumers can reject it by request ID. */
-final readonly class RejectedItemStackRequestAction implements ItemStackRequestAction
+readonly class RejectedItemStackRequestAction implements ItemStackRequestAction
 {
     public function __construct(
         private int $type,

@@ -15,7 +15,11 @@ final readonly class StartGamePacket implements Packet
     private const int MAX_BLOCK_PROPERTIES = 1_024;
     private const int MAX_REWIND_HISTORY_SIZE = 0x7fffffff;
 
-    private function __construct(private string $payload)
+    private function __construct(
+        private string $payload,
+        public GameType $playerGameType,
+        public GameType $levelGameType,
+    )
     {
         if ($payload === '' || strlen($payload) > self::MAX_BYTES) { throw new InvalidValueException('StartGame payload is empty or oversized.'); }
     }
@@ -44,6 +48,8 @@ final readonly class StartGamePacket implements Packet
         float $playerPitch = 0.0,
         float $playerYaw = 0.0,
         int $rewindHistorySize = 40,
+        GameType $playerGameType = GameType::Survival,
+        GameType $levelGameType = GameType::Survival,
     ): self
     {
         foreach ([$x, $y, $z] as $value) { CodecSupport::validateFiniteFloat($value, 'StartGame position'); }
@@ -76,10 +82,10 @@ final readonly class StartGamePacket implements Packet
             }
             $experimentNames[$experiment->name] = true;
         }
-        $w = CodecSupport::writer()->writeSignedVarLong($uniqueEntityId)->writeUnsignedVarLong($runtimeEntityId)->writeSignedVarInt(0)
+        $w = CodecSupport::writer()->writeSignedVarLong($uniqueEntityId)->writeUnsignedVarLong($runtimeEntityId)->writeSignedVarInt($playerGameType->value)
             ->writeFloatLE($x)->writeFloatLE($y)->writeFloatLE($z)->writeFloatLE($playerPitch)->writeFloatLE($playerYaw)
             ->writeSignedLongLE($worldSeed)->writeUnsignedShortLE(0)->writeString('plains', 16)
-            ->writeSignedVarInt(0)->writeSignedVarInt(1)->writeSignedVarInt(0);
+            ->writeSignedVarInt(0)->writeSignedVarInt(1)->writeSignedVarInt($levelGameType->value);
         $w = CodecSupport::writeBoolean($w, false)->writeSignedVarInt(0)->writeSignedVarInt($worldSpawnX)
             ->writeSignedVarInt($worldSpawnY)->writeSignedVarInt($worldSpawnZ);
         foreach ([true, false, false] as $flag) { $w = CodecSupport::writeBoolean($w, $flag); }
@@ -120,7 +126,7 @@ final readonly class StartGamePacket implements Packet
             ->writeBytes("\x0a\x00\x00")->writeSignedLongLE(0)->writeBytes(str_repeat("\0", 16));
         foreach ([false, false, true, false] as $flag) { $w = CodecSupport::writeBoolean($w, $flag); }
         foreach (array_fill(0, 4, '') as $id) { $w = $w->writeString($id, 0); }
-        return new self($w->toString());
+        return new self($w->toString(), $playerGameType, $levelGameType);
     }
 
     public function packetId(): int { return PacketIds::START_GAME; }
