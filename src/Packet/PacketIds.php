@@ -15,6 +15,7 @@ final class PacketIds
     public const int RESOURCE_PACK_STACK = 7;
     public const int RESOURCE_PACK_CLIENT_RESPONSE = 8;
     public const int TEXT = 9;
+    public const int SET_TITLE = 88;
     public const int SET_TIME = 10;
     public const int START_GAME = 11;
     public const int ADD_PLAYER = 12;
@@ -70,6 +71,7 @@ final class PacketIds
     public const int SUB_CHUNK = 174;
     public const int SUB_CHUNK_REQUEST = 175;
     public const int REQUEST_ABILITY = 184;
+    public const int TOAST_REQUEST = 186;
     public const int REQUEST_NETWORK_SETTINGS = 193;
     public const int UPDATE_ABILITIES = 187;
     public const int UPDATE_ADVENTURE_SETTINGS = 188;

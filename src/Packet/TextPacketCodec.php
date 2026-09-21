@@ -9,7 +9,7 @@ use Bedriox\Protocol\Exception\MalformedDataException;
 /** Selects one of the bounded text packet shapes supported by the current protocol. */
 final class TextPacketCodec
 {
-    public static function decode(string $bytes): ChatPacket|SystemTextPacket|TranslatedTextPacket
+    public static function decode(string $bytes): ChatPacket|SystemTextPacket|TextPacket|TranslatedTextPacket
     {
         [$needsTranslation, $reader] = CodecSupport::readBoolean(CodecSupport::reader($bytes));
         $variantWire = $reader->readUnsignedByte();
@@ -27,6 +27,7 @@ final class TextPacketCodec
             $needsTranslation
                 && $variant === TextPayloadVariant::MessageAndParameters
                 && $type === TextPacketType::Translation => TranslatedTextPacket::decode($bytes),
+            $type !== null => TextPacket::decode($bytes),
             default => throw new MalformedDataException('Text payload shape is not supported by the current codec.'),
         };
     }

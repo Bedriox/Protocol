@@ -29,6 +29,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 
 ### Added
 
+- Added every remaining protocol-2193 text display variant plus complete title, subtitle, action-bar, timing, clear/reset, JSON-title, and toast-notification packet support.
 - Added bounded protocol-2193 system and translated text packet shapes with typed union and text-type discriminators.
 - Added the bounded current `SetActorMotionPacket` used for authoritative entity velocity and combat knockback projection.
 - Added the complete current command packet conversation with typed packet IDs, command origins, permissions, output modes, standard argument types, bounded command declarations, requests, and responses.

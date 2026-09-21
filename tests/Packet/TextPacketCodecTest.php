@@ -11,6 +11,7 @@ use Bedriox\Protocol\Packet\Packet;
 use Bedriox\Protocol\Packet\PacketIds;
 use Bedriox\Protocol\Packet\SystemTextPacket;
 use Bedriox\Protocol\Packet\TextPacketType;
+use Bedriox\Protocol\Packet\TextPacket;
 use Bedriox\Protocol\Packet\TextPayloadVariant;
 use Bedriox\Protocol\Packet\TranslatedTextPacket;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -32,6 +33,42 @@ final class TextPacketCodecTest extends TestCase
         yield 'translated message with optional metadata' => [
             new TranslatedTextPacket('key', ['value'], 'x', 'p', 'filtered'),
             '010202036b6579010576616c756501780170010866696c7465726564',
+        ];
+        yield 'raw message' => [
+            TextPacket::raw('hello'),
+            '0000000568656c6c6f000000',
+        ];
+        yield 'popup with parameters' => [
+            TextPacket::popup('message', ['p']),
+            '000203076d657373616765010170000000',
+        ];
+        yield 'jukebox popup' => [
+            TextPacket::jukeboxPopup('record', ['name']),
+            '000204067265636f726401046e616d65000000',
+        ];
+        yield 'tip' => [
+            TextPacket::tip('hint'),
+            '0000050468696e74000000',
+        ];
+        yield 'whisper' => [
+            TextPacket::whisper('Alex', 'secret'),
+            '00010704416c657806736563726574000000',
+        ];
+        yield 'announcement' => [
+            TextPacket::announcement('Server', 'notice'),
+            '00010806536572766572066e6f74696365000000',
+        ];
+        yield 'whisper json' => [
+            TextPacket::whisperJson('{"text":"secret"}'),
+            '000009117b2274657874223a22736563726574227d000000',
+        ];
+        yield 'json' => [
+            TextPacket::json('{"text":"hello"}'),
+            '00000a107b2274657874223a2268656c6c6f227d000000',
+        ];
+        yield 'announcement json' => [
+            TextPacket::announcementJson('{"text":"notice"}'),
+            '00000b117b2274657874223a226e6f74696365227d000000',
         ];
     }
 
@@ -69,6 +106,7 @@ final class TextPacketCodecTest extends TestCase
         self::assertSame(1, TextPacketType::Chat->value);
         self::assertSame(2, TextPacketType::Translation->value);
         self::assertSame(6, TextPacketType::System->value);
+        self::assertSame(11, TextPacketType::AnnouncementJson->value);
     }
 
     /** @return iterable<string, array{string}> */
@@ -104,6 +142,12 @@ final class TextPacketCodecTest extends TestCase
             static fn (): TranslatedTextPacket => new TranslatedTextPacket('key', array_fill(0, 17, 'value')),
             static fn (): object => (new \ReflectionClass(TranslatedTextPacket::class))->newInstanceArgs(['key', [123]]),
             static fn (): TranslatedTextPacket => new TranslatedTextPacket('key', [str_repeat('x', 4_097)]),
+            static fn (): TextPacket => TextPacket::raw(''),
+            static fn (): TextPacket => TextPacket::tip(str_repeat('x', 4_097)),
+            static fn (): TextPacket => new TextPacket(TextPacketType::Raw, 'message', 'source'),
+            static fn (): TextPacket => new TextPacket(TextPacketType::Tip, 'message', parameters: ['parameter']),
+            static fn (): TextPacket => new TextPacket(TextPacketType::Popup, 'message', parameters: array_fill(0, 17, 'value')),
+            static fn (): TextPacket => new TextPacket(TextPacketType::System, 'message'),
         ] as $operation) {
             try {
                 $operation();

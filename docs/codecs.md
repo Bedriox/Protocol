@@ -39,3 +39,9 @@ Player lifecycle support includes bounded actor hurt, death, and respawn events,
 clientbound death information, and the three-state bidirectional respawn
 conversation. Actor events use the current optional fire-position field;
 unsupported event types and malformed optional values fail closed.
+
+Protocol-2193 player display support covers all twelve current text variants,
+all nine title operations, and toast notifications. Text payload variants are
+validated against their text types before fields are retained. Title timing is
+encoded as signed VarInts, and current XUID, platform identity, and filtered
+text fields remain explicit bounded strings.
