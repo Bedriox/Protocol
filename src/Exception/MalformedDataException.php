@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Exception;
 
-final class MalformedDataException extends CodecException
+class MalformedDataException extends CodecException
 {
 }
-

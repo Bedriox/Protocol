@@ -1,5 +1,8 @@
 # Changelog
 
+- Identify failed item-stack request actions by bounded action type, index, byte offset, and fixed failure category without retaining packet bytes.
+- Correct the item-stack request action marker for current creative, mine-block, and craft-results actions; the marker is the action enum ordinal, not a duplicate wire type.
+- Decode and encode bounded deprecated craft-results actions in creative item-stack requests without treating client-reported results as inventory authority.
 - Corrected creative-content group references to use the current zero-based wire index.
 
 All notable changes will be documented here. The format follows Keep a Changelog and releases will use Semantic Versioning.

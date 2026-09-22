@@ -114,13 +114,72 @@ final class GameplayMilestonePacketTest extends TestCase
             new CraftCreativeItemStackRequestAction(9, 2),
         ])]);
         self::assertSame(
-            '0106060303021d000211000000010404011d0002110000000505011d00021100000006060409090203110000000c0c090200ffffffff',
+            '0106060303021d000211000000010404011d0002110000000505011d000211000000060604090b0203110000000c0e090200ffffffff',
             bin2hex($packet->encode()),
         );
         $decoded = ItemStackRequestPacket::decode($packet->encode());
         self::assertEquals($packet, $decoded);
         self::assertInstanceOf(RejectedItemStackRequestAction::class, $decoded->requests[0]->actions[0]);
         $this->assertRejectsEveryTruncation(ItemStackRequestPacket::decode(...), $packet->encode());
+    }
+
+    public function testCreativeRequestCanCarryBoundedCraftResultsAdvisory(): void
+    {
+        $wire = hex2bin('0106020c0e09011113000100ffffffff');
+        self::assertNotFalse($wire);
+        $packet = ItemStackRequestPacket::decode($wire);
+        self::assertCount(2, $packet->requests[0]->actions);
+        self::assertInstanceOf(\Bedriox\Protocol\Packet\CraftResultsItemStackRequestAction::class, $packet->requests[0]->actions[1]);
+        self::assertSame($wire, $packet->encode());
+    }
+
+    public function testCreativeActionUsesEnumMarkerDistinctFromWireType(): void
+    {
+        $wire = hex2bin('0106010c0e090100ffffffff');
+        self::assertNotFalse($wire);
+        $request = ItemStackRequestPacket::decode($wire);
+        self::assertEquals(new CraftCreativeItemStackRequestAction(9, 1), $request->requests[0]->actions[0]);
+        self::assertSame($wire, $request->encode());
+
+        $incorrectMarker = hex2bin('0106010c0c090100ffffffff');
+        self::assertNotFalse($incorrectMarker);
+        $this->expectException(\Bedriox\Protocol\Exception\ItemStackRequestDecodeException::class);
+        ItemStackRequestPacket::decode($incorrectMarker);
+    }
+
+    public function testUnsupportedCreativeActionReportsOnlyItsBoundedDecodeLocation(): void
+    {
+        $wire = hex2bin('010001101000ffffffff');
+        self::assertNotFalse($wire);
+        try {
+            ItemStackRequestPacket::decode($wire);
+            self::fail('Unsupported action should be rejected.');
+        } catch (\Bedriox\Protocol\Exception\ItemStackRequestDecodeException $failure) {
+            self::assertSame('action', $failure->stage);
+            self::assertSame('unsupported_action_type', $failure->detailCode);
+            self::assertSame(3, $failure->byteOffset);
+            self::assertSame(0, $failure->actionIndex);
+            self::assertSame(16, $failure->actionType);
+            self::assertStringNotContainsString(bin2hex($wire), $failure->getMessage());
+        }
+    }
+
+    public function testCraftResultsWithBlockItemDescriptorHasKnownVector(): void
+    {
+        $wire = hex2bin('0106011113010101156d696e6563726166743a636f62626c6573746f6e65000100f934000100ffffffff');
+        self::assertNotFalse($wire);
+        $packet = ItemStackRequestPacket::decode($wire);
+        $action = $packet->requests[0]->actions[0];
+        self::assertInstanceOf(\Bedriox\Protocol\Packet\CraftResultsItemStackRequestAction::class, $action);
+        self::assertSame('minecraft:cobblestone', $action->results[0]->descriptorValue);
+        self::assertSame(6777, $action->results[0]->blockRuntimeId);
+        self::assertSame($wire, $packet->encode());
+        $this->assertRejectsEveryTruncation(ItemStackRequestPacket::decode(...), $wire);
+
+        $oversized = hex2bin('010601111111');
+        self::assertNotFalse($oversized);
+        $this->expectException(\Bedriox\Protocol\Exception\MalformedDataException::class);
+        ItemStackRequestPacket::decode($oversized);
     }
 
     public function testPermissionsPacketHasKnownVectorAndRejectsUnknownPermission(): void

@@ -1,5 +1,9 @@
 # Bedrock packet codec
 
+Failed item-stack request actions carry a bounded decode location and fixed category for diagnostics. These values contain no packet bytes or item content. Protocol 2193 action bodies carry a second action byte that uses the action enum ordinal; it is not always equal to the preceding wire discriminator. The codec checks the current mapping and emits the matching marker for supported actions.
+
+Creative item-stack requests may carry the protocol-2193 deprecated craft-results action in either standalone packet 147 or the request embedded in player-auth input. The codec preserves bounded result descriptors and user data but does not assign them inventory authority; the server decides whether a request succeeds.
+
 `Bedriox\Protocol\Packet` is the sole Minecraft Bedrock packet surface used by Bedriox. `ProtocolVersion` centrally declares Minecraft 1.26.50 / protocol 2193 as the wire authority; Minecraft 1.26.51 is a qualified same-protocol retail client. Packet class and namespace names intentionally do not repeat that number.
 
 The packet set covers discovery-adjacent network settings, login and authentication envelopes, encrypted resource-pack negotiation, StartGame, player-list and classic-skin records, empty-hand AddPlayer with synchronized actor data, actor removal, generic LevelChunk columns, requested SubChunk responses, registry packets, movement, chat, radius negotiation, and local-player initialization. `BedrockPacketCodec` is its only packet registry. `BedrockEncryptor`, `BedrockDecryptor`, and `BedrockEncryptedEnvelopeCodec` own continuous encrypted framing.

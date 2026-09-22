@@ -7,11 +7,20 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Codec\ByteBufferReader;
 use Bedriox\Protocol\Codec\ByteBufferWriter;
 use Bedriox\Protocol\Exception\InvalidValueException;
+use Bedriox\Protocol\Exception\ItemStackRequestDecodeException;
+use Bedriox\Protocol\Exception\CodecException;
+use Bedriox\Protocol\Exception\BufferUnderflowException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
 /** Internal bounded protocol-2193 codec for one item-stack request entry. */
 final class ItemStackRequestCodec
 {
+    /** The second action byte is the action enum ordinal, not the wire discriminator. */
+    private const array ACTION_MARKERS = [
+        0 => 0, 1 => 1, 2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6,
+        9 => 11, 12 => 14, 17 => 19,
+    ];
+
     /** @return array{ItemStackRequest, ByteBufferReader} */
     public static function readEntry(ByteBufferReader $reader): array
     {
@@ -23,7 +32,25 @@ final class ItemStackRequestCodec
         $actions = [];
         $reader = $actionCount->reader;
         for ($index = 0; $index < $actionCount->value; ++$index) {
-            [$actions[], $reader] = self::readAction($reader);
+            $actionStart = $reader;
+            try {
+                [$actions[], $reader] = self::readAction($reader);
+            } catch (CodecException $failure) {
+                $type = null;
+                try {
+                    $type = $actionStart->readUnsignedVarInt()->value;
+                } catch (CodecException) {
+                    // An invalid discriminator has no safe numeric action type to report.
+                }
+                throw new ItemStackRequestDecodeException(
+                    'action',
+                    self::decodeDetailCode($failure),
+                    $actionStart->offset(),
+                    $index,
+                    $type,
+                    $failure,
+                );
+            }
         }
         $filterStringCount = $reader->readUnsignedVarInt();
         if ($filterStringCount->value > ItemStackRequest::MAXIMUM_FILTER_STRINGS) {
@@ -46,6 +73,26 @@ final class ItemStackRequestCodec
         }
     }
 
+    private static function decodeDetailCode(CodecException $failure): string
+    {
+        if ($failure instanceof BufferUnderflowException) {
+            return 'truncated';
+        }
+
+        return match ($failure->getMessage()) {
+            'Item-stack request action type is unsupported.' => 'unsupported_action_type',
+            'Item-stack request action type markers disagree.' => 'action_marker_mismatch',
+            'Craft-results item count exceeds its limit.' => 'result_count_limit',
+            'Craft-results descriptor type is unsupported.' => 'result_descriptor_type',
+            'Craft-results descriptor markers disagree.' => 'result_descriptor_marker',
+            'Craft-results item user data exceeds its limit.' => 'result_user_data_limit',
+            'Item-stack request action is invalid.' => 'invalid_action_value',
+            'Truncated unsigned VarInt.',
+            'Truncated unsigned VarLong.' => 'truncated',
+            default => 'malformed_action',
+        };
+    }
+
     public static function writeEntry(ByteBufferWriter $writer, ItemStackRequest $request): ByteBufferWriter
     {
         $writer = $writer->writeSignedVarInt($request->requestId)->writeUnsignedVarInt(count($request->actions));
@@ -63,11 +110,11 @@ final class ItemStackRequestCodec
     private static function readAction(ByteBufferReader $reader): array
     {
         $type = $reader->readUnsignedVarInt();
-        if (!in_array($type->value, [0, 1, 2, 3, 4, 5, 6, 9, 12], true)) {
+        if (!array_key_exists($type->value, self::ACTION_MARKERS)) {
             throw new MalformedDataException('Item-stack request action type is unsupported.');
         }
         $duplicateType = $type->reader->readUnsignedByte();
-        if ($duplicateType->value !== $type->value) {
+        if ($duplicateType->value !== self::ACTION_MARKERS[$type->value]) {
             throw new MalformedDataException('Item-stack request action type markers disagree.');
         }
         $reader = $duplicateType->reader;
@@ -111,12 +158,65 @@ final class ItemStackRequestCodec
                     $stackNetworkId->value,
                 ), $stackNetworkId->reader];
             }
+            if ($type->value === 17) {
+                $count = $reader->readUnsignedVarInt();
+                if ($count->value > CraftResultsItemStackRequestAction::MAXIMUM_RESULTS) {
+                    throw new MalformedDataException('Craft-results item count exceeds its limit.');
+                }
+                $results = [];
+                $reader = $count->reader;
+                for ($index = 0; $index < $count->value; ++$index) {
+                    [$results[], $reader] = self::readResultItem($reader);
+                }
+                $crafts = $reader->readUnsignedByte();
+                return [new CraftResultsItemStackRequestAction($results, $crafts->value), $crafts->reader];
+            }
             $networkId = $reader->readUnsignedVarInt();
             $requestedCrafts = $networkId->reader->readUnsignedByte();
             return [new CraftCreativeItemStackRequestAction($networkId->value, $requestedCrafts->value), $requestedCrafts->reader];
         } catch (InvalidValueException $e) {
             throw new MalformedDataException('Item-stack request action is invalid.', previous: $e);
         }
+    }
+
+    /** @return array{ItemStackRequestResultItem, ByteBufferReader} */
+    private static function readResultItem(ByteBufferReader $reader): array
+    {
+        $type = $reader->readUnsignedVarInt();
+        if ($type->value > 3) {
+            throw new MalformedDataException('Craft-results descriptor type is unsupported.');
+        }
+        $marker = $type->reader->readUnsignedByte();
+        if ($marker->value !== $type->value) {
+            throw new MalformedDataException('Craft-results descriptor markers disagree.');
+        }
+        $reader = $marker->reader;
+        $value = null;
+        $aux = 0;
+        if ($type->value !== 0) {
+            $name = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
+            $value = $name->value;
+            $reader = $name->reader;
+            if ($type->value === 1) {
+                $readAux = $reader->readSignedVarInt();
+                $aux = $readAux->value;
+                $reader = $readAux->reader;
+            } elseif ($type->value === 2) {
+                $version = $reader->readSignedShortLE();
+                $aux = $version->value;
+                $reader = $version->reader;
+            }
+        }
+        $count = $reader->readUnsignedShortLE();
+        $blockId = $count->reader->readUnsignedVarInt();
+        $length = $blockId->reader->readUnsignedVarInt();
+        if ($length->value > InventoryItemStack::MAXIMUM_USER_DATA_BYTES) {
+            throw new MalformedDataException('Craft-results item user data exceeds its limit.');
+        }
+        $userData = $length->reader->readBytes($length->value);
+        return [new ItemStackRequestResultItem(
+            $type->value, $value, $aux, $count->value, $blockId->value, $userData->value,
+        ), $userData->reader];
     }
 
     /** @return array{ItemStackRequestSlot, ByteBufferReader} */
@@ -130,7 +230,11 @@ final class ItemStackRequestCodec
 
     private static function writeAction(ByteBufferWriter $writer, ItemStackRequestAction $action): ByteBufferWriter
     {
-        $writer = $writer->writeUnsignedVarInt($action->typeId())->writeUnsignedByte($action->typeId());
+        $typeId = $action->typeId();
+        if (!array_key_exists($typeId, self::ACTION_MARKERS)) {
+            throw new InvalidValueException('Item-stack request action type is unsupported.');
+        }
+        $writer = $writer->writeUnsignedVarInt($typeId)->writeUnsignedByte(self::ACTION_MARKERS[$typeId]);
         if ($action instanceof TakeItemStackRequestAction || $action instanceof PlaceItemStackRequestAction) {
             return self::writeSlot(self::writeSlot($writer->writeUnsignedByte($action->amount), $action->source), $action->destination);
         }
@@ -157,6 +261,26 @@ final class ItemStackRequestCodec
         if ($action instanceof CraftCreativeItemStackRequestAction) {
             return $writer->writeUnsignedVarInt($action->creativeItemNetworkId)
                 ->writeUnsignedByte($action->requestedCrafts);
+        }
+        if ($action instanceof CraftResultsItemStackRequestAction) {
+            $writer = $writer->writeUnsignedVarInt(count($action->results));
+            foreach ($action->results as $result) {
+                $writer = $writer->writeUnsignedVarInt($result->descriptorType)
+                    ->writeUnsignedByte($result->descriptorType);
+                if ($result->descriptorValue !== null) {
+                    $writer = $writer->writeString($result->descriptorValue, CodecSupport::MAX_SHORT_STRING_BYTES);
+                    if ($result->descriptorType === 1) {
+                        $writer = $writer->writeSignedVarInt($result->auxOrVersion);
+                    } elseif ($result->descriptorType === 2) {
+                        $writer = $writer->writeSignedShortLE($result->auxOrVersion);
+                    }
+                }
+                $writer = $writer->writeUnsignedShortLE($result->count)
+                    ->writeUnsignedVarInt($result->blockRuntimeId)
+                    ->writeUnsignedVarInt(strlen($result->userData))
+                    ->writeBytes($result->userData);
+            }
+            return $writer->writeUnsignedByte($action->numberOfCrafts);
         }
         if ($action instanceof RejectedItemStackRequestAction) {
             $writer = self::writeSlot($writer->writeUnsignedByte($action->amount), $action->source);
