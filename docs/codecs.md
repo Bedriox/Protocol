@@ -34,6 +34,12 @@ Current `PlayerAuthInput` block actions are target-bearing except `StopDestroyBl
 
 `BedrockEncryptedEnvelopeCodec` is the safe composition boundary for encrypted traffic. It removes the clear `0xfe` marker before the compressed batch and integrity trailer enter the continuous cipher, then restores the marker outside the ciphertext. The reverse path validates the marker before consuming decryptor state.
 
+## Chunk palette storage
+
+`PalettedStorage` accepts an expanded runtime-ID palette and one validated palette index per X-Z-Y cell. `PackedPalettedStorage` accepts the equivalent canonical little-endian Bedrock word array when a caller already owns a packed immutable snapshot. Both forms share the same section and biome boundaries and produce the same storage bytes; the serializer writes validated packed words directly instead of expanding and repacking every cell.
+
+Packed inputs declare their exact entry count and admitted bit width. Construction rejects incorrect word lengths, palette indexes outside the supplied palette, non-zero trailing entries, and non-canonical padding. Zero-bit storage is limited to a singleton palette with no words.
+
 Decompression uses bounded incremental input, rejects incomplete streams and bytes after the stream terminator, and checks both absolute output size and expansion ratio before retaining further output.
 Player lifecycle support includes bounded actor hurt, death, and respawn events,
 clientbound death information, and the three-state bidirectional respawn

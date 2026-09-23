@@ -12,6 +12,7 @@ use Bedriox\Protocol\Packet\ChunkColumnData;
 use Bedriox\Protocol\Packet\ChunkSectionData;
 use Bedriox\Protocol\Packet\ChunkSerializer;
 use Bedriox\Protocol\Packet\LevelChunkPacket;
+use Bedriox\Protocol\Packet\PackedPalettedStorage;
 use Bedriox\Protocol\Packet\PalettedStorage;
 
 final class GenericChunkSerializerTest extends TestCase
@@ -118,6 +119,75 @@ final class GenericChunkSerializerTest extends TestCase
         self::assertSame(5, ord($packet->data[0]));
         self::assertSame(5, ord($packet->data[$oneStorageLength]));
         self::assertSame(0, ord($packet->data[$oneStorageLength * 2]));
+    }
+
+    public function testPrepackedStorageProducesTheExpandedStorageVectorExactly(): void
+    {
+        $palette = [100, 200, 300];
+        $indices = [];
+        $words = '';
+        for ($wordIndex = 0; $wordIndex < 256; ++$wordIndex) {
+            $word = 0;
+            for ($entry = 0; $entry < 16; ++$entry) {
+                $cell = ($wordIndex * 16) + $entry;
+                $index = $cell % 3;
+                $indices[] = $index;
+                $word |= $index << ($entry * 2);
+            }
+            $words .= pack('V', $word);
+        }
+
+        self::assertSame(
+            ChunkSerializer::storage(new PalettedStorage($palette, $indices)),
+            ChunkSerializer::storage(new PackedPalettedStorage(
+                $palette,
+                2,
+                $words,
+                ChunkSectionData::CELL_COUNT,
+            )),
+        );
+    }
+
+    public function testPrepackedSingletonUsesTheBedrockSingletonVectorExactly(): void
+    {
+        self::assertSame(
+            ChunkSerializer::storage(PalettedStorage::singleton(17_025, ChunkSectionData::CELL_COUNT)),
+            ChunkSerializer::storage(new PackedPalettedStorage(
+                [17_025],
+                0,
+                '',
+                ChunkSectionData::CELL_COUNT,
+            )),
+        );
+    }
+
+    public function testPrepackedBiomeStorageUsesTheCopyLastMarker(): void
+    {
+        $biome = new PackedPalettedStorage([4], 2, str_repeat("\0", 1_024), 4_096);
+        $storageBytes = strlen(ChunkSerializer::storage($biome));
+        $packet = ChunkSerializer::fullColumn(new ChunkColumnData(0, 0, 0, 0, 1, [], [$biome, $biome]));
+
+        self::assertSame(0xff, ord($packet->data[$storageBytes]));
+        self::assertSame(0, ord($packet->data[$storageBytes + 1]));
+    }
+
+    /** @return iterable<string, array{callable(): mixed}> */
+    public static function invalidPackedInputs(): iterable
+    {
+        yield 'zero bits with words' => [static fn () => new PackedPalettedStorage([1], 0, "\0\0\0\0", 1)];
+        yield 'width too small' => [static fn () => new PackedPalettedStorage([1, 2, 3], 1, pack('V', 0), 1)];
+        yield 'wrong word length' => [static fn () => new PackedPalettedStorage([1, 2], 1, '', 1)];
+        yield 'out of range index' => [static fn () => new PackedPalettedStorage([1, 2, 3], 2, pack('V', 3), 1)];
+        yield 'nonzero trailing entry' => [static fn () => new PackedPalettedStorage([1, 2], 1, pack('V', 2), 1)];
+        yield 'noncanonical word padding' => [static fn () => new PackedPalettedStorage([1, 2, 3, 4, 5], 3, pack('V', 1 << 31), 10)];
+    }
+
+    #[DataProvider('invalidPackedInputs')]
+    /** @param callable(): mixed $factory */
+    public function testPackedInputsAreBounded(callable $factory): void
+    {
+        $this->expectException(InvalidValueException::class);
+        $factory();
     }
 
     /** @return iterable<string, array{callable(): mixed}> */

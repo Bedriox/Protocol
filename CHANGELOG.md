@@ -1,5 +1,6 @@
 # Changelog
 
+- Add validated pre-packed block and biome palette storage so chunk serializers can write canonical Bedrock word arrays directly without changing existing expanded-storage vectors.
 - Identify failed item-stack request actions by bounded action type, index, byte offset, and fixed failure category without retaining packet bytes.
 - Correct the item-stack request action marker for current creative, mine-block, and craft-results actions; the marker is the action enum ordinal, not a duplicate wire type.
 - Decode and encode bounded deprecated craft-results actions in creative item-stack requests without treating client-reported results as inventory authority.

@@ -12,7 +12,7 @@ final readonly class ChunkSectionData
     public const int CELL_COUNT = 16 * 16 * 16;
     private const int MAX_LAYERS = 8;
 
-    /** @param list<PalettedStorage> $blockLayers */
+    /** @param list<PalettedStorage|PackedPalettedStorage> $blockLayers */
     public function __construct(
         public int $sectionY,
         public array $blockLayers,
@@ -22,7 +22,8 @@ final readonly class ChunkSectionData
             throw new InvalidValueException('Chunk section Y or block-layer count is invalid.');
         }
         foreach ($blockLayers as $layer) {
-            if (!$layer instanceof PalettedStorage || $layer->size() !== self::CELL_COUNT) {
+            if ((!$layer instanceof PalettedStorage && !$layer instanceof PackedPalettedStorage)
+                || $layer->size() !== self::CELL_COUNT) {
                 throw new InvalidValueException('Chunk section contains an invalid block layer.');
             }
         }

@@ -16,7 +16,7 @@ final readonly class ChunkColumnData
 
     /**
      * @param list<ChunkSectionData> $sections Contiguous from minSectionY through the highest included section.
-     * @param list<PalettedStorage> $biomes One 4,096-cell storage for every dimension section.
+     * @param list<PalettedStorage|PackedPalettedStorage> $biomes One 4,096-cell storage for every dimension section.
      * @param list<string> $blockEntityNbt Concatenated network-NBT compound roots.
      * @param list<int> $borderBlocks Reserved Education entries; non-empty input is rejected for retail safety.
      */
@@ -77,7 +77,8 @@ final readonly class ChunkColumnData
 
     private static function isValidBiome(mixed $biome): bool
     {
-        return $biome instanceof PalettedStorage && $biome->size() === self::BIOME_CELL_COUNT;
+        return ($biome instanceof PalettedStorage || $biome instanceof PackedPalettedStorage)
+            && $biome->size() === self::BIOME_CELL_COUNT;
     }
 
     private static function isValidBlockEntity(mixed $nbt): bool
