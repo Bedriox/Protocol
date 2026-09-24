@@ -23,12 +23,24 @@ final readonly class UpdateAttributesPacket implements Packet
     {
         $maximum = 3.4028234663852886e38;
         return new self($runtimeEntityId, [
-            new PlayerAttribute('minecraft:health', 0.0, 20.0, 20.0, 0.0, 20.0, 20.0),
-            new PlayerAttribute('minecraft:player.hunger', 0.0, 20.0, 20.0, 0.0, 20.0, 20.0),
+            PlayerAttribute::health(20.0),
+            PlayerAttribute::hunger(20.0),
             new PlayerAttribute('minecraft:movement', 0.0, $maximum, 0.1, 0.0, $maximum, 0.1),
             new PlayerAttribute('minecraft:player.level', 0.0, 24_791.0, 0.0, 0.0, 24_791.0, 0.0),
             new PlayerAttribute('minecraft:player.experience', 0.0, 1.0, 0.0, 0.0, 1.0, 0.0),
         ], UnsignedLong::fromInt(0));
+    }
+
+    public static function nutrition(
+        UnsignedLong $runtimeEntityId,
+        float $hunger,
+        float $saturation,
+        ?UnsignedLong $tick = null,
+    ): self {
+        return new self($runtimeEntityId, [
+            PlayerAttribute::hunger($hunger),
+            PlayerAttribute::saturation($saturation),
+        ], $tick ?? UnsignedLong::fromInt(0));
     }
 
     public function packetId(): int { return PacketIds::UPDATE_ATTRIBUTES; }

@@ -8,5 +8,7 @@ enum ActorEventType: int
 {
     case Hurt = 2;
     case Death = 3;
+    case UseItem = 9;
     case Respawn = 18;
+    case EatingItem = 57;
 }

@@ -746,6 +746,7 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame(49, ActorFlag::HasGravity->value);
         self::assertSame(1, ActorFlag::Sneaking->value);
         self::assertSame(3, ActorFlag::Sprinting->value);
+        self::assertSame(4, ActorFlag::UsingItem->value);
 
         $packet = SetActorDataPacket::baselinePlayer(UnsignedLong::fromInt(7), UnsignedLong::fromInt(0), 'Player');
         $wire = hex2bin(
@@ -786,11 +787,13 @@ final class GameplayPacketCodecTest extends TestCase
             UnsignedLong::fromInt(9),
             true,
             true,
+            true,
         );
         $postureFlags = $posture->metadata[0]->value;
         self::assertIsInt($postureFlags);
         self::assertSame(ActorFlag::Sneaking->mask(), $postureFlags & ActorFlag::Sneaking->mask());
         self::assertSame(ActorFlag::Sprinting->mask(), $postureFlags & ActorFlag::Sprinting->mask());
+        self::assertSame(ActorFlag::UsingItem->mask(), $postureFlags & ActorFlag::UsingItem->mask());
         foreach ([ActorFlag::CanShowName, ActorFlag::CanClimb, ActorFlag::Breathing, ActorFlag::HasCollision, ActorFlag::HasGravity] as $flag) {
             self::assertSame($flag->mask(), $postureFlags & $flag->mask());
         }

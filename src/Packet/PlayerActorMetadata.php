@@ -12,13 +12,18 @@ final class PlayerActorMetadata
     }
 
     /** @return list<ActorMetadata> */
-    public static function baseline(string $name, bool $sneaking = false, bool $sprinting = false): array
+    public static function baseline(
+        string $name,
+        bool $sneaking = false,
+        bool $sprinting = false,
+        bool $usingItem = false,
+    ): array
     {
         $width = self::float32(0.6);
         $height = self::float32(1.8);
 
         return [
-            ActorMetadata::long(0, self::flags($sneaking, $sprinting)),
+            ActorMetadata::long(0, self::flags($sneaking, $sprinting, $usingItem)),
             ActorMetadata::int(1, 20),
             ActorMetadata::byte(3, 0),
             ActorMetadata::string(4, $name),
@@ -35,7 +40,11 @@ final class PlayerActorMetadata
         ];
     }
 
-    public static function flags(bool $sneaking = false, bool $sprinting = false): int
+    public static function flags(
+        bool $sneaking = false,
+        bool $sprinting = false,
+        bool $usingItem = false,
+    ): int
     {
         $flags = ActorFlag::combine(
             ActorFlag::CanShowName,
@@ -49,6 +58,9 @@ final class PlayerActorMetadata
         }
         if ($sprinting) {
             $flags |= ActorFlag::Sprinting->mask();
+        }
+        if ($usingItem) {
+            $flags |= ActorFlag::UsingItem->mask();
         }
         return $flags;
     }

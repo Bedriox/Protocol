@@ -24,7 +24,9 @@ final class PlayerLifecyclePacketTest extends TestCase
         foreach ([
             ['07020000', ActorEventType::Hurt],
             ['07030000', ActorEventType::Death],
+            ['07090000', ActorEventType::UseItem],
             ['07120000', ActorEventType::Respawn],
+            ['07390000', ActorEventType::EatingItem],
         ] as [$hex, $type]) {
             $packet = new ActorEventPacket(UnsignedLong::fromInt(7), $type);
             self::assertSame($hex, bin2hex(BedrockPacketCodec::encode($packet)));

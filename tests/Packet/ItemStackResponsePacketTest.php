@@ -25,9 +25,11 @@ final class ItemStackResponsePacketTest extends TestCase
 {
     public function testCurrentInventoryContainerIdsMatchProtocol2193(): void
     {
+        self::assertSame(6, FullContainerName::ARMOR);
         self::assertSame(12, FullContainerName::COMBINED_HOTBAR_AND_INVENTORY);
         self::assertSame(28, FullContainerName::HOTBAR);
         self::assertSame(29, FullContainerName::INVENTORY);
+        self::assertSame(34, FullContainerName::OFFHAND);
         self::assertSame(59, FullContainerName::CURSOR);
         self::assertSame(60, FullContainerName::CREATED_OUTPUT);
     }

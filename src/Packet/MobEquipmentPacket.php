@@ -16,7 +16,7 @@ final readonly class MobEquipmentPacket implements Packet
         public UnsignedLong $runtimeEntityId,
         public int $inventorySlot = 0,
         public int $hotbarSlot = 0,
-        public int $windowId = 0,
+        public int $windowId = InventoryContainerId::INVENTORY,
         ?InventoryItemStack $item = null,
     ) {
         foreach ([$inventorySlot, $hotbarSlot, $windowId] as $value) {

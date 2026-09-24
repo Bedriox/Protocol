@@ -7,5 +7,5 @@ namespace Bedriox\Protocol\Packet;
 enum ItemReleaseActionType: int
 {
     case Release = 0;
-    case Use = 1;
+    case Consume = 1;
 }

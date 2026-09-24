@@ -122,7 +122,7 @@ final class InventoryTransactionPacketTest extends TestCase
     public function testAllTypedPayloadsRoundTripAndPacketIdIsRegistered(): void
     {
         $release = new InventoryTransactionPacket(0, [], [], new ItemReleaseInventoryTransaction(
-            ItemReleaseActionType::Use,
+            ItemReleaseActionType::Consume,
             2,
             new InventoryItemStack(5, 1, 0, -7, 12, "\x01\x02"),
             new InventoryVector3(1.0, 2.0, 3.0),

@@ -9,9 +9,11 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 /** Current FullContainerName wire value; container-name IDs are defined by protocol 2193. */
 final readonly class FullContainerName
 {
+    public const int ARMOR = 6;
     public const int COMBINED_HOTBAR_AND_INVENTORY = 12;
     public const int HOTBAR = 28;
     public const int INVENTORY = 29;
+    public const int OFFHAND = 34;
     public const int CURSOR = 59;
     public const int CREATED_OUTPUT = 60;
     public const int DYNAMIC = 63;

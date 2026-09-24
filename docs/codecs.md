@@ -51,3 +51,10 @@ all nine title operations, and toast notifications. Text payload variants are
 validated against their text types before fields are retained. Title timing is
 encoded as signed VarInts, and current XUID, platform identity, and filtered
 text fields remain explicit bounded strings.
+
+Authoritative item-use support exposes the current typed use, release, hand,
+prediction, and cooldown values without applying gameplay state. Armor uses the
+five-descriptor packet-32 snapshot, while main-hand and offhand equipment use
+packet 31 with named inventory window IDs. Hunger and saturation updates use
+bounded player-attribute factories; exhaustion deliberately remains outside the
+wire projection.

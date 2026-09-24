@@ -30,6 +30,7 @@ final class PacketIds
     public const int UPDATE_ATTRIBUTES = 29;
     public const int INVENTORY_TRANSACTION = 30;
     public const int MOB_EQUIPMENT = 31;
+    public const int MOB_ARMOR_EQUIPMENT = 32;
     public const int INTERACT = 33;
     public const int PLAYER_ACTION = 36;
     public const int SET_ACTOR_DATA = 39;

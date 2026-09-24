@@ -35,9 +35,10 @@ final readonly class SetActorDataPacket implements Packet
         UnsignedLong $tick,
         bool $sneaking,
         bool $sprinting,
+        bool $usingItem = false,
     ): self {
         return new self($runtimeEntityId, $tick, [
-            ActorMetadata::long(0, PlayerActorMetadata::flags($sneaking, $sprinting)),
+            ActorMetadata::long(0, PlayerActorMetadata::flags($sneaking, $sprinting, $usingItem)),
         ]);
     }
 

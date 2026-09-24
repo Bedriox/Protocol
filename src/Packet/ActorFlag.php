@@ -9,6 +9,7 @@ enum ActorFlag: int
 {
     case Sneaking = 1;
     case Sprinting = 3;
+    case UsingItem = 4;
     case CanShowName = 14;
     case CanClimb = 19;
     case Breathing = 35;

@@ -1,5 +1,6 @@
 # Changelog
 
+- Add the current armor and offhand equipment synchronization surface, bounded nutrition attributes, item-use actor events, and exact item-release semantics.
 - Qualify the complete protocol-2193 creative content and selection shapes with damage, item user data, block-state runtime IDs, stable unsigned creative IDs, standalone requests, and embedded player-input requests.
 - Add bounded hard and soft command enums, command aliases, multiple typed overload projections, and packet 114 soft-enum updates for live client suggestions.
 - Add validated pre-packed block and biome palette storage so chunk serializers can write canonical Bedrock word arrays directly without changing existing expanded-storage vectors.
