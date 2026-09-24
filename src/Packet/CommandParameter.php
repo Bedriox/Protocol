@@ -11,7 +11,7 @@ final readonly class CommandParameter
     /** @param list<CommandParameterOption> $options */
     public function __construct(
         public string $name,
-        public CommandArgumentType $type,
+        public CommandArgumentType|CommandEnum $type,
         public bool $optional = false,
         public array $options = [],
     ) {

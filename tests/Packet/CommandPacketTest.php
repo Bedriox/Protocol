@@ -11,6 +11,7 @@ use Bedriox\Protocol\Packet\AvailableCommandsPacket;
 use Bedriox\Protocol\Packet\BedrockPacketCodec;
 use Bedriox\Protocol\Packet\CommandArgumentType;
 use Bedriox\Protocol\Packet\CommandDefinition;
+use Bedriox\Protocol\Packet\CommandEnum;
 use Bedriox\Protocol\Packet\CommandOrigin;
 use Bedriox\Protocol\Packet\CommandOriginType;
 use Bedriox\Protocol\Packet\CommandOutputMessage;
@@ -21,6 +22,8 @@ use Bedriox\Protocol\Packet\CommandParameter;
 use Bedriox\Protocol\Packet\CommandPermission;
 use Bedriox\Protocol\Packet\CommandRequestPacket;
 use Bedriox\Protocol\Packet\PacketIds;
+use Bedriox\Protocol\Packet\SoftEnumUpdateType;
+use Bedriox\Protocol\Packet\UpdateSoftEnumPacket;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -82,6 +85,64 @@ final class CommandPacketTest extends TestCase
         self::assertSame(PacketIds::AVAILABLE_COMMANDS, BedrockPacketCodec::packetId($packet));
     }
 
+    public function testAvailableCommandsEncodesEnumsAliasesAndMultipleOverloads(): void
+    {
+        $packet = new AvailableCommandsPacket([
+            new CommandDefinition('test', 'Test', CommandPermission::Any, [
+                new CommandOverload([
+                    new CommandParameter('mode', new CommandEnum('mode', ['give', 'clear'])),
+                    new CommandParameter('player', new CommandEnum('bedriox:online_players', ['Alex', 'Steve'], true)),
+                ]),
+                new CommandOverload([new CommandParameter('target', CommandArgumentType::Target)]),
+            ], aliases: ['t']),
+        ]);
+        $wire = hex2bin(
+            '030174046769766505636c656172000002' .
+            '1462656472696f783a616c69617365733a746573740100000000' .
+            '046d6f64650201000000020000000001' .
+            '04746573740454657374000003616e790000000000020002' .
+            '046d6f646501003000000006706c61796572000010040000' .
+            '00010674617267657408001000000001' .
+            '1662656472696f783a6f6e6c696e655f706c61796572730204416c657805537465766500',
+        );
+        self::assertIsString($wire);
+        self::assertSame($wire, $packet->encode());
+        self::assertEquals($packet, AvailableCommandsPacket::decode($wire));
+    }
+
+    public function testAvailableCommandsAllowsPrimaryNameInOwnAliasEnum(): void
+    {
+        $packet = new AvailableCommandsPacket([
+            new CommandDefinition('version', 'Show version', aliases: ['version', 'ver']),
+            new CommandDefinition('list', 'List players'),
+        ]);
+
+        $decoded = AvailableCommandsPacket::decode($packet->encode());
+
+        self::assertSame(['version', 'ver'], $decoded->commands[0]->aliases);
+        self::assertSame([], $decoded->commands[1]->aliases);
+    }
+
+    public function testSoftEnumUpdatesMatchCurrentProtocolVectorAndRegistry(): void
+    {
+        $packet = new UpdateSoftEnumPacket(
+            'bedriox:online_players',
+            ['Alex', 'Steve'],
+            SoftEnumUpdateType::Replace,
+        );
+        $wire = hex2bin('1662656472696f783a6f6e6c696e655f706c61796572730204416c657805537465766502');
+        self::assertIsString($wire);
+        self::assertSame($wire, $packet->encode());
+        self::assertEquals($packet, UpdateSoftEnumPacket::decode($wire));
+        self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::UPDATE_SOFT_ENUM, $wire));
+        self::assertSame(PacketIds::UPDATE_SOFT_ENUM, BedrockPacketCodec::packetId($packet));
+
+        foreach (SoftEnumUpdateType::cases() as $type) {
+            $update = new UpdateSoftEnumPacket('players', [], $type);
+            self::assertEquals($update, UpdateSoftEnumPacket::decode($update->encode()));
+        }
+    }
+
     public function testCommandOutputRoundTripsAllCurrentNamedTypes(): void
     {
         $origin = new CommandOrigin(CommandOriginType::Player, self::NIL_UUID, 'request');
@@ -136,6 +197,23 @@ final class CommandPacketTest extends TestCase
         }];
         yield 'invalid command name' => [static function (): void {
             new CommandDefinition('Bad Name', 'Invalid');
+        }];
+        yield 'alias collides with a command' => [static function (): void {
+            new AvailableCommandsPacket([
+                new CommandDefinition('first', 'First', aliases: ['second']),
+                new CommandDefinition('second', 'Second'),
+            ]);
+        }];
+        yield 'hard enum is empty' => [static function (): void {
+            new CommandEnum('mode', []);
+        }];
+        yield 'same enum name has conflicting values' => [static function (): void {
+            new AvailableCommandsPacket([
+                new CommandDefinition('test', 'Test', overloads: [new CommandOverload([
+                    new CommandParameter('first', new CommandEnum('mode', ['one'])),
+                    new CommandParameter('second', new CommandEnum('mode', ['two'])),
+                ])]),
+            ]);
         }];
     }
 
@@ -193,12 +271,59 @@ final class CommandPacketTest extends TestCase
         CommandRequestPacket::decode("\x00\x81\x20");
     }
 
+    public function testMalformedCommandEnumReferencesAreRejected(): void
+    {
+        $this->expectException(MalformedDataException::class);
+        AvailableCommandsPacket::decode("\x00\x00\x00\x01\x01x\x01\x00\x00\x00\x00");
+    }
+
+    public function testDuplicateWireEnumNamesAreRejected(): void
+    {
+        $packet = new AvailableCommandsPacket([
+            new CommandDefinition('test', 'Test', overloads: [new CommandOverload([
+                new CommandParameter('first', new CommandEnum('mode', ['one'])),
+                new CommandParameter('second', new CommandEnum('mood', ['two'])),
+            ])]),
+        ]);
+        $wire = str_replace("\x04mood", "\x04mode", $packet->encode(), $replacements);
+        self::assertSame(1, $replacements);
+        $this->expectException(MalformedDataException::class);
+        AvailableCommandsPacket::decode($wire);
+    }
+
+    public function testUnknownSoftEnumParameterReferenceIsRejected(): void
+    {
+        $packet = new AvailableCommandsPacket([
+            new CommandDefinition('test', 'Test', overloads: [new CommandOverload([
+                new CommandParameter('player', new CommandEnum('players', ['Alex'], true)),
+            ])]),
+        ]);
+        $wire = str_replace(pack('V', 0x04100000), pack('V', 0x04100001), $packet->encode(), $replacements);
+        self::assertSame(1, $replacements);
+        $this->expectException(MalformedDataException::class);
+        AvailableCommandsPacket::decode($wire);
+    }
+
+    public function testUnknownSoftEnumUpdateTypeIsRejected(): void
+    {
+        $wire = (new UpdateSoftEnumPacket('players', ['Alex'], SoftEnumUpdateType::Replace))->encode();
+        $this->expectException(MalformedDataException::class);
+        UpdateSoftEnumPacket::decode(substr($wire, 0, -1) . "\x03");
+    }
+
+    public function testOversizedCommandEnumValueCountIsRejectedBeforeIteration(): void
+    {
+        $this->expectException(MalformedDataException::class);
+        AvailableCommandsPacket::decode("\x81\x20");
+    }
+
     public function testTruncatedPacketsAreRejectedAtEveryBoundary(): void
     {
         $packets = [
             new CommandRequestPacket('/version', new CommandOrigin(CommandOriginType::Player, self::NIL_UUID, 'id')),
             new AvailableCommandsPacket([new CommandDefinition('version', 'Version', overloads: [new CommandOverload()])]),
             new CommandOutputPacket(new CommandOrigin(CommandOriginType::Player, self::NIL_UUID, 'id'), CommandOutputType::AllOutput, 0),
+            new UpdateSoftEnumPacket('players', ['Alex', 'Steve'], SoftEnumUpdateType::Replace),
         ];
         foreach ($packets as $packet) {
             $wire = $packet->encode();

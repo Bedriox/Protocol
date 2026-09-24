@@ -57,6 +57,7 @@ final class PacketIds
     public const int SERVER_SETTINGS_REQUEST = 102;
     public const int MOVE_ACTOR_DELTA = 111;
     public const int SET_LOCAL_PLAYER_AS_INITIALIZED = 113;
+    public const int UPDATE_SOFT_ENUM = 114;
     public const int NETWORK_STACK_LATENCY = 115;
     public const int AVAILABLE_ACTOR_IDENTIFIERS = 119;
     public const int NETWORK_CHUNK_PUBLISHER_UPDATE = 121;
