@@ -1,5 +1,6 @@
 # Changelog
 
+- Qualify the complete protocol-2193 creative content and selection shapes with damage, item user data, block-state runtime IDs, stable unsigned creative IDs, standalone requests, and embedded player-input requests.
 - Add bounded hard and soft command enums, command aliases, multiple typed overload projections, and packet 114 soft-enum updates for live client suggestions.
 - Add validated pre-packed block and biome palette storage so chunk serializers can write canonical Bedrock word arrays directly without changing existing expanded-storage vectors.
 - Identify failed item-stack request actions by bounded action type, index, byte offset, and fixed failure category without retaining packet bytes.
