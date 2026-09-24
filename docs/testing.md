@@ -6,9 +6,9 @@ Run all local checks with:
 composer check
 ```
 
-`composer test` runs PHPUnit and `composer analyse` runs PHPStan at maximum level. Protocol work must add minimum/maximum boundary, truncation at every meaningful width, numerical overflow, capacity overflow, canonical encoding, offset, immutable-state, round-trip, and golden-wire tests. Security-sensitive parsers should also receive fuzz/property coverage as the harness is introduced.
+`composer check` runs the complete local gate: locked dependency validation and audit, PHPStan at maximum level, and the full PHPUnit suite. `composer test` runs PHPUnit alone, while `composer analyse` runs PHPStan alone. Protocol work must add minimum/maximum boundary, truncation at every meaningful width, numerical overflow, capacity overflow, canonical encoding, offset, immutable-state, round-trip, and golden-wire tests. Security-sensitive parsers should also receive fuzz/property coverage as the harness is introduced.
 
-CI validates Composer metadata, installs locked constraints, audits dependencies, runs tests, and performs static analysis on Linux and Windows. A successful single connection is not a compatibility test.
+GitHub CI uses `composer check:ci` on PHP 8.4 to validate Composer metadata, audit locked dependencies, and perform maximum-level static analysis. PHPUnit remains part of the required local `composer check` gate and is not repeated by GitHub. A successful single connection is not a compatibility test.
 
 Batch coverage includes literal packet-header and length-prefix vectors, independently generated RFC 1950 and raw-DEFLATE bytes, negotiated-zlib threshold boundaries for both `0x00` and `0xff` (including threshold zero), meaningful truncation points, trailing data, rejected Snappy/unknown algorithms, size/ratio bombs, count limits, and a deterministic 200-packet property sequence.
 

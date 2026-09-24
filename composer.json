@@ -27,9 +27,14 @@
     "scripts": {
         "test": "phpunit",
         "analyse": "phpstan analyse --no-progress",
-        "check": [
-            "@test",
+        "check:ci": [
+            "composer validate --strict",
+            "composer audit --locked",
             "@analyse"
+        ],
+        "check": [
+            "@check:ci",
+            "@test"
         ]
     },
     "config": {
