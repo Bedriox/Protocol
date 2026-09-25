@@ -8,7 +8,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 
 final readonly class CraftCreativeItemStackRequestAction implements ItemStackRequestAction
 {
-    public const int TYPE_ID = 12;
+    public const int TYPE_ID = ItemStackRequestActionType::CraftCreative->value;
 
     public function __construct(
         public int $creativeItemNetworkId,

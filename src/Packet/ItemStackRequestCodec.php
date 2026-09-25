@@ -15,12 +15,6 @@ use Bedriox\Protocol\Exception\MalformedDataException;
 /** Internal bounded protocol-2193 codec for one item-stack request entry. */
 final class ItemStackRequestCodec
 {
-    /** The second action byte is the action enum ordinal, not the wire discriminator. */
-    private const array ACTION_MARKERS = [
-        0 => 0, 1 => 1, 2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6,
-        9 => 11, 12 => 14, 17 => 19,
-    ];
-
     /** @return array{ItemStackRequest, ByteBufferReader} */
     public static function readEntry(ByteBufferReader $reader): array
     {
@@ -110,11 +104,12 @@ final class ItemStackRequestCodec
     private static function readAction(ByteBufferReader $reader): array
     {
         $type = $reader->readUnsignedVarInt();
-        if (!array_key_exists($type->value, self::ACTION_MARKERS)) {
+        $actionType = ItemStackRequestActionType::fromWire($type->value);
+        if (in_array($actionType, [ItemStackRequestActionType::LabTableCombine, ItemStackRequestActionType::BeaconPayment], true)) {
             throw new MalformedDataException('Item-stack request action type is unsupported.');
         }
         $duplicateType = $type->reader->readUnsignedByte();
-        if ($duplicateType->value !== self::ACTION_MARKERS[$type->value]) {
+        if ($duplicateType->value !== $actionType->marker()) {
             throw new MalformedDataException('Item-stack request action type markers disagree.');
         }
         $reader = $duplicateType->reader;
@@ -158,7 +153,7 @@ final class ItemStackRequestCodec
                     $stackNetworkId->value,
                 ), $stackNetworkId->reader];
             }
-            if ($type->value === 17) {
+            if ($actionType === ItemStackRequestActionType::CraftResults) {
                 $count = $reader->readUnsignedVarInt();
                 if ($count->value > CraftResultsItemStackRequestAction::MAXIMUM_RESULTS) {
                     throw new MalformedDataException('Craft-results item count exceeds its limit.');
@@ -171,9 +166,62 @@ final class ItemStackRequestCodec
                 $crafts = $reader->readUnsignedByte();
                 return [new CraftResultsItemStackRequestAction($results, $crafts->value), $crafts->reader];
             }
-            $networkId = $reader->readUnsignedVarInt();
-            $requestedCrafts = $networkId->reader->readUnsignedByte();
-            return [new CraftCreativeItemStackRequestAction($networkId->value, $requestedCrafts->value), $requestedCrafts->reader];
+            if (in_array($actionType, [ItemStackRequestActionType::CraftRecipe, ItemStackRequestActionType::CraftCreative], true)) {
+                $networkId = $reader->readUnsignedVarInt();
+                $requestedCrafts = $networkId->reader->readUnsignedByte();
+                $action = $actionType === ItemStackRequestActionType::CraftRecipe
+                    ? new CraftRecipeItemStackRequestAction($networkId->value, $requestedCrafts->value)
+                    : new CraftCreativeItemStackRequestAction($networkId->value, $requestedCrafts->value);
+                return [$action, $requestedCrafts->reader];
+            }
+            if ($actionType === ItemStackRequestActionType::AutoCraftRecipe) {
+                $networkId = $reader->readUnsignedVarInt();
+                $requestedCrafts = $networkId->reader->readUnsignedByte();
+                $count = $requestedCrafts->reader->readUnsignedVarInt();
+                if ($count->value > AutoCraftRecipeItemStackRequestAction::MAXIMUM_INGREDIENTS) {
+                    throw new MalformedDataException('Automatic craft-recipe ingredient count exceeds its limit.');
+                }
+                $ingredients = [];
+                $reader = $count->reader;
+                for ($index = 0; $index < $count->value; ++$index) {
+                    [$ingredients[], $reader] = CraftingRecipeWireCodec::readActionIngredient($reader);
+                }
+                return [new AutoCraftRecipeItemStackRequestAction(
+                    $networkId->value,
+                    $requestedCrafts->value,
+                    $ingredients,
+                ), $reader];
+            }
+            if ($actionType === ItemStackRequestActionType::CraftRecipeOptional) {
+                $networkId = $reader->readUnsignedVarInt();
+                $filterIndex = $networkId->reader->readSignedIntLE();
+                return [new CraftRecipeOptionalItemStackRequestAction(
+                    $networkId->value,
+                    $filterIndex->value,
+                ), $filterIndex->reader];
+            }
+            if ($actionType === ItemStackRequestActionType::CraftRepairAndDisenchant) {
+                $networkId = $reader->readSignedIntLE();
+                $requestedCrafts = $networkId->reader->readUnsignedByte();
+                $repairCost = $requestedCrafts->reader->readSignedVarInt();
+                return [new CraftRepairAndDisenchantItemStackRequestAction(
+                    $networkId->value,
+                    $requestedCrafts->value,
+                    $repairCost->value,
+                ), $repairCost->reader];
+            }
+            if ($actionType === ItemStackRequestActionType::CraftLoom) {
+                $patternId = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
+                $timesCrafted = $patternId->reader->readUnsignedByte();
+                return [new CraftLoomItemStackRequestAction(
+                    $patternId->value,
+                    $timesCrafted->value,
+                ), $timesCrafted->reader];
+            }
+            if ($actionType === ItemStackRequestActionType::CraftNonImplemented) {
+                return [new CraftNonImplementedItemStackRequestAction(), $reader];
+            }
+            throw new MalformedDataException('Item-stack request action type is unsupported.');
         } catch (InvalidValueException $e) {
             throw new MalformedDataException('Item-stack request action is invalid.', previous: $e);
         }
@@ -231,10 +279,11 @@ final class ItemStackRequestCodec
     private static function writeAction(ByteBufferWriter $writer, ItemStackRequestAction $action): ByteBufferWriter
     {
         $typeId = $action->typeId();
-        if (!array_key_exists($typeId, self::ACTION_MARKERS)) {
+        $actionType = ItemStackRequestActionType::tryFrom($typeId);
+        if ($actionType === null || in_array($actionType, [ItemStackRequestActionType::LabTableCombine, ItemStackRequestActionType::BeaconPayment], true)) {
             throw new InvalidValueException('Item-stack request action type is unsupported.');
         }
-        $writer = $writer->writeUnsignedVarInt($typeId)->writeUnsignedByte(self::ACTION_MARKERS[$typeId]);
+        $writer = $writer->writeUnsignedVarInt($typeId)->writeUnsignedByte($actionType->marker());
         if ($action instanceof TakeItemStackRequestAction || $action instanceof PlaceItemStackRequestAction) {
             return self::writeSlot(self::writeSlot($writer->writeUnsignedByte($action->amount), $action->source), $action->destination);
         }
@@ -261,6 +310,35 @@ final class ItemStackRequestCodec
         if ($action instanceof CraftCreativeItemStackRequestAction) {
             return $writer->writeUnsignedVarInt($action->creativeItemNetworkId)
                 ->writeUnsignedByte($action->requestedCrafts);
+        }
+        if ($action instanceof CraftRecipeItemStackRequestAction) {
+            return $writer->writeUnsignedVarInt($action->recipeNetworkId)
+                ->writeUnsignedByte($action->requestedCrafts);
+        }
+        if ($action instanceof AutoCraftRecipeItemStackRequestAction) {
+            $writer = $writer->writeUnsignedVarInt($action->recipeNetworkId)
+                ->writeUnsignedByte($action->requestedCrafts)
+                ->writeUnsignedVarInt(count($action->ingredients));
+            foreach ($action->ingredients as $ingredient) {
+                $writer = CraftingRecipeWireCodec::writeActionIngredient($writer, $ingredient);
+            }
+            return $writer;
+        }
+        if ($action instanceof CraftRecipeOptionalItemStackRequestAction) {
+            return $writer->writeUnsignedVarInt($action->recipeNetworkId)
+                ->writeSignedIntLE($action->filteredStringIndex);
+        }
+        if ($action instanceof CraftRepairAndDisenchantItemStackRequestAction) {
+            return $writer->writeSignedIntLE($action->recipeNetworkId)
+                ->writeUnsignedByte($action->requestedCrafts)
+                ->writeSignedVarInt($action->repairCost);
+        }
+        if ($action instanceof CraftLoomItemStackRequestAction) {
+            return $writer->writeString($action->patternId, CodecSupport::MAX_SHORT_STRING_BYTES)
+                ->writeUnsignedByte($action->timesCrafted);
+        }
+        if ($action instanceof CraftNonImplementedItemStackRequestAction) {
+            return $writer;
         }
         if ($action instanceof CraftResultsItemStackRequestAction) {
             $writer = $writer->writeUnsignedVarInt(count($action->results));

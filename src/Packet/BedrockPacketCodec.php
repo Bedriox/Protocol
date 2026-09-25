@@ -69,6 +69,7 @@ final class BedrockPacketCodec
             PacketIds::CONTAINER_CLOSE => ContainerClosePacket::decode($payload),
             PacketIds::INVENTORY_CONTENT => InventoryContentPacket::decode($payload),
             PacketIds::INVENTORY_SLOT => InventorySlotPacket::decode($payload),
+            PacketIds::CRAFTING_DATA => CraftingDataPacket::decode($payload),
             PacketIds::REQUEST_CHUNK_RADIUS => RequestChunkRadiusPacket::decode($payload),
             PacketIds::CHUNK_RADIUS_UPDATED => ChunkRadiusUpdatedPacket::decode($payload),
             PacketIds::SET_PLAYER_GAME_TYPE => SetPlayerGameTypePacket::decode($payload),

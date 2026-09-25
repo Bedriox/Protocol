@@ -1,5 +1,6 @@
 # Changelog
 
+- Add bounded crafting recipe snapshots for shaped, shapeless, user-data-aware, chemistry, and multi recipes, plus the complete current crafting stack-request action family and named crafting containers.
 - Add the current armor and offhand equipment synchronization surface, bounded nutrition attributes, item-use actor events, and exact item-release semantics.
 - Qualify the complete protocol-2193 creative content and selection shapes with damage, item user data, block-state runtime IDs, stable unsigned creative IDs, standalone requests, and embedded player-input requests.
 - Add bounded hard and soft command enums, command aliases, multiple typed overload projections, and packet 114 soft-enum updates for live client suggestions.
@@ -103,7 +104,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 - Corrected the PlayerAuthInput item-use descriptor to the protocol-2193 single optional signed stack-network-ID field and aligned its inventory-action bound to 100.
 - Encode every LevelChunk subchunk with a block layer, using a singleton air palette for empty sections, and enforce the official 64-section and 65-cache-entry bounds.
 - Made Minecraft 1.26.50 / protocol 2193 the sole wire target, qualified Minecraft 1.26.51 as a same-protocol retail client, and removed the protocol-2169 PlayerAuthInput and SubChunk branches.
-- Matched the current Cloudburst terrain envelope by encoding one biome palette followed by copy-last sentinels and deriving the request limit from fixed-world section bounds.
+- Encode one biome palette followed by copy-last sentinels and derive the request limit from fixed-world section bounds.
 - Corrected `PlayerAuthInputPacket` conditional-payload indexes and nested presence decoding, and accept the valid absent input-data representation as an empty flag set.
 - Accept the bounded Interact action-byte domain shared by current schema ordinals and retail legacy-valued notifications while retaining exact structural validation.
 - Name MovePlayer mode 1 `RESPAWN`, matching the current packet schema; teleport mode 2 remains distinct.

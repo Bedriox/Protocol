@@ -58,3 +58,9 @@ five-descriptor packet-32 snapshot, while main-hand and offhand equipment use
 packet 31 with named inventory window IDs. Hunger and saturation updates use
 bounded player-attribute factories; exhaustion deliberately remains outside the
 wire projection.
+
+Crafting recipe snapshots use immutable shaped, shapeless, and multi recipe
+values. The codec bounds registry, grid, ingredient, result, string, NBT, and
+unlock-requirement sizes before iteration or allocation. It preserves current
+recipe network IDs and all current crafting request action bodies, but treats
+every decoded value as intent for an authoritative consumer to validate.

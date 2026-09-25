@@ -6,7 +6,7 @@ namespace Bedriox\Protocol\Packet;
 
 final readonly class SwapItemStackRequestAction implements ItemStackRequestAction
 {
-    public const int TYPE_ID = 2;
+    public const int TYPE_ID = ItemStackRequestActionType::Swap->value;
 
     public function __construct(
         public ItemStackRequestSlot $source,

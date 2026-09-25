@@ -10,7 +10,7 @@ composer install
 composer check
 ```
 
-Use strict types, immutable values where practical, bounded reads, and explicit exceptions. Do not copy implementation code from PocketMine, Nukkit, or other servers. Preserve legally required copyright and license attribution in `NOTICE` or `THIRD_PARTY_NOTICES.md` before committing external material.
+Use strict types, immutable values where practical, bounded reads, and explicit exceptions. Do not copy implementation code from external servers. Preserve legally required copyright and license attribution in `NOTICE` or `THIRD_PARTY_NOTICES.md` before committing external material.
 
 Changes to a wire format require tests containing a readable rationale and independently obtained fixtures. Update `CHANGELOG.md` for user-visible changes.
 

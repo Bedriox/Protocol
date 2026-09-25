@@ -9,7 +9,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 /** Deprecated client craft-result report; never authorizes inventory mutation. */
 final readonly class CraftResultsItemStackRequestAction implements ItemStackRequestAction
 {
-    public const int TYPE_ID = 17;
+    public const int TYPE_ID = ItemStackRequestActionType::CraftResults->value;
     public const int MAXIMUM_RESULTS = 16;
 
     /** @param list<ItemStackRequestResultItem> $results */

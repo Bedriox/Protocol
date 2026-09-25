@@ -11,6 +11,8 @@ final readonly class FullContainerName
 {
     public const int ARMOR = 6;
     public const int COMBINED_HOTBAR_AND_INVENTORY = 12;
+    public const int CRAFTING_INPUT = 13;
+    public const int CRAFTING_OUTPUT = 14;
     public const int HOTBAR = 28;
     public const int INVENTORY = 29;
     public const int OFFHAND = 34;

@@ -6,7 +6,7 @@ namespace Bedriox\Protocol\Packet;
 
 final readonly class DropItemStackRequestAction extends RejectedItemStackRequestAction
 {
-    public const int TYPE_ID = 3;
+    public const int TYPE_ID = ItemStackRequestActionType::Drop->value;
 
     public function __construct(
         int $amount,

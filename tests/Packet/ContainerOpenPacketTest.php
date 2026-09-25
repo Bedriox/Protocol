@@ -43,6 +43,14 @@ final class ContainerOpenPacketTest extends TestCase
         self::assertSame(self::MAIN_INVENTORY_VECTOR, bin2hex($packet->encode()));
     }
 
+    public function testWorkbenchOpenUsesTheExistingContainerConversation(): void
+    {
+        $packet = new ContainerOpenPacket(9, ContainerType::Workbench, new BlockPosition(2, 64, -3), 0);
+
+        self::assertSame('09010480010500', bin2hex($packet->encode()));
+        self::assertEquals($packet, ContainerOpenPacket::decode($packet->encode()));
+    }
+
     public function testEveryTruncationAndTrailingByteFailClosed(): void
     {
         $wire = hex2bin(self::VECTOR);

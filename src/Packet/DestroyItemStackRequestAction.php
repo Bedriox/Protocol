@@ -6,7 +6,7 @@ namespace Bedriox\Protocol\Packet;
 
 final readonly class DestroyItemStackRequestAction extends RejectedItemStackRequestAction
 {
-    public const int TYPE_ID = 4;
+    public const int TYPE_ID = ItemStackRequestActionType::Destroy->value;
 
     public function __construct(int $amount, ItemStackRequestSlot $source)
     {

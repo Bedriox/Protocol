@@ -8,7 +8,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 
 final readonly class CreateItemStackRequestAction implements ItemStackRequestAction
 {
-    public const int TYPE_ID = 6;
+    public const int TYPE_ID = ItemStackRequestActionType::Create->value;
 
     public function __construct(public int $slot)
     {

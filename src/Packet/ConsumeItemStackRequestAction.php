@@ -6,7 +6,7 @@ namespace Bedriox\Protocol\Packet;
 
 final readonly class ConsumeItemStackRequestAction extends RejectedItemStackRequestAction
 {
-    public const int TYPE_ID = 5;
+    public const int TYPE_ID = ItemStackRequestActionType::Consume->value;
 
     public function __construct(int $amount, ItemStackRequestSlot $source)
     {

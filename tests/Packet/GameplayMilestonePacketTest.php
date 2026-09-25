@@ -147,9 +147,9 @@ final class GameplayMilestonePacketTest extends TestCase
         ItemStackRequestPacket::decode($incorrectMarker);
     }
 
-    public function testUnsupportedCreativeActionReportsOnlyItsBoundedDecodeLocation(): void
+    public function testUnknownActionReportsOnlyItsBoundedDecodeLocation(): void
     {
-        $wire = hex2bin('010001101000ffffffff');
+        $wire = hex2bin('010001121400ffffffff');
         self::assertNotFalse($wire);
         try {
             ItemStackRequestPacket::decode($wire);
@@ -159,7 +159,7 @@ final class GameplayMilestonePacketTest extends TestCase
             self::assertSame('unsupported_action_type', $failure->detailCode);
             self::assertSame(3, $failure->byteOffset);
             self::assertSame(0, $failure->actionIndex);
-            self::assertSame(16, $failure->actionType);
+            self::assertSame(18, $failure->actionType);
             self::assertStringNotContainsString(bin2hex($wire), $failure->getMessage());
         }
     }

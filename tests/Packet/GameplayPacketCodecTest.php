@@ -611,7 +611,7 @@ final class GameplayPacketCodecTest extends TestCase
         ])->encode()));
     }
 
-    public function testCloudburstStyleFlatChunkShellAndRequestedTerrainAreBounded(): void
+    public function testFlatChunkShellAndRequestedTerrainAreBounded(): void
     {
         $ids = ['air' => 13_629, 'bedrock' => 14_348, 'dirt' => 10_854, 'grass_block' => 12_086];
         $shell = LevelChunkPacket::fixedFlatShell(0, 0, 1);

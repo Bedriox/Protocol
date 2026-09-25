@@ -8,7 +8,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 
 final readonly class MineBlockItemStackRequestAction implements ItemStackRequestAction
 {
-    public const int TYPE_ID = 9;
+    public const int TYPE_ID = ItemStackRequestActionType::MineBlock->value;
 
     public function __construct(
         public int $hotbarSlot,

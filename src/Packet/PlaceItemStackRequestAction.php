@@ -8,7 +8,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 
 final readonly class PlaceItemStackRequestAction implements ItemStackRequestAction
 {
-    public const int TYPE_ID = 1;
+    public const int TYPE_ID = ItemStackRequestActionType::Place->value;
 
     public function __construct(
         public int $amount,
