@@ -43,11 +43,16 @@ final class ContainerOpenPacketTest extends TestCase
         self::assertSame(self::MAIN_INVENTORY_VECTOR, bin2hex($packet->encode()));
     }
 
-    public function testWorkbenchOpenUsesTheExistingContainerConversation(): void
+    public function testBlockInventoryUsesTheNoActorSentinel(): void
     {
-        $packet = new ContainerOpenPacket(9, ContainerType::Workbench, new BlockPosition(2, 64, -3), 0);
+        $packet = ContainerOpenPacket::blockInventory(
+            9,
+            ContainerType::Workbench,
+            new BlockPosition(2, 64, -3),
+        );
 
-        self::assertSame('09010480010500', bin2hex($packet->encode()));
+        self::assertSame(-1, $packet->actorUniqueId);
+        self::assertSame('09010480010501', bin2hex($packet->encode()));
         self::assertEquals($packet, ContainerOpenPacket::decode($packet->encode()));
     }
 

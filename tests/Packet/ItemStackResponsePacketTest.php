@@ -96,6 +96,20 @@ final class ItemStackResponsePacketTest extends TestCase
         self::assertEquals($packet, ItemStackResponsePacket::decode($packet->encode()));
     }
 
+    public function testEmptyAuthoritativeSlotOmitsTheStackNetworkId(): void
+    {
+        $packet = new ItemStackResponsePacket([new ItemStackResponse(
+            ItemStackResponse::STATUS_SUCCESS,
+            -1055,
+            [new ItemStackResponseContainer(new FullContainerName(FullContainerName::LEVEL_ENTITY), [
+                new ItemStackResponseSlot(12, 12, 0, null),
+            ])],
+        )]);
+
+        self::assertSame('0100bd1001010700010c0c0000000000', bin2hex($packet->encode()));
+        self::assertEquals($packet, ItemStackResponsePacket::decode($packet->encode()));
+    }
+
     public function testTypedRequestAndSuccessResponseRejectEveryTruncationAndTrailingData(): void
     {
         $inventory = new ItemStackRequestSlot(new FullContainerName(FullContainerName::INVENTORY), 0, 17);

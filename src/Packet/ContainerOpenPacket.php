@@ -31,6 +31,11 @@ final readonly class ContainerOpenPacket implements Packet
         );
     }
 
+    public static function blockInventory(int $containerId, ContainerType $containerType, BlockPosition $position): self
+    {
+        return new self($containerId, $containerType, $position, -1);
+    }
+
     public function packetId(): int { return PacketIds::CONTAINER_OPEN; }
 
     public function encode(): string

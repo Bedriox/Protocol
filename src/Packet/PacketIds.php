@@ -26,6 +26,7 @@ final class PacketIds
     public const int MOVE_PLAYER = 19;
     public const int UPDATE_BLOCK = 21;
     public const int LEVEL_EVENT = 25;
+    public const int BLOCK_EVENT = 26;
     public const int ACTOR_EVENT = 27;
     public const int UPDATE_ATTRIBUTES = 29;
     public const int INVENTORY_TRANSACTION = 30;
@@ -43,6 +44,7 @@ final class PacketIds
     public const int INVENTORY_CONTENT = 49;
     public const int INVENTORY_SLOT = 50;
     public const int CRAFTING_DATA = 52;
+    public const int BLOCK_ACTOR_DATA = 56;
     public const int LEVEL_CHUNK = 58;
     public const int SET_COMMANDS_ENABLED = 59;
     public const int SET_DIFFICULTY = 60;
@@ -86,6 +88,7 @@ final class PacketIds
     public const int DEATH_INFO = 189;
     public const int TRIM_DATA = 302;
     public const int SET_PLAYER_INVENTORY_OPTIONS = 307;
+    public const int CONTAINER_REGISTRY_CLEANUP = 317;
     public const int SERVERBOUND_LOADING_SCREEN = 312;
     public const int JIGSAW_STRUCTURE_DATA = 313;
     public const int MOVEMENT_PREDICTION_SYNC = 322;

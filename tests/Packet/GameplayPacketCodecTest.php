@@ -29,6 +29,7 @@ use Bedriox\Protocol\Packet\CommandPermissionLevel;
 use Bedriox\Protocol\Packet\CreativeContentPacket;
 use Bedriox\Protocol\Packet\CraftingDataPacket;
 use Bedriox\Protocol\Packet\ContainerClosePacket;
+use Bedriox\Protocol\Packet\ContainerType;
 use Bedriox\Protocol\Packet\GameRulesChangedPacket;
 use Bedriox\Protocol\Packet\GameRuleSet;
 use Bedriox\Protocol\Packet\InventoryContentPacket;
@@ -147,7 +148,7 @@ final class GameplayPacketCodecTest extends TestCase
             ),
             '0744028001030582010801',
         ];
-        yield 'container close' => [new ContainerClosePacket(255, 0, false), 'ff0000'];
+        yield 'container close' => [new ContainerClosePacket(255, ContainerType::Container, false), 'ff0000'];
         yield 'network stack latency' => [
             new NetworkStackLatencyPacket(new UnsignedLong(0x11223344, 0x55667788), true),
             '887766554433221101',
@@ -324,7 +325,7 @@ final class GameplayPacketCodecTest extends TestCase
         $animation = new AnimatePacket(AnimatePacket::SWING, UnsignedLong::fromInt(9), 0.0, null);
         self::assertTrue($animation->isSwing());
 
-        $close = new ContainerClosePacket(255, 0, false);
+        $close = new ContainerClosePacket(255, ContainerType::Container, false);
         self::assertSame(-1, $close->signedContainerId());
 
         $latency = new NetworkStackLatencyPacket(new UnsignedLong(0xffffffff, 0xffffffff), false);

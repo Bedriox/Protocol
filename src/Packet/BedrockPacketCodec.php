@@ -52,6 +52,7 @@ final class BedrockPacketCodec
             PacketIds::MOVE_PLAYER => MovePlayerPacket::decode($payload),
             PacketIds::UPDATE_BLOCK => UpdateBlockPacket::decode($payload),
             PacketIds::LEVEL_EVENT => LevelEventPacket::decode($payload),
+            PacketIds::BLOCK_EVENT => BlockEventPacket::decode($payload),
             PacketIds::LEVEL_SOUND_EVENT => LevelSoundEventPacket::decode($payload),
             PacketIds::ACTOR_EVENT => ActorEventPacket::decode($payload),
             PacketIds::INVENTORY_TRANSACTION => InventoryTransactionPacket::decode($payload),
@@ -70,6 +71,7 @@ final class BedrockPacketCodec
             PacketIds::INVENTORY_CONTENT => InventoryContentPacket::decode($payload),
             PacketIds::INVENTORY_SLOT => InventorySlotPacket::decode($payload),
             PacketIds::CRAFTING_DATA => CraftingDataPacket::decode($payload),
+            PacketIds::BLOCK_ACTOR_DATA => BlockActorDataPacket::decode($payload),
             PacketIds::REQUEST_CHUNK_RADIUS => RequestChunkRadiusPacket::decode($payload),
             PacketIds::CHUNK_RADIUS_UPDATED => ChunkRadiusUpdatedPacket::decode($payload),
             PacketIds::SET_PLAYER_GAME_TYPE => SetPlayerGameTypePacket::decode($payload),
@@ -94,6 +96,7 @@ final class BedrockPacketCodec
             PacketIds::SERVERBOUND_LOADING_SCREEN => ServerboundLoadingScreenPacket::decode($payload),
             PacketIds::MOVEMENT_PREDICTION_SYNC => MovementPredictionSyncPacket::decode($payload),
             PacketIds::SET_PLAYER_INVENTORY_OPTIONS => SetPlayerInventoryOptionsPacket::decode($payload),
+            PacketIds::CONTAINER_REGISTRY_CLEANUP => ContainerRegistryCleanupPacket::decode($payload),
             default => throw new MalformedDataException('Packet ID is not registered in the Bedrock codec.'),
         };
     }
@@ -127,6 +130,7 @@ final class BedrockPacketCodec
             MovePlayerPacket::class => PacketIds::MOVE_PLAYER,
             UpdateBlockPacket::class => PacketIds::UPDATE_BLOCK,
             LevelEventPacket::class => PacketIds::LEVEL_EVENT,
+            BlockEventPacket::class => PacketIds::BLOCK_EVENT,
             LevelSoundEventPacket::class => PacketIds::LEVEL_SOUND_EVENT,
             ActorEventPacket::class => PacketIds::ACTOR_EVENT,
             UpdateAttributesPacket::class => PacketIds::UPDATE_ATTRIBUTES,
@@ -145,6 +149,7 @@ final class BedrockPacketCodec
             InventoryContentPacket::class => PacketIds::INVENTORY_CONTENT,
             InventorySlotPacket::class => PacketIds::INVENTORY_SLOT,
             CraftingDataPacket::class => PacketIds::CRAFTING_DATA,
+            BlockActorDataPacket::class => PacketIds::BLOCK_ACTOR_DATA,
             LevelChunkPacket::class => PacketIds::LEVEL_CHUNK,
             SetCommandsEnabledPacket::class => PacketIds::SET_COMMANDS_ENABLED,
             SetDifficultyPacket::class => PacketIds::SET_DIFFICULTY,
@@ -189,6 +194,7 @@ final class BedrockPacketCodec
             JigsawStructureDataPacket::class => PacketIds::JIGSAW_STRUCTURE_DATA,
             VoxelShapesPacket::class => PacketIds::VOXEL_SHAPES,
             SetPlayerInventoryOptionsPacket::class => PacketIds::SET_PLAYER_INVENTORY_OPTIONS,
+            ContainerRegistryCleanupPacket::class => PacketIds::CONTAINER_REGISTRY_CLEANUP,
             default => throw new InvalidValueException('Packet type is not registered in the Bedrock codec.'),
         };
     }

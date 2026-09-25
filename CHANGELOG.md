@@ -1,5 +1,6 @@
 # Changelog
 
+- Add bounded block-actor data, block state events, dynamic-container cleanup, the complete named container-slot domain, and protocol-2193 item-stack response slots for persistent storage conversations.
 - Add bounded crafting recipe snapshots for shaped, shapeless, user-data-aware, chemistry, and multi recipes, plus the complete current crafting stack-request action family and named crafting containers.
 - Add the current armor and offhand equipment synchronization surface, bounded nutrition attributes, item-use actor events, and exact item-release semantics.
 - Qualify the complete protocol-2193 creative content and selection shapes with damage, item user data, block-state runtime IDs, stable unsigned creative IDs, standalone requests, and embedded player-input requests.

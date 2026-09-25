@@ -20,4 +20,6 @@ A packet addition or change requires:
 - consumer tests for every affected phase and journey;
 - compatibility documentation updates when the wire authority changes.
 
+Container packet families are conversationally complete at the protocol boundary: open and close use the same closed container-type domain; content, slot, stack-request, and stack-response values share the complete current container-slot domain; block-backed screens can project bounded block-actor NBT and block state events; and dynamic full-container entries have an explicit bounded cleanup packet. Window ownership, viewer lifecycle, transaction atomicity, persistence, and correction policy remain server responsibilities.
+
 Do not register unknown bodies as opaque no-ops. A not-yet-implemented gameplay action may be decoded only when its complete bounded structure is known; ignoring or rejecting it is server policy.
