@@ -1,5 +1,7 @@
 # Changelog
 
+- Name the current actor on-fire metadata flag for authoritative entity combustion updates.
+- Add the bounded protocol-2193 non-player actor conversation with generic actor spawning, dynamic properties, vehicle/passenger links, generic attribute updates and modifiers, and the complete current actor-event domain.
 - Add bounded block-actor data, block state events, dynamic-container cleanup, the complete named container-slot domain, and protocol-2193 item-stack response slots for persistent storage conversations.
 - Add bounded crafting recipe snapshots for shaped, shapeless, user-data-aware, chemistry, and multi recipes, plus the complete current crafting stack-request action family and named crafting containers.
 - Add the current armor and offhand equipment synchronization surface, bounded nutrition attributes, item-use actor events, and exact item-release semantics.

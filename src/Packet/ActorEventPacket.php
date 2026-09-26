@@ -54,7 +54,7 @@ final readonly class ActorEventPacket implements Packet
         $event = $runtime->reader->readUnsignedByte();
         $type = ActorEventType::tryFrom($event->value);
         if ($type === null) {
-            throw new MalformedDataException('Actor-event type is outside the supported lifecycle subset.');
+            throw new MalformedDataException('Actor-event type is invalid for the current protocol.');
         }
         $data = $event->reader->readSignedVarInt();
         [$hasFirePosition, $reader] = CodecSupport::readBoolean($data->reader);

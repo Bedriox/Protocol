@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Current Bedrock actor-flag bit indexes used by Bedriox's player baseline. */
+/** Current Bedrock actor-flag bit indexes used by Bedriox actor baselines. */
 enum ActorFlag: int
 {
+    case OnFire = 0;
     case Sneaking = 1;
     case Sprinting = 3;
     case UsingItem = 4;
+    case Invisible = 5;
+    case Baby = 11;
     case CanShowName = 14;
+    case NoAi = 16;
     case CanClimb = 19;
     case Breathing = 35;
     case HasCollision = 48;

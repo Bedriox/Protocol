@@ -19,6 +19,7 @@ final class PacketIds
     public const int SET_TIME = 10;
     public const int START_GAME = 11;
     public const int ADD_PLAYER = 12;
+    public const int ADD_ACTOR = 13;
     public const int REMOVE_ACTOR = 14;
     public const int ADD_ITEM_ACTOR = 15;
     public const int TAKE_ITEM_ACTOR = 17;
@@ -36,6 +37,7 @@ final class PacketIds
     public const int PLAYER_ACTION = 36;
     public const int SET_ACTOR_DATA = 39;
     public const int SET_ACTOR_MOTION = 40;
+    public const int SET_ACTOR_LINK = 41;
     public const int SET_SPAWN_POSITION = 43;
     public const int ANIMATE = 44;
     public const int RESPAWN = 45;

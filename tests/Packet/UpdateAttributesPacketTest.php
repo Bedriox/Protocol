@@ -28,6 +28,9 @@ final class UpdateAttributesPacketTest extends TestCase
 
         self::assertSame(PacketIds::UPDATE_ATTRIBUTES, BedrockPacketCodec::packetId($packet));
         self::assertSame(self::NUTRITION_VECTOR, bin2hex($packet->encode()));
+        $decoded = BedrockPacketCodec::decode(PacketIds::UPDATE_ATTRIBUTES, $packet->encode());
+        self::assertInstanceOf(UpdateAttributesPacket::class, $decoded);
+        self::assertSame($packet->encode(), $decoded->encode());
         self::assertCount(2, $packet->attributes);
         self::assertSame(PlayerAttribute::HUNGER, $packet->attributes[0]->name);
         self::assertSame(PlayerAttribute::SATURATION, $packet->attributes[1]->name);

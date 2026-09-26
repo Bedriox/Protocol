@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\Value\UnsignedLong;
 
-/** Bounded actor metadata snapshot; actor properties are intentionally unsupported. */
+/** Bounded actor metadata and dynamic-property snapshot. */
 final readonly class SetActorDataPacket implements Packet
 {
     /** @param list<ActorMetadata> $metadata */
@@ -15,6 +14,7 @@ final readonly class SetActorDataPacket implements Packet
         public UnsignedLong $runtimeEntityId,
         public UnsignedLong $tick,
         public array $metadata = [],
+        public ActorProperties $properties = new ActorProperties(),
     ) {
         ActorMetadataCollection::validate($metadata);
     }
@@ -48,21 +48,16 @@ final readonly class SetActorDataPacket implements Packet
     {
         $writer = CodecSupport::writer()->writeUnsignedVarLong($this->runtimeEntityId);
         $writer = ActorMetadataCollection::write($writer, $this->metadata);
-        return $writer->writeUnsignedVarInt(0)->writeUnsignedVarInt(0)
-            ->writeUnsignedVarLong($this->tick)->toString();
+        return $this->properties->write($writer)->writeUnsignedVarLong($this->tick)->toString();
     }
 
     public static function decode(string $bytes): self
     {
         $runtimeEntityId = CodecSupport::reader($bytes)->readUnsignedVarLong();
         [$metadata, $reader] = ActorMetadataCollection::read($runtimeEntityId->reader);
-        $integerProperties = $reader->readUnsignedVarInt();
-        $floatProperties = $integerProperties->reader->readUnsignedVarInt();
-        if ($integerProperties->value !== 0 || $floatProperties->value !== 0) {
-            throw new MalformedDataException('Actor properties are unsupported.');
-        }
-        $tick = $floatProperties->reader->readUnsignedVarLong();
+        [$properties, $reader] = ActorProperties::read($reader);
+        $tick = $reader->readUnsignedVarLong();
         CodecSupport::requireEnd($tick->reader);
-        return new self($runtimeEntityId->value, $tick->value, $metadata);
+        return new self($runtimeEntityId->value, $tick->value, $metadata, $properties);
     }
 }
