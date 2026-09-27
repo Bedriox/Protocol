@@ -8,7 +8,7 @@ use LogicException;
 use OverflowException;
 use Bedriox\Protocol\Exception\InvalidValueException;
 
-/** @internal Continuous AES-256-CTR stream built from the AES-ECB block primitive. */
+/** @internal Continuous AES-256-CTR stream backed by OpenSSL's native bulk primitive. */
 final class Aes256CtrStream
 {
     private ?string $key;
@@ -35,35 +35,43 @@ final class Aes256CtrStream
         if ($key === null || $this->counterBlock === null || $this->remainingKeystream === null) {
             throw new LogicException('AES-CTR stream is closed.');
         }
+        $length = strlen($input);
+        if ($length === 0) {
+            return '';
+        }
+
         $output = '';
         $offset = 0;
-        $length = strlen($input);
-        while ($offset < $length) {
-            $remainingKeystream = $this->remainingKeystream;
-            if ($remainingKeystream === '') {
-                $counterBlock = $this->counterBlock;
-                if ($counterBlock === null) {
-                    throw new LogicException('AES-CTR stream is closed.');
-                }
-                $keystream = openssl_encrypt(
-                    $counterBlock,
-                    'aes-256-ecb',
-                    $key,
-                    OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
-                );
-                if (!is_string($keystream) || strlen($keystream) !== 16) {
-                    $this->close();
-                    throw new EncryptionException('OpenSSL failed to generate AES-CTR keystream.');
-                }
-                $this->remainingKeystream = $keystream;
-                $remainingKeystream = $keystream;
-                $this->incrementCounterBlock();
-            }
+        $remainingKeystream = $this->remainingKeystream;
+        if ($remainingKeystream !== '') {
             $take = min(strlen($remainingKeystream), $length - $offset);
             $output .= substr($input, $offset, $take) ^ substr($remainingKeystream, 0, $take);
             $this->remainingKeystream = substr($remainingKeystream, $take);
             $offset += $take;
+            if ($offset === $length) {
+                return $output;
+            }
         }
+
+        $counterBlock = $this->counterBlock;
+        $remainingLength = $length - $offset;
+        $padding = (16 - ($remainingLength % 16)) % 16;
+        $paddedInput = substr($input, $offset) . str_repeat("\0", $padding);
+        $encrypted = openssl_encrypt(
+            $paddedInput,
+            'aes-256-ctr',
+            $key,
+            OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
+            $counterBlock,
+        );
+        if (!is_string($encrypted) || strlen($encrypted) !== strlen($paddedInput)) {
+            $this->close();
+            throw new EncryptionException('OpenSSL failed to update the AES-CTR stream.');
+        }
+        $output .= substr($encrypted, 0, $remainingLength);
+        $this->remainingKeystream = $padding === 0 ? '' : substr($encrypted, $remainingLength);
+        $this->incrementCounterBlocks(intdiv(strlen($paddedInput), 16));
+
         return $output;
     }
 
@@ -83,18 +91,19 @@ final class Aes256CtrStream
         $this->remainingKeystream = null;
     }
 
-    private function incrementCounterBlock(): void
+    private function incrementCounterBlocks(int $blocks): void
     {
-        if ($this->counterBlock === null) {
+        if ($this->counterBlock === null || $blocks < 1) {
             throw new LogicException('AES-CTR stream is closed.');
         }
+        $carry = $blocks;
         for ($index = 15; $index >= 0; --$index) {
-            $value = ord($this->counterBlock[$index]);
-            if ($value !== 0xff) {
-                $this->counterBlock[$index] = chr($value + 1);
+            $sum = ord($this->counterBlock[$index]) + ($carry & 0xff);
+            $this->counterBlock[$index] = chr($sum & 0xff);
+            $carry = intdiv($carry, 256) + intdiv($sum, 256);
+            if ($carry === 0) {
                 return;
             }
-            $this->counterBlock[$index] = "\0";
         }
         $this->close();
         throw new OverflowException('AES-CTR block counter overflowed.');

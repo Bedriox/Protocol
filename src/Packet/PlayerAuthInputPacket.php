@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Bedriox\Protocol\Packet;
 
 use Bedriox\Protocol\Codec\ByteBufferReader;
+use Bedriox\Protocol\Codec\SignedVarInt;
+use Bedriox\Protocol\Codec\UnsignedVarInt;
+use Bedriox\Protocol\Codec\UnsignedVarLong;
+use Bedriox\Protocol\Exception\BufferUnderflowException;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\ProtocolVersion;
@@ -14,9 +18,15 @@ use Bedriox\Protocol\Value\UnsignedLong;
 final readonly class PlayerAuthInputPacket implements Packet
 {
     /** @var list<int> */
+    private const array CONDITIONAL_PAYLOAD_FLAGS = [34, 35, 36, 45];
+
+    /** @var list<int> */
     private const array UNSUPPORTED_CONDITIONAL_PAYLOAD_FLAGS = [34, 45];
 
     private const int MAX_BLOCK_ACTIONS = 100;
+
+    /** @var array<int, true> */
+    private array $inputFlagSet;
 
     /** @param list<int> $inputFlags */
     public function __construct(
@@ -49,6 +59,7 @@ final readonly class PlayerAuthInputPacket implements Packet
                 throw new InvalidValueException('PlayerAuthInput contains an unsupported flag.');
             }
         }
+        $this->inputFlagSet = array_fill_keys($inputFlags, true);
         if ($inputMode < 0 || $inputMode > 4 || !in_array($playMode, [0, 1, 2, 7], true)
             || $interactionMode < 0 || $interactionMode > 2) {
             throw new InvalidValueException('PlayerAuthInput mode is outside the Bedrock range.');
@@ -73,7 +84,7 @@ final readonly class PlayerAuthInputPacket implements Packet
 
     public function packetId(): int { return PacketIds::PLAYER_AUTH_INPUT; }
     public function feetY(): float { return PlayerPositionProjection::wireToFeetY($this->wireY); }
-    public function hasInput(PlayerAuthInputFlag $flag): bool { return in_array($flag->value, $this->inputFlags, true); }
+    public function hasInput(PlayerAuthInputFlag $flag): bool { return isset($this->inputFlagSet[$flag->value]); }
     /** @return list<PlayerAuthInputFlag> */
     public function typedInputFlags(): array
     {
@@ -157,6 +168,83 @@ final readonly class PlayerAuthInputPacket implements Packet
     public static function decodeForProtocol(string $bytes, int $protocolVersion): self
     {
         self::requireSupportedProtocol($protocolVersion);
+        $ordinary = self::decodeOrdinaryInput($bytes);
+        if ($ordinary !== null) {
+            return $ordinary;
+        }
+
+        return self::decodeConditionalInput($bytes);
+    }
+
+    /**
+     * Decodes the common movement-only shape without constructing an immutable reader for every scalar.
+     * Conditional action payloads retain the general decoder below.
+     */
+    private static function decodeOrdinaryInput(string $bytes): ?self
+    {
+        $offset = 0;
+        $floats = self::readFloats($bytes, $offset, 8);
+        $count = UnsignedVarInt::decode($bytes, $offset);
+        $offset += $count['bytes'];
+        if ($count['value'] > PlayerAuthInputFlag::COUNT) {
+            throw new MalformedDataException('PlayerAuthInput input-data count exceeds its limit.');
+        }
+        $flags = [];
+        $flagSet = [];
+        $hasConditionalPayload = false;
+        for ($index = 0; $index < $count['value']; ++$index) {
+            $decoded = SignedVarInt::decode($bytes, $offset);
+            $offset += $decoded['bytes'];
+            $flag = $decoded['value'];
+            if (PlayerAuthInputFlag::tryFrom($flag) === null || isset($flagSet[$flag])) {
+                throw new MalformedDataException('PlayerAuthInput input data contains an unknown or duplicate entry.');
+            }
+            $flagSet[$flag] = true;
+            $flags[] = $flag;
+            $hasConditionalPayload = $hasConditionalPayload || in_array($flag, self::CONDITIONAL_PAYLOAD_FLAGS, true);
+        }
+        if ($hasConditionalPayload) {
+            return null;
+        }
+
+        $inputMode = UnsignedVarInt::decode($bytes, $offset);
+        $offset += $inputMode['bytes'];
+        $playMode = UnsignedVarInt::decode($bytes, $offset);
+        $offset += $playMode['bytes'];
+        $interactionMode = UnsignedVarInt::decode($bytes, $offset);
+        $offset += $interactionMode['bytes'];
+        array_push($floats, ...self::readFloats($bytes, $offset, 2));
+        $tick = UnsignedVarLong::decode($bytes, $offset);
+        $offset += $tick['bytes'];
+        array_push($floats, ...self::readFloats($bytes, $offset, 3));
+
+        if (strlen($bytes) - $offset < 5) {
+            throw new BufferUnderflowException('Truncated PlayerAuthInput optional-payload presence fields.');
+        }
+        if (substr($bytes, $offset, 5) !== "\0\0\0\0\0") {
+            // Let the general path report the precise presence or boolean violation.
+            return null;
+        }
+        $offset += 5;
+        array_push($floats, ...self::readFloats($bytes, $offset, 7));
+        if ($offset !== strlen($bytes)) {
+            throw new MalformedDataException('Unexpected trailing bytes after packet payload.');
+        }
+
+        try {
+            return new self(
+                $floats[0], $floats[1], $floats[2], $floats[3], $floats[4], $floats[5], $floats[6], $floats[7],
+                $flags, $inputMode['value'], $playMode['value'], $interactionMode['value'],
+                $floats[8], $floats[9], $tick['value'], $floats[10], $floats[11], $floats[12],
+                $floats[13], $floats[14], $floats[15], $floats[16], $floats[17], $floats[18], $floats[19],
+            );
+        } catch (InvalidValueException $e) {
+            throw new MalformedDataException('PlayerAuthInput payload is invalid.', previous: $e);
+        }
+    }
+
+    private static function decodeConditionalInput(string $bytes): self
+    {
         $r = CodecSupport::reader($bytes); $floats = [];
         for ($i = 0; $i < 8; ++$i) { [$floats[], $r] = self::float($r); }
         [$flags, $r] = self::readInputData($r);
@@ -202,6 +290,30 @@ final readonly class PlayerAuthInputPacket implements Packet
                 $floats[18], $floats[19], $itemStackRequest !== null || $blockActions !== null || $itemUseTransaction !== null,
                 $itemStackRequest?->requestId, $blockActions, $itemUseTransaction, $itemStackRequest);
         } catch (InvalidValueException $e) { throw new MalformedDataException('PlayerAuthInput payload is invalid.', previous: $e); }
+    }
+
+    /** @return list<float> */
+    private static function readFloats(string $bytes, int &$offset, int $count): array
+    {
+        $length = $count * 4;
+        if (strlen($bytes) - $offset < $length) {
+            throw new BufferUnderflowException('Truncated PlayerAuthInput float fields.');
+        }
+        $decoded = unpack('g' . $count, substr($bytes, $offset, $length));
+        if ($decoded === false || count($decoded) !== $count) {
+            throw new MalformedDataException('Unable to decode PlayerAuthInput float fields.');
+        }
+        $offset += $length;
+
+        $floats = [];
+        foreach ($decoded as $value) {
+            if (!is_float($value)) {
+                throw new MalformedDataException('PlayerAuthInput float field has an unexpected decoded type.');
+            }
+            $floats[] = $value;
+        }
+
+        return $floats;
     }
 
     /** @return array{float, ByteBufferReader} */
