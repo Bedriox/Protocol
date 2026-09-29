@@ -54,6 +54,8 @@ final class PacketIds
     public const int SET_DIFFICULTY = 60;
     public const int SET_PLAYER_GAME_TYPE = 62;
     public const int PLAYER_LIST = 63;
+    public const int CLIENTBOUND_MAP_ITEM_DATA = 67;
+    public const int MAP_INFO_REQUEST = 68;
     public const int REQUEST_CHUNK_RADIUS = 69;
     public const int CHUNK_RADIUS_UPDATED = 70;
     public const int GAME_RULES_CHANGED = 72;
@@ -78,6 +80,7 @@ final class PacketIds
     public const int NETWORK_SETTINGS = 143;
     public const int PLAYER_AUTH_INPUT = 144;
     public const int CREATIVE_CONTENT = 145;
+    public const int PLAYER_ENCHANT_OPTIONS = 146;
     public const int ITEM_STACK_REQUEST = 147;
     public const int ITEM_STACK_RESPONSE = 148;
     public const int UPDATE_PLAYER_GAME_TYPE = 151;
@@ -98,4 +101,5 @@ final class PacketIds
     public const int JIGSAW_STRUCTURE_DATA = 313;
     public const int MOVEMENT_PREDICTION_SYNC = 322;
     public const int VOXEL_SHAPES = 337;
+    public const int SET_PLAYER_FURNACE_OPTIONS = 351;
 }

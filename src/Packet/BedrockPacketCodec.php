@@ -69,6 +69,8 @@ final class BedrockPacketCodec
             PacketIds::SET_ACTOR_LINK => SetActorLinkPacket::decode($payload),
             PacketIds::LEVEL_CHUNK => LevelChunkPacket::decode($payload),
             PacketIds::PLAYER_LIST => PlayerListPacketCodec::decode($payload),
+            PacketIds::CLIENTBOUND_MAP_ITEM_DATA => ClientboundMapItemDataPacket::decode($payload),
+            PacketIds::MAP_INFO_REQUEST => MapInfoRequestPacket::decode($payload),
             PacketIds::PLAYER_SKIN => PlayerSkinPacket::decode($payload),
             PacketIds::CONTAINER_OPEN => ContainerOpenPacket::decode($payload),
             PacketIds::CONTAINER_CLOSE => ContainerClosePacket::decode($payload),
@@ -76,6 +78,7 @@ final class BedrockPacketCodec
             PacketIds::INVENTORY_SLOT => InventorySlotPacket::decode($payload),
             PacketIds::CONTAINER_SET_DATA => ContainerSetDataPacket::decode($payload),
             PacketIds::CRAFTING_DATA => CraftingDataPacket::decode($payload),
+            PacketIds::PLAYER_ENCHANT_OPTIONS => PlayerEnchantOptionsPacket::decode($payload),
             PacketIds::BLOCK_ACTOR_DATA => BlockActorDataPacket::decode($payload),
             PacketIds::REQUEST_CHUNK_RADIUS => RequestChunkRadiusPacket::decode($payload),
             PacketIds::CHUNK_RADIUS_UPDATED => ChunkRadiusUpdatedPacket::decode($payload),
@@ -103,6 +106,7 @@ final class BedrockPacketCodec
             PacketIds::MOVEMENT_PREDICTION_SYNC => MovementPredictionSyncPacket::decode($payload),
             PacketIds::SET_PLAYER_INVENTORY_OPTIONS => SetPlayerInventoryOptionsPacket::decode($payload),
             PacketIds::CONTAINER_REGISTRY_CLEANUP => ContainerRegistryCleanupPacket::decode($payload),
+            PacketIds::SET_PLAYER_FURNACE_OPTIONS => SetPlayerFurnaceOptionsPacket::decode($payload),
             default => throw new MalformedDataException('Packet ID is not registered in the Bedrock codec.'),
         };
     }
@@ -159,6 +163,7 @@ final class BedrockPacketCodec
             InventorySlotPacket::class => PacketIds::INVENTORY_SLOT,
             ContainerSetDataPacket::class => PacketIds::CONTAINER_SET_DATA,
             CraftingDataPacket::class => PacketIds::CRAFTING_DATA,
+            PlayerEnchantOptionsPacket::class => PacketIds::PLAYER_ENCHANT_OPTIONS,
             BlockActorDataPacket::class => PacketIds::BLOCK_ACTOR_DATA,
             LevelChunkPacket::class => PacketIds::LEVEL_CHUNK,
             SetCommandsEnabledPacket::class => PacketIds::SET_COMMANDS_ENABLED,
@@ -167,6 +172,8 @@ final class BedrockPacketCodec
             UpdatePlayerGameTypePacket::class => PacketIds::UPDATE_PLAYER_GAME_TYPE,
             PlayerListRemovePacket::class => PacketIds::PLAYER_LIST,
             PlayerListAddPacket::class => PacketIds::PLAYER_LIST,
+            ClientboundMapItemDataPacket::class => PacketIds::CLIENTBOUND_MAP_ITEM_DATA,
+            MapInfoRequestPacket::class => PacketIds::MAP_INFO_REQUEST,
             PlayerSkinPacket::class => PacketIds::PLAYER_SKIN,
             RequestChunkRadiusPacket::class => PacketIds::REQUEST_CHUNK_RADIUS,
             ChunkRadiusUpdatedPacket::class => PacketIds::CHUNK_RADIUS_UPDATED,
@@ -206,6 +213,7 @@ final class BedrockPacketCodec
             VoxelShapesPacket::class => PacketIds::VOXEL_SHAPES,
             SetPlayerInventoryOptionsPacket::class => PacketIds::SET_PLAYER_INVENTORY_OPTIONS,
             ContainerRegistryCleanupPacket::class => PacketIds::CONTAINER_REGISTRY_CLEANUP,
+            SetPlayerFurnaceOptionsPacket::class => PacketIds::SET_PLAYER_FURNACE_OPTIONS,
             default => throw new InvalidValueException('Packet type is not registered in the Bedrock codec.'),
         };
     }

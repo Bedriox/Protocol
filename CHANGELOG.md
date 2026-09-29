@@ -1,5 +1,8 @@
 # Changelog
 
+- Accept the current optional-recipe zero network-ID sentinel used by anvils without weakening other recipe-ID validation.
+- Add a typed protocol-2193 experience-orb actor factory with its required positive experience-value metadata.
+- Add bounded smithing transform and trim recipe sections, enchanting options, map requests and updates, and protocol-2193 furnace display preferences for processing-station gameplay.
 - Migrate block network IDs to canonical signed 32-bit hashes, advertise hash mode in StartGame, and project the same bit pattern through each packet's required signed or unsigned VarInt encoding.
 - Add an explicit `BlockNetworkId` value object and negative-hash coverage for chunks, block updates, inventory, creative inventory, particles, transactions, and stack-request craft results.
 - Add typed current weather level events for rain and thunder transitions.

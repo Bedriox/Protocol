@@ -10,9 +10,11 @@ use Bedriox\Protocol\Packet\BedrockPacketCodec;
 use Bedriox\Protocol\Packet\ContainerMixData;
 use Bedriox\Protocol\Packet\CraftingDataPacket;
 use Bedriox\Protocol\Packet\CraftingRecipeIngredient;
+use Bedriox\Protocol\Packet\InventoryItemStack;
+use Bedriox\Protocol\Packet\SmithingTransformRecipe;
+use Bedriox\Protocol\Packet\SmithingTrimRecipe;
 use Bedriox\Protocol\Packet\CraftingRecipeType;
 use Bedriox\Protocol\Packet\CraftingRecipeUnlockRequirement;
-use Bedriox\Protocol\Packet\InventoryItemStack;
 use Bedriox\Protocol\Packet\MultiCraftingRecipe;
 use Bedriox\Protocol\Packet\PacketIds;
 use Bedriox\Protocol\Packet\PotionMixData;
@@ -22,6 +24,22 @@ use PHPUnit\Framework\TestCase;
 
 final class CraftingDataPacketTest extends TestCase
 {
+    public function testSmithingSectionsRoundTrip(): void
+    {
+        $ingredient = CraftingRecipeIngredient::item('minecraft:iron_ingot');
+        $packet = new CraftingDataPacket(
+            smithingTransformRecipes: [new SmithingTransformRecipe(
+                'minecraft:upgrade', $ingredient, $ingredient, $ingredient,
+                new InventoryItemStack(1, 1, 0, null, 0, ''), 'smithing_table', 100,
+            )],
+            smithingTrimRecipes: [new SmithingTrimRecipe(
+                'minecraft:trim', $ingredient, $ingredient, $ingredient, 'smithing_table', 101,
+            )],
+        );
+
+        self::assertEquals($packet, CraftingDataPacket::decode($packet->encode()));
+    }
+
     private const string UUID = '00112233-4455-6677-8899-aabbccddeeff';
     private const string VECTOR = '010c62656472696f783a7465737402020101046e616d650f6d696e6563726166743a73746f6e65feff0302010a04000000007766554433221100ffeeddccbbaa99880e6372616674696e675f7461626c6504000100010007010b62656472696f783a6d69780101086974656d5f7461670e6d696e6563726166743a6c6f6773feff0304010a04000000007766554433221100ffeeddccbbaa99880e6372616674696e675f7461626c65000100010008017766554433221100ffeeddccbbaa998809000000000000000001';
     private const string MIX_VECTOR = '000000000000000001020406080a0c010e10120001';

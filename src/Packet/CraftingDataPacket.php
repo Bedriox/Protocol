@@ -23,16 +23,26 @@ final readonly class CraftingDataPacket implements Packet
     /** @var list<ContainerMixData> */
     public array $containerMixData;
 
+    /** @var list<SmithingTransformRecipe> */
+    public array $smithingTransformRecipes;
+
+    /** @var list<SmithingTrimRecipe> */
+    public array $smithingTrimRecipes;
+
     /**
      * @param list<CraftingRecipe> $recipes
      * @param list<PotionMixData> $potionMixData
      * @param list<ContainerMixData> $containerMixData
+     * @param list<SmithingTransformRecipe> $smithingTransformRecipes
+     * @param list<SmithingTrimRecipe> $smithingTrimRecipes
      */
     public function __construct(
         array $recipes = [],
         public bool $cleanRecipes = true,
         array $potionMixData = [],
         array $containerMixData = [],
+        array $smithingTransformRecipes = [],
+        array $smithingTrimRecipes = [],
     ) {
         if (!array_is_list($recipes) || count($recipes) > self::MAXIMUM_RECIPES) {
             throw new InvalidValueException('Crafting recipe registry must be a bounded list.');
@@ -62,6 +72,30 @@ final readonly class CraftingDataPacket implements Packet
             ContainerMixData::class,
             'Container-mix registry',
         );
+        if (!array_is_list($smithingTransformRecipes) || count($smithingTransformRecipes) > self::MAXIMUM_RECIPES) {
+            throw new InvalidValueException('Smithing-transform registry must be a bounded list.');
+        }
+        foreach ($smithingTransformRecipes as $recipe) {
+            if (!$recipe instanceof SmithingTransformRecipe) {
+                throw new InvalidValueException('Smithing-transform registry contains an invalid recipe.');
+            }
+        }
+        $this->smithingTransformRecipes = $smithingTransformRecipes;
+        if (!array_is_list($smithingTrimRecipes) || count($smithingTrimRecipes) > self::MAXIMUM_RECIPES) {
+            throw new InvalidValueException('Smithing-trim registry must be a bounded list.');
+        }
+        foreach ($smithingTrimRecipes as $recipe) {
+            if (!$recipe instanceof SmithingTrimRecipe) {
+                throw new InvalidValueException('Smithing-trim registry contains an invalid recipe.');
+            }
+        }
+        $this->smithingTrimRecipes = $smithingTrimRecipes;
+        foreach (array_merge($this->smithingTransformRecipes, $this->smithingTrimRecipes) as $recipe) {
+            if (isset($networkIds[$recipe->networkId])) {
+                throw new InvalidValueException('Crafting recipe network IDs must be unique.');
+            }
+            $networkIds[$recipe->networkId] = true;
+        }
     }
 
     public function packetId(): int { return PacketIds::CRAFTING_DATA; }
@@ -80,8 +114,8 @@ final readonly class CraftingDataPacket implements Packet
             }
         }
 
-        // Smithing transform and trim registries remain deferred.
-        $writer = $writer->writeUnsignedVarInt(0)->writeUnsignedVarInt(0);
+        $writer = self::writeSmithingTransforms($writer, $this->smithingTransformRecipes);
+        $writer = self::writeSmithingTrims($writer, $this->smithingTrimRecipes);
         $writer = self::writePotionMixData($writer, $this->potionMixData);
         $writer = self::writeContainerMixData($writer, $this->containerMixData);
         // Material reducers remain deferred.
@@ -103,13 +137,8 @@ final readonly class CraftingDataPacket implements Packet
                 [$recipes[], $reader] = self::readRecipe($reader, $type);
             }
         }
-        for ($section = 0; $section < 2; ++$section) {
-            $count = $reader->readUnsignedVarInt();
-            if ($count->value !== 0) {
-                throw new MalformedDataException('Unsupported crafting-data section must be empty.');
-            }
-            $reader = $count->reader;
-        }
+        [$smithingTransforms, $reader] = self::readSmithingTransforms($reader);
+        [$smithingTrims, $reader] = self::readSmithingTrims($reader);
         [$potionMixData, $reader] = self::readPotionMixData($reader);
         [$containerMixData, $reader] = self::readContainerMixData($reader);
         $materialReducers = $reader->readUnsignedVarInt();
@@ -120,10 +149,105 @@ final readonly class CraftingDataPacket implements Packet
         [$cleanRecipes, $reader] = CodecSupport::readBoolean($reader);
         CodecSupport::requireEnd($reader);
         try {
-            return new self($recipes, $cleanRecipes, $potionMixData, $containerMixData);
+            return new self(
+                $recipes,
+                $cleanRecipes,
+                $potionMixData,
+                $containerMixData,
+                $smithingTransforms,
+                $smithingTrims,
+            );
         } catch (InvalidValueException $e) {
             throw new MalformedDataException('Crafting recipe registry is invalid.', previous: $e);
         }
+    }
+
+    /** @param list<SmithingTransformRecipe> $recipes */
+    private static function writeSmithingTransforms(ByteBufferWriter $writer, array $recipes): ByteBufferWriter
+    {
+        $writer = $writer->writeUnsignedVarInt(count($recipes));
+        foreach ($recipes as $recipe) {
+            $writer = $writer->writeString($recipe->recipeId, CodecSupport::MAX_SHORT_STRING_BYTES);
+            foreach ([$recipe->template, $recipe->base, $recipe->addition] as $ingredient) {
+                $writer = CraftingRecipeWireCodec::writeIngredient($writer, $ingredient);
+            }
+            $writer = CreativeItemStackWireCodec::write($writer, $recipe->result)
+                ->writeString($recipe->craftingTag, CodecSupport::MAX_SHORT_STRING_BYTES)
+                ->writeUnsignedVarInt($recipe->networkId);
+        }
+        return $writer;
+    }
+
+    /** @return array{list<SmithingTransformRecipe>, ByteBufferReader} */
+    private static function readSmithingTransforms(ByteBufferReader $reader): array
+    {
+        $count = $reader->readUnsignedVarInt();
+        if ($count->value > self::MAXIMUM_RECIPES) {
+            throw new MalformedDataException('Smithing-transform recipe count exceeds its limit.');
+        }
+        $reader = $count->reader;
+        $recipes = [];
+        for ($index = 0; $index < $count->value; ++$index) {
+            $id = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
+            [$template, $reader] = CraftingRecipeWireCodec::readIngredient($id->reader);
+            [$base, $reader] = CraftingRecipeWireCodec::readIngredient($reader);
+            [$addition, $reader] = CraftingRecipeWireCodec::readIngredient($reader);
+            [$result, $reader] = CreativeItemStackWireCodec::read($reader);
+            $tag = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
+            $networkId = $tag->reader->readUnsignedVarInt();
+            try {
+                $recipes[] = new SmithingTransformRecipe(
+                    $id->value, $template, $base, $addition, $result, $tag->value, $networkId->value,
+                );
+            } catch (InvalidValueException $e) {
+                throw new MalformedDataException('Smithing-transform recipe is invalid.', previous: $e);
+            }
+            $reader = $networkId->reader;
+        }
+        return [$recipes, $reader];
+    }
+
+    /** @param list<SmithingTrimRecipe> $recipes */
+    private static function writeSmithingTrims(ByteBufferWriter $writer, array $recipes): ByteBufferWriter
+    {
+        $writer = $writer->writeUnsignedVarInt(count($recipes));
+        foreach ($recipes as $recipe) {
+            $writer = $writer->writeString($recipe->recipeId, CodecSupport::MAX_SHORT_STRING_BYTES);
+            foreach ([$recipe->template, $recipe->base, $recipe->addition] as $ingredient) {
+                $writer = CraftingRecipeWireCodec::writeIngredient($writer, $ingredient);
+            }
+            $writer = $writer->writeString($recipe->craftingTag, CodecSupport::MAX_SHORT_STRING_BYTES)
+                ->writeUnsignedVarInt($recipe->networkId);
+        }
+        return $writer;
+    }
+
+    /** @return array{list<SmithingTrimRecipe>, ByteBufferReader} */
+    private static function readSmithingTrims(ByteBufferReader $reader): array
+    {
+        $count = $reader->readUnsignedVarInt();
+        if ($count->value > self::MAXIMUM_RECIPES) {
+            throw new MalformedDataException('Smithing-trim recipe count exceeds its limit.');
+        }
+        $reader = $count->reader;
+        $recipes = [];
+        for ($index = 0; $index < $count->value; ++$index) {
+            $id = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
+            [$template, $reader] = CraftingRecipeWireCodec::readIngredient($id->reader);
+            [$base, $reader] = CraftingRecipeWireCodec::readIngredient($reader);
+            [$addition, $reader] = CraftingRecipeWireCodec::readIngredient($reader);
+            $tag = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
+            $networkId = $tag->reader->readUnsignedVarInt();
+            try {
+                $recipes[] = new SmithingTrimRecipe(
+                    $id->value, $template, $base, $addition, $tag->value, $networkId->value,
+                );
+            } catch (InvalidValueException $e) {
+                throw new MalformedDataException('Smithing-trim recipe is invalid.', previous: $e);
+            }
+            $reader = $networkId->reader;
+        }
+        return [$recipes, $reader];
     }
 
     /** @return list<CraftingRecipeType> */

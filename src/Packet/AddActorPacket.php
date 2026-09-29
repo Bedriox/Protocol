@@ -66,6 +66,35 @@ final readonly class AddActorPacket implements Packet
         return PacketIds::ADD_ACTOR;
     }
 
+    public static function experienceOrb(
+        int $actorUniqueId,
+        UnsignedLong $runtimeEntityId,
+        float $x,
+        float $y,
+        float $z,
+        int $experienceValue,
+        float $motionX = 0.0,
+        float $motionY = 0.0,
+        float $motionZ = 0.0,
+    ): self {
+        return new self(
+            $actorUniqueId,
+            $runtimeEntityId,
+            ExperienceOrbActorMetadata::IDENTIFIER,
+            $x,
+            $y,
+            $z,
+            $motionX,
+            $motionY,
+            $motionZ,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            metadata: ExperienceOrbActorMetadata::baseline($experienceValue),
+        );
+    }
+
     public function encode(): string
     {
         $writer = CodecSupport::writer()->writeSignedVarLong($this->actorUniqueId)

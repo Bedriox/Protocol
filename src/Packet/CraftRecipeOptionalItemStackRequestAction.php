@@ -12,7 +12,7 @@ final readonly class CraftRecipeOptionalItemStackRequestAction implements ItemSt
 
     public function __construct(public int $recipeNetworkId, public int $filteredStringIndex)
     {
-        if ($recipeNetworkId < 1 || $recipeNetworkId > 0xffffffff
+        if ($recipeNetworkId < 0 || $recipeNetworkId > 0xffffffff
             || $filteredStringIndex < -0x80000000 || $filteredStringIndex > 0x7fffffff) {
             throw new InvalidValueException('Optional craft-recipe action contains an out-of-range value.');
         }

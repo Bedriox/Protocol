@@ -66,6 +66,26 @@ final class CraftingItemStackRequestTest extends TestCase
         }
     }
 
+    public function testOptionalRecipeWithoutAResultHasExactVectorAndRoundTrips(): void
+    {
+        $wire = hex2bin('0106010d0f00ffffffff00ffffffff');
+        self::assertIsString($wire);
+
+        $packet = ItemStackRequestPacket::decode($wire);
+        $action = $packet->requests[0]->actions[0];
+
+        self::assertEquals(new CraftRecipeOptionalItemStackRequestAction(0, -1), $action);
+        self::assertSame($wire, $packet->encode());
+        for ($length = 0; $length < strlen($wire); ++$length) {
+            try {
+                ItemStackRequestPacket::decode(substr($wire, 0, $length));
+                self::fail("Truncated optional-recipe request was accepted at {$length} bytes.");
+            } catch (CodecException) {
+                self::addToAssertionCount(1);
+            }
+        }
+    }
+
     public function testRecipeCraftRequestIsClosedInEmbeddedPlayerInput(): void
     {
         $request = new ItemStackRequest(9, [new CraftRecipeItemStackRequestAction(17, 1)]);

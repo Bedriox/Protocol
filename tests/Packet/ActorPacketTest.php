@@ -30,6 +30,7 @@ use Bedriox\Protocol\Packet\ActorProperties;
 use Bedriox\Protocol\Packet\ActorSpawnAttribute;
 use Bedriox\Protocol\Packet\AddActorPacket;
 use Bedriox\Protocol\Packet\BedrockPacketCodec;
+use Bedriox\Protocol\Packet\ExperienceOrbActorMetadata;
 use Bedriox\Protocol\Packet\MobArmorEquipmentPacket;
 use Bedriox\Protocol\Packet\MobEquipmentPacket;
 use Bedriox\Protocol\Packet\Packet;
@@ -79,6 +80,44 @@ final class ActorPacketTest extends TestCase
         self::assertSame('070001020501030000c03fac02', bin2hex($packet->encode()));
         self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::SET_ACTOR_DATA, $packet->encode()));
         $this->assertRejectsEveryTruncation(SetActorDataPacket::decode(...), $packet->encode());
+    }
+
+    public function testExperienceOrbFactoryUsesCurrentIdentifierAndValueMetadata(): void
+    {
+        $packet = AddActorPacket::experienceOrb(
+            -2,
+            UnsignedLong::fromInt(7),
+            1.0,
+            2.0,
+            3.0,
+            7,
+            0.25,
+            0.5,
+            -0.75,
+        );
+
+        self::assertSame(ExperienceOrbActorMetadata::IDENTIFIER, $packet->identifier);
+        self::assertEquals([ActorMetadata::int(15, 7)], $packet->metadata);
+        self::assertSame(
+            '0307106d696e6563726166743a78705f6f7262'
+            . '0000803f00000040000040400000803e0000003f000040bf00000000000000000000000000000000'
+            . '00010f02020e000000',
+            bin2hex($packet->encode()),
+        );
+        self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::ADD_ACTOR, $packet->encode()));
+        $this->assertRejectsEveryTruncation(AddActorPacket::decode(...), $packet->encode());
+    }
+
+    public function testExperienceOrbMetadataRejectsValuesOutsidePositiveSignedIntegerRange(): void
+    {
+        foreach ([0, -1, 0x80000000] as $experienceValue) {
+            try {
+                ExperienceOrbActorMetadata::baseline($experienceValue);
+                self::fail('Out-of-range experience-orb value was accepted.');
+            } catch (InvalidValueException) {
+                $this->addToAssertionCount(1);
+            }
+        }
     }
 
     public function testOnFireActorFlagUsesTheCurrentMetadataBit(): void
