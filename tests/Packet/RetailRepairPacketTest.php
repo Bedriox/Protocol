@@ -84,7 +84,7 @@ final class RetailRepairPacketTest extends TestCase
 
         $update = new UpdateBlockPacket(
             new BlockPosition(-0x80000000, 0x7fffffff, 0),
-            0xffffffff,
+            -0x80000000,
             UpdateBlockFlag::cases(),
             0xffffffff,
         );
@@ -153,7 +153,7 @@ final class RetailRepairPacketTest extends TestCase
         }
 
         foreach ([
-            static fn () => new UpdateBlockPacket(new BlockPosition(0, 0, 0), -1, [], 0),
+            static fn () => new UpdateBlockPacket(new BlockPosition(0, 0, 0), -0x80000001, [], 0),
             static fn () => new UpdateBlockPacket(new BlockPosition(0, 0, 0), 0x100000000, [], 0),
             static fn () => new UpdateBlockPacket(new BlockPosition(0, 0, 0), 0, [UpdateBlockFlag::Network, UpdateBlockFlag::Network], 0),
             static fn () => new UpdateBlockPacket(new BlockPosition(0, 0, 0), 0, [], -1),

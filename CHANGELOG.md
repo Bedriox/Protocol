@@ -1,5 +1,7 @@
 # Changelog
 
+- Migrate block network IDs to canonical signed 32-bit hashes, advertise hash mode in StartGame, and project the same bit pattern through each packet's required signed or unsigned VarInt encoding.
+- Add an explicit `BlockNetworkId` value object and negative-hash coverage for chunks, block updates, inventory, creative inventory, particles, transactions, and stack-request craft results.
 - Add bounded protocol-2193 actor-effect synchronization, named-particle spawning, and typed level-event particles with color, block, item, scalar, direction, and size payload factories.
 - Add typed potion and container mixing registries plus brewing-stand and furnace progress synchronization.
 - Name the current actor on-fire metadata flag for authoritative entity combustion updates.

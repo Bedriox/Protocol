@@ -21,7 +21,7 @@ final readonly class ItemUseInventoryTransaction implements InventoryTransaction
         public ItemUseClientCooldownState $cooldownState,
     ) {
         if ($blockFace < 0 || $blockFace > 0xff || $hotbarSlot < -0x80000000 || $hotbarSlot > 0x7fffffff
-            || $targetBlockRuntimeId < 0 || $targetBlockRuntimeId > 0xffffffff) {
+            || $targetBlockRuntimeId < -0x80000000 || $targetBlockRuntimeId > 0x7fffffff) {
             throw new \Bedriox\Protocol\Exception\InvalidValueException('Item-use transaction contains an out-of-range scalar.');
         }
     }

@@ -11,6 +11,7 @@ use Bedriox\Protocol\Exception\ItemStackRequestDecodeException;
 use Bedriox\Protocol\Exception\CodecException;
 use Bedriox\Protocol\Exception\BufferUnderflowException;
 use Bedriox\Protocol\Exception\MalformedDataException;
+use Bedriox\Protocol\Value\BlockNetworkId;
 
 /** Internal bounded protocol-2193 codec for one item-stack request entry. */
 final class ItemStackRequestCodec
@@ -263,7 +264,7 @@ final class ItemStackRequestCodec
         }
         $userData = $length->reader->readBytes($length->value);
         return [new ItemStackRequestResultItem(
-            $type->value, $value, $aux, $count->value, $blockId->value, $userData->value,
+            $type->value, $value, $aux, $count->value, BlockNetworkId::fromUnsigned($blockId->value)->signed(), $userData->value,
         ), $userData->reader];
     }
 
@@ -354,7 +355,7 @@ final class ItemStackRequestCodec
                     }
                 }
                 $writer = $writer->writeUnsignedShortLE($result->count)
-                    ->writeUnsignedVarInt($result->blockRuntimeId)
+                    ->writeUnsignedVarInt(BlockNetworkId::fromSigned($result->blockRuntimeId)->unsigned())
                     ->writeUnsignedVarInt(strlen($result->userData))
                     ->writeBytes($result->userData);
             }

@@ -51,8 +51,8 @@ final readonly class PlayerItemUseTransaction
             || $itemCount < 0 || $itemCount > 0xffff
             || $itemAux < 0 || $itemAux > 0x7fff
             || ($itemStackNetworkId !== null && ($itemStackNetworkId < -0x80000000 || $itemStackNetworkId > 0x7fffffff))
-            || $itemBlockRuntimeId < 0 || $itemBlockRuntimeId > 0xffffffff
-            || $targetBlockRuntimeId < 0 || $targetBlockRuntimeId > 0xffffffff
+            || $itemBlockRuntimeId < -0x80000000 || $itemBlockRuntimeId > 0x7fffffff
+            || $targetBlockRuntimeId < -0x80000000 || $targetBlockRuntimeId > 0x7fffffff
             || $predictedResult < 0 || $predictedResult > 1
             || $clientCooldownState < 0 || $clientCooldownState > 1) {
             throw new InvalidValueException('PlayerAuthInput item-use transaction contains an out-of-range value.');

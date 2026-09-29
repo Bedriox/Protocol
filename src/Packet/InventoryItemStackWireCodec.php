@@ -7,6 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Codec\ByteBufferReader;
 use Bedriox\Protocol\Codec\ByteBufferWriter;
 use Bedriox\Protocol\Exception\MalformedDataException;
+use Bedriox\Protocol\Value\BlockNetworkId;
 
 /** Internal protocol-2193 NetworkItemStackDescriptor codec shared by transaction forms. */
 final class InventoryItemStackWireCodec
@@ -39,7 +40,7 @@ final class InventoryItemStackWireCodec
             $count->value,
             $aux->value,
             $networkId,
-            $blockRuntimeId->value,
+            BlockNetworkId::fromUnsigned($blockRuntimeId->value)->signed(),
             $userData->value,
         ), $userData->reader];
     }
@@ -54,7 +55,7 @@ final class InventoryItemStackWireCodec
             $writer = $writer->writeSignedVarInt($item->stackNetworkId);
         }
 
-        return $writer->writeUnsignedVarInt($item->blockRuntimeId)
+        return $writer->writeUnsignedVarInt(BlockNetworkId::fromSigned($item->blockRuntimeId)->unsigned())
             ->writeUnsignedVarInt(strlen($item->userData))
             ->writeBytes($item->userData);
     }

@@ -141,11 +141,12 @@ final class InventoryTransactionPacketTest extends TestCase
             InventoryItemStack::empty(),
             new InventoryVector3(0.0, 0.0, 0.0),
             new InventoryVector3(0.0, 0.0, 0.0),
-            0,
+            -604_749_536,
             ItemUsePredictedResult::Failure,
             ItemUseClientCooldownState::On,
         ));
         self::assertEquals($use, InventoryTransactionPacket::decode($use->encode()));
+        self::assertStringContainsString("\xa0\x82\xd1\xdf\x0d", $use->encode());
 
         $entity = new InventoryTransactionPacket(0, [], [], new ItemUseOnEntityInventoryTransaction(
             UnsignedLong::fromInt(77),
@@ -187,7 +188,7 @@ final class InventoryTransactionPacketTest extends TestCase
             0xffff,
             0x7fff,
             0x7fffffff,
-            0xffffffff,
+            -0x80000000,
             str_repeat("\xa5", InventoryItemStack::MAXIMUM_USER_DATA_BYTES),
         );
         $boundary = new InventoryTransactionPacket(0, [], [new InventoryAction(

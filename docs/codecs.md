@@ -38,6 +38,8 @@ Current `PlayerAuthInput` block actions are target-bearing except `StopDestroyBl
 
 `PalettedStorage` accepts an expanded runtime-ID palette and one validated palette index per X-Z-Y cell. `PackedPalettedStorage` accepts the equivalent canonical little-endian Bedrock word array when a caller already owns a packed immutable snapshot. Both forms share the same section and biome boundaries and produce the same storage bytes; the serializer writes validated packed words directly instead of expanding and repacking every cell.
 
+Block network identities are canonical signed 32-bit hashes in memory. Chunk and subchunk palettes encode them as signed VarInts. `BlockNetworkId` exposes the corresponding unsigned 32-bit bit pattern for packet fields whose schema uses an unsigned VarInt; callers must choose the representation at the packet boundary instead of passing ambiguous unsigned integers through the domain model.
+
 Packed inputs declare their exact entry count and admitted bit width. Construction rejects incorrect word lengths, palette indexes outside the supplied palette, non-zero trailing entries, and non-canonical padding. Zero-bit storage is limited to a singleton palette with no words.
 
 Decompression uses bounded incremental input, rejects incomplete streams and bytes after the stream terminator, and checks both absolute output size and expansion ratio before retaining further output.

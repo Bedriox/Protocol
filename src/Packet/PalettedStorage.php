@@ -90,7 +90,7 @@ final readonly class PalettedStorage
 
     private static function isRuntimeId(mixed $runtimeId): bool
     {
-        return is_int($runtimeId) && $runtimeId >= 0 && $runtimeId <= 0x7fffffff;
+        return is_int($runtimeId) && $runtimeId >= -0x80000000 && $runtimeId <= 0x7fffffff;
     }
 
     private static function isPaletteIndex(mixed $index, int $maximum): bool

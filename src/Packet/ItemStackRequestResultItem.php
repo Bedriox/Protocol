@@ -24,7 +24,7 @@ final readonly class ItemStackRequestResultItem
             || $auxOrVersion < -0x80000000 || $auxOrVersion > 0x7fffffff
             || ($descriptorType === 2 && ($auxOrVersion < -0x8000 || $auxOrVersion > 0x7fff))
             || $count < 0 || $count > 0xffff
-            || $blockRuntimeId < 0 || $blockRuntimeId > 0xffffffff
+            || $blockRuntimeId < -0x80000000 || $blockRuntimeId > 0x7fffffff
             || strlen($userData) > InventoryItemStack::MAXIMUM_USER_DATA_BYTES) {
             throw new InvalidValueException('Craft-results item descriptor is invalid.');
         }

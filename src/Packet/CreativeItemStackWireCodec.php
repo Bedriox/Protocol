@@ -17,9 +17,6 @@ final class CreativeItemStackWireCodec
         if ($item->stackNetworkId !== null) {
             throw new InvalidValueException('Creative item instances cannot carry stack-network IDs.');
         }
-        if ($item->blockRuntimeId > 0x7fffffff) {
-            throw new InvalidValueException('Creative item block runtime ID exceeds the signed 32-bit wire range.');
-        }
         if ($item->runtimeId === 0 && ($item->count !== 0 || $item->aux !== 0 || $item->blockRuntimeId !== 0 || $item->userData !== '')) {
             throw new InvalidValueException('Creative air item instances must be empty.');
         }
@@ -52,9 +49,6 @@ final class CreativeItemStackWireCodec
             throw new MalformedDataException('Creative item auxiliary value exceeds its limit.');
         }
         $blockRuntimeId = $aux->reader->readSignedVarInt();
-        if ($blockRuntimeId->value < 0) {
-            throw new MalformedDataException('Creative item block runtime ID cannot be negative.');
-        }
         $length = $blockRuntimeId->reader->readUnsignedVarInt();
         if ($length->value > InventoryItemStack::MAXIMUM_USER_DATA_BYTES) {
             throw new MalformedDataException('Creative item user data exceeds its byte limit.');

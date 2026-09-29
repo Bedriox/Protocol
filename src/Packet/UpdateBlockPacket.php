@@ -6,6 +6,7 @@ namespace Bedriox\Protocol\Packet;
 
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
+use Bedriox\Protocol\Value\BlockNetworkId;
 
 /** Clientbound block-state update; runtime IDs must already be translated for protocol 2193. */
 final readonly class UpdateBlockPacket implements Packet
@@ -17,8 +18,8 @@ final readonly class UpdateBlockPacket implements Packet
         public array $flags,
         public int $layer,
     ) {
-        if ($blockRuntimeId < 0 || $blockRuntimeId > 0xffffffff || $layer < 0 || $layer > 0xffffffff) {
-            throw new InvalidValueException('Update-block runtime ID and layer must fit unsigned 32-bit integers.');
+        if ($blockRuntimeId < -0x80000000 || $blockRuntimeId > 0x7fffffff || $layer < 0 || $layer > 0xffffffff) {
+            throw new InvalidValueException('Update-block runtime ID must fit signed 32-bit and layer must fit unsigned 32-bit.');
         }
         if (!array_is_list($flags)) {
             throw new InvalidValueException('Update-block flags must be a list.');
@@ -42,7 +43,7 @@ final readonly class UpdateBlockPacket implements Packet
         }
         return CodecSupport::writer()->writeSignedVarInt($this->position->x)
             ->writeSignedVarInt($this->position->y)->writeSignedVarInt($this->position->z)
-            ->writeUnsignedVarInt($this->blockRuntimeId)->writeUnsignedVarInt($flagBits)
+            ->writeUnsignedVarInt(BlockNetworkId::fromSigned($this->blockRuntimeId)->unsigned())->writeUnsignedVarInt($flagBits)
             ->writeUnsignedVarInt($this->layer)->toString();
     }
 
@@ -64,6 +65,6 @@ final readonly class UpdateBlockPacket implements Packet
         }
         $layer = $flagBits->reader->readUnsignedVarInt();
         CodecSupport::requireEnd($layer->reader);
-        return new self(new BlockPosition($x->value, $y->value, $z->value), $runtimeId->value, $flags, $layer->value);
+        return new self(new BlockPosition($x->value, $y->value, $z->value), BlockNetworkId::fromUnsigned($runtimeId->value)->signed(), $flags, $layer->value);
     }
 }

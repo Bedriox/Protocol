@@ -7,6 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Codec\ByteBufferReader;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
+use Bedriox\Protocol\Value\BlockNetworkId;
 
 /** Internal bounded decoder for the current packed PlayerAuthInput item-use form. */
 final class PlayerItemUseTransactionCodec
@@ -85,7 +86,7 @@ final class PlayerItemUseTransactionCodec
                 new BlockPosition($x->value, $y->value, $z->value), $face->value, $hotbar->value, $hand->value,
                 $item->runtimeId, $item->count, $item->aux, $item->stackNetworkId, $item->blockRuntimeId,
                 $vectors[0], $vectors[1], $vectors[2], $vectors[3], $vectors[4], $vectors[5],
-                $targetRuntimeId->value, $predictedResult->value, $cooldown->value,
+                BlockNetworkId::fromUnsigned($targetRuntimeId->value)->signed(), $predictedResult->value, $cooldown->value,
                 $actions,
                 $item,
             );

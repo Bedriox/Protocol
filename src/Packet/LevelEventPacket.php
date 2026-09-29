@@ -124,10 +124,6 @@ final readonly class LevelEventPacket implements Packet
 
     public static function terrainParticle(LevelEventPosition $position, int $blockRuntimeId): self
     {
-        if ($blockRuntimeId < 0) {
-            throw new InvalidValueException('Particle block runtime ID must not be negative.');
-        }
-
         return self::particleWithData($position, LevelEventParticleType::Terrain, $blockRuntimeId);
     }
 

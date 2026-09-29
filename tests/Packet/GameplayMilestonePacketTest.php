@@ -166,13 +166,13 @@ final class GameplayMilestonePacketTest extends TestCase
 
     public function testCraftResultsWithBlockItemDescriptorHasKnownVector(): void
     {
-        $wire = hex2bin('0106011113010101156d696e6563726166743a636f62626c6573746f6e65000100f934000100ffffffff');
+        $wire = hex2bin('0106011113010101156d696e6563726166743a636f62626c6573746f6e65000100a082d1df0d000100ffffffff');
         self::assertNotFalse($wire);
         $packet = ItemStackRequestPacket::decode($wire);
         $action = $packet->requests[0]->actions[0];
         self::assertInstanceOf(\Bedriox\Protocol\Packet\CraftResultsItemStackRequestAction::class, $action);
         self::assertSame('minecraft:cobblestone', $action->results[0]->descriptorValue);
-        self::assertSame(6777, $action->results[0]->blockRuntimeId);
+        self::assertSame(-604_749_536, $action->results[0]->blockRuntimeId);
         self::assertSame($wire, $packet->encode());
         $this->assertRejectsEveryTruncation(ItemStackRequestPacket::decode(...), $wire);
 
@@ -297,7 +297,8 @@ final class GameplayMilestonePacketTest extends TestCase
         $default = StartGamePacket::fixedFlat(1, UnsignedLong::fromInt(2), 0.5, 65.0, -0.5, 'level', 'Flat');
         self::assertSame(GameType::Survival, $default->playerGameType);
         self::assertSame(GameType::Survival, $default->levelGameType);
-        self::assertSame('de16e9f01c2cfb60f0ff5ded922014bbb0aff888dfe284ff79c59fe467d786c2', hash('sha256', $default->encode()));
+        self::assertTrue($default->blockNetworkIdsAreHashes);
+        self::assertSame('2dc8ba6efcb2b6ed7ad0215a5ec418cf51c4b56c27e8ee4cd1bd343eccb3fc2b', hash('sha256', $default->encode()));
 
         $configured = StartGamePacket::fixedFlat(
             1,

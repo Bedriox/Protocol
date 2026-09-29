@@ -25,7 +25,7 @@ final readonly class PackedPalettedStorage
             throw new InvalidValueException('Packed paletted storage palette must be a non-empty bounded unique list.');
         }
         foreach ($palette as $runtimeId) {
-            if (!is_int($runtimeId) || $runtimeId < 0 || $runtimeId > 0x7fff_ffff) {
+            if (!is_int($runtimeId) || $runtimeId < -0x8000_0000 || $runtimeId > 0x7fff_ffff) {
                 throw new InvalidValueException('Packed paletted storage runtime ID is outside the signed-varint range.');
             }
         }

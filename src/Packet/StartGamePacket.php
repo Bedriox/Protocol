@@ -19,6 +19,7 @@ final readonly class StartGamePacket implements Packet
         private string $payload,
         public GameType $playerGameType,
         public GameType $levelGameType,
+        public bool $blockNetworkIdsAreHashes,
     )
     {
         if ($payload === '' || strlen($payload) > self::MAX_BYTES) { throw new InvalidValueException('StartGame payload is empty or oversized.'); }
@@ -124,9 +125,16 @@ final readonly class StartGamePacket implements Packet
         // InventoryTransaction actions for ordinary inventory moves and splits.
         $w = CodecSupport::writeBoolean($w, true)->writeString('', 0)
             ->writeBytes("\x0a\x00\x00")->writeSignedLongLE(0)->writeBytes(str_repeat("\0", 16));
-        foreach ([false, false, true, false] as $flag) { $w = CodecSupport::writeBoolean($w, $flag); }
+        $enableClientSideChunkGeneration = false;
+        $blockNetworkIdsAreHashes = true;
+        $networkPermissionsServerAuthSounds = true;
+        $isLoggingChat = false;
+        $w = CodecSupport::writeBoolean($w, $enableClientSideChunkGeneration);
+        $w = CodecSupport::writeBoolean($w, $blockNetworkIdsAreHashes);
+        $w = CodecSupport::writeBoolean($w, $networkPermissionsServerAuthSounds);
+        $w = CodecSupport::writeBoolean($w, $isLoggingChat);
         foreach (array_fill(0, 4, '') as $id) { $w = $w->writeString($id, 0); }
-        return new self($w->toString(), $playerGameType, $levelGameType);
+        return new self($w->toString(), $playerGameType, $levelGameType, $blockNetworkIdsAreHashes);
     }
 
     public function packetId(): int { return PacketIds::START_GAME; }

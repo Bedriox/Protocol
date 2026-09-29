@@ -8,6 +8,7 @@ use Bedriox\Protocol\Codec\ByteBufferReader;
 use Bedriox\Protocol\Codec\ByteBufferWriter;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
+use Bedriox\Protocol\Value\BlockNetworkId;
 
 /** Internal bounded protocol-2193 packet-30 codec. */
 final class InventoryTransactionWireCodec
@@ -146,7 +147,7 @@ final class InventoryTransactionWireCodec
             $predicted = self::readByteEnum($target->reader, ItemUsePredictedResult::class, 'item-use prediction');
             $cooldown = self::readByteEnum($predicted[1], ItemUseClientCooldownState::class, 'item-use cooldown');
             return [new ItemUseInventoryTransaction($action[0], $trigger[0], $position, $face->value, $hotbar->value,
-                $hand[0], $item, $player, $click, $target->value, $predicted[0], $cooldown[0]), $cooldown[1]];
+                $hand[0], $item, $player, $click, BlockNetworkId::fromUnsigned($target->value)->signed(), $predicted[0], $cooldown[0]), $cooldown[1]];
         }
         if ($type === InventoryTransactionType::ItemUseOnEntity) {
             $entity = $reader->readUnsignedVarLong();
@@ -175,7 +176,7 @@ final class InventoryTransactionWireCodec
                 ->writeSignedVarInt($value->hotbarSlot)->writeUnsignedByte($value->hand->value);
             $writer = InventoryItemStackWireCodec::write($writer, $value->item);
             return self::writeVector(self::writeVector($writer, $value->playerPosition), $value->clickPosition)
-                ->writeUnsignedVarInt($value->targetBlockRuntimeId)->writeUnsignedByte($value->predictedResult->value)
+                ->writeUnsignedVarInt(BlockNetworkId::fromSigned($value->targetBlockRuntimeId)->unsigned())->writeUnsignedByte($value->predictedResult->value)
                 ->writeUnsignedByte($value->cooldownState->value);
         }
         if ($value instanceof ItemUseOnEntityInventoryTransaction) {

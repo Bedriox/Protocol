@@ -60,7 +60,7 @@ final readonly class LevelChunkPacket implements Packet
             throw new InvalidValueException('Flat chunk biome and block runtime IDs are invalid.');
         }
         foreach ($runtimeIds as $runtimeId) {
-            if ($runtimeId < 0 || $runtimeId > 0x7fffffff) {
+            if ($runtimeId < -0x80000000 || $runtimeId > 0x7fffffff) {
                 throw new InvalidValueException('Flat chunk block runtime ID is outside the signed-varint range.');
             }
         }
