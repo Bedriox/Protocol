@@ -66,3 +66,8 @@ values. The codec bounds registry, grid, ingredient, result, string, NBT, and
 unlock-requirement sizes before iteration or allocation. It preserves current
 recipe network IDs and all current crafting request action bodies, but treats
 every decoded value as intent for an authoritative consumer to validate.
+
+Weather presentation uses the typed rain and thunder level-event transitions.
+Start transitions require an unsigned 16-bit non-zero intensity; stop
+transitions carry zero. Weather state, duration, cycling, and policy remain
+owned by the server rather than the protocol package.

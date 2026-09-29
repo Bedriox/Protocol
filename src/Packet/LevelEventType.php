@@ -11,6 +11,10 @@ enum LevelEventType: int
     case MobSpawn = 2004;
     case DragonEggTeleport = 2010;
     case EndermanTeleport = 2013;
+    case StartRain = 3001;
+    case StartThunder = 3002;
+    case StopRain = 3003;
+    case StopThunder = 3004;
     case DestroyBlock = 2001;
     case CrackBlock = 2014;
     case DestroyBlockWithoutSound = 2021;

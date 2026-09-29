@@ -181,6 +181,20 @@ final readonly class LevelEventPacket implements Packet
         return new self(LevelEventType::EndermanTeleport->value, $position, 0);
     }
 
+    public static function weather(LevelEventType $type, int $intensity = 65_535): self
+    {
+        $starting = in_array($type, [LevelEventType::StartRain, LevelEventType::StartThunder], true);
+        $stopping = in_array($type, [LevelEventType::StopRain, LevelEventType::StopThunder], true);
+        if (!$starting && !$stopping) {
+            throw new InvalidValueException('Level-event type is not a weather transition.');
+        }
+        if (($starting && ($intensity < 1 || $intensity > 65_535)) || ($stopping && $intensity !== 0)) {
+            throw new InvalidValueException('Weather intensity does not match the requested transition.');
+        }
+
+        return new self($type->value, new LevelEventPosition(0.0, 0.0, 0.0), $intensity);
+    }
+
     private static function particleWithData(
         LevelEventPosition $position,
         LevelEventParticleType $type,

@@ -70,8 +70,36 @@ final class GameplayMilestonePacketTest extends TestCase
         self::assertSame(LevelEventType::CrackBlock, LevelEventPacket::crackBlock($position, 9)->type());
         self::assertSame(LevelEventType::PunchBlockEast, LevelEventPacket::punchBlock($position, 9, 5)->type());
 
+        self::assertSame(3001, LevelEventType::StartRain->value);
+        self::assertSame(3002, LevelEventType::StartThunder->value);
+        self::assertSame(3003, LevelEventType::StopRain->value);
+        self::assertSame(3004, LevelEventType::StopThunder->value);
+
+        $rain = LevelEventPacket::weather(LevelEventType::StartRain, 40_000);
+        self::assertSame(LevelEventType::StartRain, $rain->type());
+        self::assertSame(40_000, $rain->data);
+        self::assertEquals(new LevelEventPosition(0.0, 0.0, 0.0), $rain->position);
+        self::assertSame(LevelEventType::StopThunder, LevelEventPacket::weather(LevelEventType::StopThunder, 0)->type());
+
         $this->expectException(InvalidValueException::class);
         LevelEventPacket::punchBlock($position, 9, 6);
+    }
+
+    public function testWeatherFactoriesRejectMismatchedTypesAndIntensity(): void
+    {
+        foreach ([
+            static fn() => LevelEventPacket::weather(LevelEventType::DestroyBlock),
+            static fn() => LevelEventPacket::weather(LevelEventType::StartRain, 0),
+            static fn() => LevelEventPacket::weather(LevelEventType::StartThunder, 65_536),
+            static fn() => LevelEventPacket::weather(LevelEventType::StopRain, 1),
+        ] as $factory) {
+            try {
+                $factory();
+                self::fail('Invalid weather level-event input was accepted.');
+            } catch (\Bedriox\Protocol\Exception\InvalidValueException) {
+                self::addToAssertionCount(1);
+            }
+        }
     }
 
     public function testCreativeContentUsesOneByteGroupsAndTypedEntries(): void
