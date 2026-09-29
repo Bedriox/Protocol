@@ -778,6 +778,10 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame('Player', $decoded->metadata[3]->value);
         self::assertSame(400, $decoded->metadata[4]->value);
         self::assertSame(400, $decoded->metadata[7]->value);
+        self::assertTrue(PlayerActorMetadata::isFlags($decoded->metadata[0]));
+        self::assertTrue(PlayerActorMetadata::isAirSupply($decoded->metadata[4]));
+        self::assertTrue(PlayerActorMetadata::isMaximumAirSupply($decoded->metadata[7]));
+        self::assertSame(123, PlayerActorMetadata::airSupply(123)->value);
         self::assertSame(0, $decoded->metadata[11]->value);
         self::assertSame(0.0, $decoded->metadata[12]->value);
         self::assertInstanceOf(ActorMetadataVector3::class, $decoded->metadata[13]->value);

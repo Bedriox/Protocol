@@ -29,6 +29,7 @@ final class PacketIds
     public const int LEVEL_EVENT = 25;
     public const int BLOCK_EVENT = 26;
     public const int ACTOR_EVENT = 27;
+    public const int MOB_EFFECT = 28;
     public const int UPDATE_ATTRIBUTES = 29;
     public const int INVENTORY_TRANSACTION = 30;
     public const int MOB_EQUIPMENT = 31;
@@ -45,6 +46,7 @@ final class PacketIds
     public const int CONTAINER_CLOSE = 47;
     public const int INVENTORY_CONTENT = 49;
     public const int INVENTORY_SLOT = 50;
+    public const int CONTAINER_SET_DATA = 51;
     public const int CRAFTING_DATA = 52;
     public const int BLOCK_ACTOR_DATA = 56;
     public const int LEVEL_CHUNK = 58;
@@ -64,6 +66,7 @@ final class PacketIds
     public const int SET_LOCAL_PLAYER_AS_INITIALIZED = 113;
     public const int UPDATE_SOFT_ENUM = 114;
     public const int NETWORK_STACK_LATENCY = 115;
+    public const int SPAWN_PARTICLE_EFFECT = 118;
     public const int AVAILABLE_ACTOR_IDENTIFIERS = 119;
     public const int NETWORK_CHUNK_PUBLISHER_UPDATE = 121;
     public const int BIOME_DEFINITION_LIST = 122;

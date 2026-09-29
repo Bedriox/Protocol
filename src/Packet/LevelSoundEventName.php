@@ -12,6 +12,8 @@ final readonly class LevelSoundEventName
     public const string HIT = 'hit';
     public const string BREAK = 'break';
     public const string PLACE = 'place';
+    public const string GLASS = 'glass';
+    public const string POTION_BREWED = 'potion.brewed';
 
     public function __construct(public string $value)
     {
@@ -24,4 +26,6 @@ final readonly class LevelSoundEventName
     public static function hit(): self { return new self(self::HIT); }
     public static function break(): self { return new self(self::BREAK); }
     public static function place(): self { return new self(self::PLACE); }
+    public static function glass(): self { return new self(self::GLASS); }
+    public static function potionBrewed(): self { return new self(self::POTION_BREWED); }
 }

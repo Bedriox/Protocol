@@ -7,6 +7,10 @@ namespace Bedriox\Protocol\Packet;
 /** Named protocol-2193 level events used by authoritative block interaction. */
 enum LevelEventType: int
 {
+    case PotionSplash = 2002;
+    case MobSpawn = 2004;
+    case DragonEggTeleport = 2010;
+    case EndermanTeleport = 2013;
     case DestroyBlock = 2001;
     case CrackBlock = 2014;
     case DestroyBlockWithoutSound = 2021;

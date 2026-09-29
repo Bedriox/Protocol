@@ -1,5 +1,7 @@
 # Changelog
 
+- Add bounded protocol-2193 actor-effect synchronization, named-particle spawning, and typed level-event particles with color, block, item, scalar, direction, and size payload factories.
+- Add typed potion and container mixing registries plus brewing-stand and furnace progress synchronization.
 - Name the current actor on-fire metadata flag for authoritative entity combustion updates.
 - Add the bounded protocol-2193 non-player actor conversation with generic actor spawning, dynamic properties, vehicle/passenger links, generic attribute updates and modifiers, and the complete current actor-event domain.
 - Add bounded block-actor data, block state events, dynamic-container cleanup, the complete named container-slot domain, and protocol-2193 item-stack response slots for persistent storage conversations.

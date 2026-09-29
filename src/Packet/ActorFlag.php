@@ -17,6 +17,7 @@ enum ActorFlag: int
     case NoAi = 16;
     case CanClimb = 19;
     case Breathing = 35;
+    case Linger = 46;
     case HasCollision = 48;
     case HasGravity = 49;
 

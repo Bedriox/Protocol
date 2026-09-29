@@ -7,6 +7,10 @@ namespace Bedriox\Protocol\Packet;
 /** Canonical current-protocol player actor metadata snapshots. */
 final class PlayerActorMetadata
 {
+    private const int FLAGS = 0;
+    private const int AIR_SUPPLY = 7;
+    private const int MAXIMUM_AIR_SUPPLY = 42;
+
     private function __construct()
     {
     }
@@ -23,14 +27,14 @@ final class PlayerActorMetadata
         $height = self::float32(1.8);
 
         return [
-            ActorMetadata::long(0, self::flags($sneaking, $sprinting, $usingItem)),
+            self::flagsEntry(self::flags($sneaking, $sprinting, $usingItem)),
             ActorMetadata::int(1, 20),
             ActorMetadata::byte(3, 0),
             ActorMetadata::string(4, $name),
-            ActorMetadata::short(7, 400),
+            self::airSupply(400),
             ActorMetadata::long(37, -1),
             ActorMetadata::float(38, 1.0),
-            ActorMetadata::short(42, 400),
+            self::maximumAirSupply(400),
             ActorMetadata::float(53, $width),
             ActorMetadata::float(54, $height),
             ActorMetadata::byte(81, 1),
@@ -63,6 +67,36 @@ final class PlayerActorMetadata
             $flags |= ActorFlag::UsingItem->mask();
         }
         return $flags;
+    }
+
+    public static function flagsEntry(int $flags): ActorMetadata
+    {
+        return ActorMetadata::long(self::FLAGS, $flags);
+    }
+
+    public static function airSupply(int $ticks): ActorMetadata
+    {
+        return ActorMetadata::short(self::AIR_SUPPLY, $ticks);
+    }
+
+    public static function maximumAirSupply(int $ticks): ActorMetadata
+    {
+        return ActorMetadata::short(self::MAXIMUM_AIR_SUPPLY, $ticks);
+    }
+
+    public static function isFlags(ActorMetadata $metadata): bool
+    {
+        return $metadata->id === self::FLAGS;
+    }
+
+    public static function isAirSupply(ActorMetadata $metadata): bool
+    {
+        return $metadata->id === self::AIR_SUPPLY;
+    }
+
+    public static function isMaximumAirSupply(ActorMetadata $metadata): bool
+    {
+        return $metadata->id === self::MAXIMUM_AIR_SUPPLY;
     }
 
     private static function float32(float $value): float
