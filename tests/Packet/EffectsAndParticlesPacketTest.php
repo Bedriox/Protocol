@@ -11,6 +11,7 @@ use Bedriox\Protocol\Packet\AreaEffectCloudActorMetadata;
 use Bedriox\Protocol\Packet\PotionProjectileActorMetadata;
 use Bedriox\Protocol\Packet\TippedArrowActorMetadata;
 use Bedriox\Protocol\Packet\DimensionId;
+use Bedriox\Protocol\Packet\FishingHookActorMetadata;
 use Bedriox\Protocol\Packet\LevelEventPosition;
 use Bedriox\Protocol\Packet\MobEffectEvent;
 use Bedriox\Protocol\Packet\MobEffectPacket;
@@ -111,10 +112,12 @@ final class EffectsAndParticlesPacketTest extends TestCase
     {
         self::assertCount(2, PotionProjectileActorMetadata::baseline(22, true));
         self::assertCount(2, TippedArrowActorMetadata::baseline(22));
+        self::assertCount(2, FishingHookActorMetadata::baseline(123));
         self::assertCount(10, AreaEffectCloudActorMetadata::baseline(3.0, 0x12345678));
 
         $this->assertInvalidValue(static fn() => PotionProjectileActorMetadata::baseline(0x8000, false));
         $this->assertInvalidValue(static fn() => TippedArrowActorMetadata::baseline(0x100));
+        $this->assertInvalidValue(static fn() => FishingHookActorMetadata::baseline(0));
         $this->assertInvalidValue(static fn() => AreaEffectCloudActorMetadata::baseline(INF));
     }
 
