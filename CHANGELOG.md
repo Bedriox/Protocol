@@ -1,5 +1,6 @@
 # Changelog
 
+- Expose the current actor metadata flag used for sheared entities.
 - Add typed current-protocol fishing-hook owner metadata for authoritative cast and reel projection.
 - Accept the current optional-recipe zero network-ID sentinel used by anvils without weakening other recipe-ID validation.
 - Add a typed protocol-2193 experience-orb actor factory with its required positive experience-value metadata.
