@@ -749,6 +749,7 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame(1, ActorFlag::Sneaking->value);
         self::assertSame(3, ActorFlag::Sprinting->value);
         self::assertSame(4, ActorFlag::UsingItem->value);
+        self::assertSame(8, ActorFlag::Saddled->value);
         self::assertSame(11, ActorFlag::Baby->value);
         self::assertSame(16, ActorFlag::NoAi->value);
         self::assertSame(31, ActorFlag::Sheared->value);

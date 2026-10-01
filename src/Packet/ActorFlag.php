@@ -12,6 +12,7 @@ enum ActorFlag: int
     case Sprinting = 3;
     case UsingItem = 4;
     case Invisible = 5;
+    case Saddled = 8;
     case Baby = 11;
     case CanShowName = 14;
     case NoAi = 16;
