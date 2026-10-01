@@ -21,13 +21,14 @@ final class PlayerActorMetadata
         bool $sneaking = false,
         bool $sprinting = false,
         bool $usingItem = false,
+        bool $riding = false,
     ): array
     {
         $width = self::float32(0.6);
         $height = self::float32(1.8);
 
         return [
-            self::flagsEntry(self::flags($sneaking, $sprinting, $usingItem)),
+            self::flagsEntry(self::flags($sneaking, $sprinting, $usingItem, $riding)),
             ActorMetadata::int(1, 20),
             ActorMetadata::byte(3, 0),
             ActorMetadata::string(4, $name),
@@ -48,6 +49,7 @@ final class PlayerActorMetadata
         bool $sneaking = false,
         bool $sprinting = false,
         bool $usingItem = false,
+        bool $riding = false,
     ): int
     {
         $flags = ActorFlag::combine(
@@ -65,6 +67,9 @@ final class PlayerActorMetadata
         }
         if ($usingItem) {
             $flags |= ActorFlag::UsingItem->mask();
+        }
+        if ($riding) {
+            $flags |= ActorFlag::Riding->mask();
         }
         return $flags;
     }

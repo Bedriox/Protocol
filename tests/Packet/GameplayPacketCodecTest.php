@@ -824,6 +824,14 @@ final class GameplayPacketCodecTest extends TestCase
         }
     }
 
+    public function testMountedPlayerFlagsUseTheNamedRidingBit(): void
+    {
+        $flags = PlayerActorMetadata::flags(riding: true);
+
+        self::assertSame(ActorFlag::Riding->mask(), $flags & ActorFlag::Riding->mask());
+        self::assertSame(0, PlayerActorMetadata::flags() & ActorFlag::Riding->mask());
+    }
+
     public function testPlayerListAddRequiresClientValidClassicSkin(): void
     {
         $appearance = new VerifiedClientData(64, 32, str_repeat("\x01", 64 * 32 * 4), 0, 0, '', '{}', [],

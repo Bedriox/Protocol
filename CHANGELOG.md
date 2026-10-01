@@ -1,5 +1,6 @@
 # Changelog
 
+- Name the current riding actor flag so vehicle links can project complete passenger metadata.
 - Name the current powered, ignited, wall-climbing, angry, charged, and fire-immune actor metadata flags and the explosion sound used by hostile-mob projection.
 - Expose the current actor metadata flag used for sheared entities.
 - Add typed current-protocol fishing-hook owner metadata for authoritative cast and reel projection.
