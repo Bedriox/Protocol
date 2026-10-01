@@ -68,7 +68,7 @@ If a change affects the server contract, also run the Bedriox workspace verifier
 
 ## Documentation, licensing, and security
 
-Update `docs/codecs.md` or the relevant repository-local guide plus `CHANGELOG.md` whenever public behavior changes. Update `docs/compatibility.md` for PHP, platform, package, or Bedrock-version changes. Architectural/versioning decisions requiring alternatives or community review belong in `Bedriox/RFCs`.
+Update `docs/codecs.md` or the relevant repository-local guide plus `CHANGELOG.md` whenever public behavior changes. Update `docs/compatibility.md` for PHP, platform, package, or Bedrock-version changes. Architectural or versioning decisions requiring alternatives or community review need a written design proposal approved by the maintainers.
 
 Maintain a clean-room implementation. Do not copy or translate PocketMine, RakLib, Nukkit, Cloudburst, Dragonfly, decompiled, leaked, GPL-incompatible, or proprietary implementation code. Record legally required third-party copyright and license attribution in `NOTICE` or `THIRD_PARTY_NOTICES.md` before admitting external material.
 

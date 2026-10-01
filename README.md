@@ -13,7 +13,7 @@ RakNet transport, gameplay, authentication policy, and copyrighted game data are
 
 ## Install and use
 
-The package is not published yet. During private development, add the repository as a Composer VCS repository and require `bedriox/protocol`.
+The package is not currently published on Packagist. Add the public repository as a Composer VCS repository and require `bedriox/protocol`, or use the sibling checkout layout documented by Bedriox.
 
 The codec requires 64-bit PHP 8.4 through 8.x.
 
