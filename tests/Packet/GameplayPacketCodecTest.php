@@ -755,8 +755,10 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame(11, ActorFlag::Baby->value);
         self::assertSame(16, ActorFlag::NoAi->value);
         self::assertSame(18, ActorFlag::WallClimbing->value);
+        self::assertSame(24, ActorFlag::Sitting->value);
         self::assertSame(25, ActorFlag::Angry->value);
         self::assertSame(27, ActorFlag::Charged->value);
+        self::assertSame(28, ActorFlag::Tamed->value);
         self::assertSame(31, ActorFlag::Sheared->value);
         self::assertSame(50, ActorFlag::FireImmune->value);
 
@@ -955,6 +957,32 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertEqualsWithDelta(0.42, $predictedVelocity['y'], 0.000001);
         self::assertEqualsWithDelta(-0.25, $predictedVelocity['z'], 0.000001);
         self::assertSame(0x102, $decoded->tick->toSignedBits());
+    }
+
+    public function testPlayerAuthInputDecodesCurrentMountedVehicleFields(): void
+    {
+        $wire = hex2bin('000020410000a0410000803ff43d8342000000400000803e0000403f0000a041015a010001000020410000a0414dcdcccc3dcdcc4c3e9a99993e000000010000a0c000000c4201a4130000803e0000403f000000000000803f000000000000803e0000403f');
+        self::assertIsString($wire);
+
+        $packet = BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $wire, 2193);
+        self::assertInstanceOf(PlayerAuthInputPacket::class, $packet);
+        self::assertTrue($packet->hasInput(PlayerAuthInputFlag::IsInClientPredictedVehicle));
+        self::assertEqualsWithDelta(-5.0, $packet->vehicleRotationPitch, 0.000001);
+        self::assertEqualsWithDelta(35.0, $packet->vehicleRotationYaw, 0.000001);
+        self::assertSame(1234, $packet->predictedVehicleActorId);
+        self::assertSame(bin2hex($wire), bin2hex($packet->encode()));
+
+        foreach ([
+            substr($wire, 0, 61) . "\0" . substr($wire, 62),
+            substr($wire, 0, 70) . "\0" . substr($wire, 71),
+        ] as $missingMountedField) {
+            try {
+                BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $missingMountedField, 2193);
+                self::fail('Mounted PlayerAuthInput accepted a missing conditional field.');
+            } catch (CodecException) {
+                self::addToAssertionCount(1);
+            }
+        }
     }
 
     public function testPlayerAuthInputConditionalPresenceIsBoundedAndCannotBeEncodedWithoutPayload(): void

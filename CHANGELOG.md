@@ -1,5 +1,7 @@
 # Changelog
 
+- Decode and encode the current mounted `PlayerAuthInput` vehicle rotation and
+  predicted vehicle actor ID instead of rejecting ordinary rideable movement.
 - Name the current riding actor flag so vehicle links can project complete passenger metadata.
 - Name the current powered, ignited, wall-climbing, angry, charged, and fire-immune actor metadata flags and the explosion sound used by hostile-mob projection.
 - Expose the current actor metadata flag used for sheared entities.

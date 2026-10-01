@@ -21,8 +21,10 @@ enum ActorFlag: int
     case NoAi = 16;
     case WallClimbing = 18;
     case CanClimb = 19;
+    case Sitting = 24;
     case Angry = 25;
     case Charged = 27;
+    case Tamed = 28;
     case Sheared = 31;
     case Breathing = 35;
     case Linger = 46;

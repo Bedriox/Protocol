@@ -21,7 +21,7 @@ final readonly class PlayerAuthInputPacket implements Packet
     private const array CONDITIONAL_PAYLOAD_FLAGS = [34, 35, 36, 45];
 
     /** @var list<int> */
-    private const array UNSUPPORTED_CONDITIONAL_PAYLOAD_FLAGS = [34, 45];
+    private const array UNSUPPORTED_CONDITIONAL_PAYLOAD_FLAGS = [34];
 
     private const int MAX_BLOCK_ACTIONS = 100;
 
@@ -45,6 +45,9 @@ final readonly class PlayerAuthInputPacket implements Packet
         public ?array $blockActions = null,
         public ?PlayerItemUseTransaction $itemUseTransaction = null,
         public ?ItemStackRequest $itemStackRequest = null,
+        public ?float $vehicleRotationPitch = null,
+        public ?float $vehicleRotationYaw = null,
+        public ?int $predictedVehicleActorId = null,
     ) {
         foreach ([$pitch, $yaw, $wireX, $wireY, $wireZ, $moveX, $moveZ, $headYaw, $interactPitch, $interactYaw,
             $deltaX, $deltaY, $deltaZ, $analogMoveX, $analogMoveZ, $cameraX, $cameraY, $cameraZ, $rawMoveX, $rawMoveZ] as $value) {
@@ -79,6 +82,19 @@ final readonly class PlayerAuthInputPacket implements Packet
                     throw new InvalidValueException('PlayerAuthInput block actions must be typed values.');
                 }
             }
+        }
+        $hasPredictedVehicle = $this->hasInput(PlayerAuthInputFlag::IsInClientPredictedVehicle);
+        if (($vehicleRotationPitch !== null || $vehicleRotationYaw !== null || $predictedVehicleActorId !== null)
+            && !$hasPredictedVehicle) {
+            throw new InvalidValueException('Predicted vehicle data requires the mounted input flag.');
+        }
+        if ($hasPredictedVehicle
+            && ($vehicleRotationPitch === null || $vehicleRotationYaw === null || $predictedVehicleActorId === null)) {
+            throw new InvalidValueException('Mounted input requires complete predicted vehicle data.');
+        }
+        if ($vehicleRotationPitch !== null && $vehicleRotationYaw !== null) {
+            CodecSupport::validateFiniteFloat($vehicleRotationPitch, 'PlayerAuthInput vehicle pitch');
+            CodecSupport::validateFiniteFloat($vehicleRotationYaw, 'PlayerAuthInput vehicle yaw');
         }
     }
 
@@ -122,9 +138,11 @@ final readonly class PlayerAuthInputPacket implements Packet
         }
         $hasBlockActions = $this->hasInput(PlayerAuthInputFlag::PerformBlockActions);
         $hasStackRequest = $this->hasInput(PlayerAuthInputFlag::PerformItemStackRequest);
+        $hasPredictedVehicle = $this->hasInput(PlayerAuthInputFlag::IsInClientPredictedVehicle);
         if ($this->itemUseTransaction !== null || $hasBlockActions !== ($this->blockActions !== null)
             || $hasStackRequest !== ($this->itemStackRequest !== null)
-            || ($this->ignoredOptionalPayload && !$hasBlockActions && !$hasStackRequest)) {
+            || $hasPredictedVehicle !== ($this->predictedVehicleActorId !== null)
+            || ($this->ignoredOptionalPayload && !$hasBlockActions && !$hasStackRequest && !$hasPredictedVehicle)) {
             throw new InvalidValueException('PlayerAuthInput optional payload presence does not match its input flags.');
         }
         $optionalPayloads = CodecSupport::writer()->writeUnsignedByte(0);
@@ -146,7 +164,25 @@ final readonly class PlayerAuthInputPacket implements Packet
                 }
             }
         }
-        $optionalPayloads = $optionalPayloads->writeUnsignedByte(0)->writeUnsignedByte(0);
+        $optionalPayloads = $optionalPayloads->writeUnsignedByte($hasPredictedVehicle ? 1 : 0);
+        if ($hasPredictedVehicle) {
+            $vehicleRotationPitch = $this->vehicleRotationPitch;
+            $vehicleRotationYaw = $this->vehicleRotationYaw;
+            if ($vehicleRotationPitch === null || $vehicleRotationYaw === null) {
+                throw new InvalidValueException('Mounted input requires complete vehicle rotation.');
+            }
+            $optionalPayloads = $optionalPayloads
+                ->writeFloatLE($vehicleRotationPitch)
+                ->writeFloatLE($vehicleRotationYaw);
+        }
+        $optionalPayloads = $optionalPayloads->writeUnsignedByte($hasPredictedVehicle ? 1 : 0);
+        if ($hasPredictedVehicle) {
+            $predictedVehicleActorId = $this->predictedVehicleActorId;
+            if ($predictedVehicleActorId === null) {
+                throw new InvalidValueException('Mounted input requires a predicted vehicle actor ID.');
+            }
+            $optionalPayloads = $optionalPayloads->writeSignedVarLong($predictedVehicleActorId);
+        }
         return CodecSupport::writer()->writeFloatLE($this->pitch)->writeFloatLE($this->yaw)
             ->writeFloatLE($this->wireX)->writeFloatLE($this->wireY)->writeFloatLE($this->wireZ)
             ->writeFloatLE($this->moveX)->writeFloatLE($this->moveZ)->writeFloatLE($this->headYaw)
@@ -271,15 +307,21 @@ final readonly class PlayerAuthInputPacket implements Packet
         if ($blockActionsPresent) {
             [$blockActions, $r] = self::readBlockActions($r);
         }
+        $vehicleRotationPitch = null;
+        $vehicleRotationYaw = null;
+        $predictedVehicleActorId = null;
         [$vehicleRotationPresent, $r] = CodecSupport::readBoolean($r);
         self::requirePresence($flags, PlayerAuthInputFlag::IsInClientPredictedVehicle, $vehicleRotationPresent, 'vehicle rotation');
         if ($vehicleRotationPresent) {
-            throw new MalformedDataException('PlayerAuthInput vehicle rotation is not supported.');
+            [$vehicleRotationPitch, $r] = self::float($r);
+            [$vehicleRotationYaw, $r] = self::float($r);
         }
         [$predictedVehiclePresent, $r] = CodecSupport::readBoolean($r);
         self::requirePresence($flags, PlayerAuthInputFlag::IsInClientPredictedVehicle, $predictedVehiclePresent, 'predicted vehicle');
         if ($predictedVehiclePresent) {
-            throw new MalformedDataException('PlayerAuthInput predicted vehicle is not supported.');
+            $predictedVehicle = $r->readSignedVarLong();
+            $predictedVehicleActorId = $predictedVehicle->value;
+            $r = $predictedVehicle->reader;
         }
         for ($i = 0; $i < 7; ++$i) { [$floats[], $r] = self::float($r); }
         CodecSupport::requireEnd($r);
@@ -288,7 +330,8 @@ final readonly class PlayerAuthInputPacket implements Packet
                 $flags, $inputMode->value, $playMode->value, $interaction->value, $floats[8], $floats[9], $tick->value,
                 $floats[10], $floats[11], $floats[12], $floats[13], $floats[14], $floats[15], $floats[16], $floats[17],
                 $floats[18], $floats[19], $itemStackRequest !== null || $blockActions !== null || $itemUseTransaction !== null,
-                $itemStackRequest?->requestId, $blockActions, $itemUseTransaction, $itemStackRequest);
+                $itemStackRequest?->requestId, $blockActions, $itemUseTransaction, $itemStackRequest,
+                $vehicleRotationPitch, $vehicleRotationYaw, $predictedVehicleActorId);
         } catch (InvalidValueException $e) { throw new MalformedDataException('PlayerAuthInput payload is invalid.', previous: $e); }
     }
 
