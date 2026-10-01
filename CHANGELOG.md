@@ -1,5 +1,6 @@
 # Changelog
 
+- Name the current powered, ignited, wall-climbing, angry, charged, and fire-immune actor metadata flags and the explosion sound used by hostile-mob projection.
 - Expose the current actor metadata flag used for sheared entities.
 - Add typed current-protocol fishing-hook owner metadata for authoritative cast and reel projection.
 - Accept the current optional-recipe zero network-ID sentinel used by anvils without weakening other recipe-ID validation.

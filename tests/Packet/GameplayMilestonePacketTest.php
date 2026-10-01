@@ -366,6 +366,7 @@ final class GameplayMilestonePacketTest extends TestCase
         self::assertSame('place', LevelSoundEventName::place()->value);
         self::assertSame('glass', LevelSoundEventName::glass()->value);
         self::assertSame('potion.brewed', LevelSoundEventName::potionBrewed()->value);
+        self::assertSame('explode', LevelSoundEventName::explode()->value);
         $packet = new LevelSoundEventPacket(
             LevelSoundEventName::hit(),
             new LevelEventPosition(1.0, 2.0, 3.0),

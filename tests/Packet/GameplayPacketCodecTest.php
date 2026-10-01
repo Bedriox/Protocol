@@ -750,9 +750,15 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame(3, ActorFlag::Sprinting->value);
         self::assertSame(4, ActorFlag::UsingItem->value);
         self::assertSame(8, ActorFlag::Saddled->value);
+        self::assertSame(9, ActorFlag::Powered->value);
+        self::assertSame(10, ActorFlag::Ignited->value);
         self::assertSame(11, ActorFlag::Baby->value);
         self::assertSame(16, ActorFlag::NoAi->value);
+        self::assertSame(18, ActorFlag::WallClimbing->value);
+        self::assertSame(25, ActorFlag::Angry->value);
+        self::assertSame(27, ActorFlag::Charged->value);
         self::assertSame(31, ActorFlag::Sheared->value);
+        self::assertSame(50, ActorFlag::FireImmune->value);
 
         $packet = SetActorDataPacket::baselinePlayer(UnsignedLong::fromInt(7), UnsignedLong::fromInt(0), 'Player');
         $wire = hex2bin(

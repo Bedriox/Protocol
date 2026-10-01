@@ -13,15 +13,21 @@ enum ActorFlag: int
     case UsingItem = 4;
     case Invisible = 5;
     case Saddled = 8;
+    case Powered = 9;
+    case Ignited = 10;
     case Baby = 11;
     case CanShowName = 14;
     case NoAi = 16;
+    case WallClimbing = 18;
     case CanClimb = 19;
+    case Angry = 25;
+    case Charged = 27;
     case Sheared = 31;
     case Breathing = 35;
     case Linger = 46;
     case HasCollision = 48;
     case HasGravity = 49;
+    case FireImmune = 50;
 
     public function mask(): int
     {

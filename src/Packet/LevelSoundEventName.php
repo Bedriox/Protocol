@@ -14,6 +14,7 @@ final readonly class LevelSoundEventName
     public const string PLACE = 'place';
     public const string GLASS = 'glass';
     public const string POTION_BREWED = 'potion.brewed';
+    public const string EXPLODE = 'explode';
 
     public function __construct(public string $value)
     {
@@ -28,4 +29,5 @@ final readonly class LevelSoundEventName
     public static function place(): self { return new self(self::PLACE); }
     public static function glass(): self { return new self(self::GLASS); }
     public static function potionBrewed(): self { return new self(self::POTION_BREWED); }
+    public static function explode(): self { return new self(self::EXPLODE); }
 }
