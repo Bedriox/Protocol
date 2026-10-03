@@ -1,5 +1,8 @@
 # Changelog
 
+- Project current boat buoyancy metadata so controlling clients retain water
+  physics while predicting mounted movement.
+
 - Decode and encode the current mounted `PlayerAuthInput` vehicle rotation and
   predicted vehicle actor ID instead of rejecting ordinary rideable movement.
 - Name the current riding actor flag so vehicle links can project complete passenger metadata.
