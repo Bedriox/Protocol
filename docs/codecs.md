@@ -54,6 +54,14 @@ validated against their text types before fields are retained. Title timing is
 encoded as signed VarInts, and current XUID, platform identity, and filtered
 text fields remain explicit bounded strings.
 
+Boss-event packet 74 uses protocol 2193's fixed payload for every operation: a
+signed boss unique-entity ID, typed action byte, bounded title and filtered
+title, finite `0.0..1.0` progress, typed color byte and typed overlay byte. The
+complete current action domain includes the client `QUERY` notification, so a
+normal reply cannot fall through the packet registry. Decoding communicates
+presentation state only; boss encounters, participants and viewer selection
+remain server-owned.
+
 Authoritative item-use support exposes the current typed use, release, hand,
 prediction, and cooldown values without applying gameplay state. Armor uses the
 five-descriptor packet-32 snapshot, while main-hand and offhand equipment use

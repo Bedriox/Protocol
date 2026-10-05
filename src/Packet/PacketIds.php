@@ -60,6 +60,7 @@ final class PacketIds
     public const int REQUEST_CHUNK_RADIUS = 69;
     public const int CHUNK_RADIUS_UPDATED = 70;
     public const int GAME_RULES_CHANGED = 72;
+    public const int BOSS_EVENT = 74;
     public const int AVAILABLE_COMMANDS = 76;
     public const int COMMAND_REQUEST = 77;
     public const int COMMAND_OUTPUT = 79;
