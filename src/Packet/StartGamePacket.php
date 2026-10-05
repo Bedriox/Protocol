@@ -20,9 +20,11 @@ final readonly class StartGamePacket implements Packet
         public GameType $playerGameType,
         public GameType $levelGameType,
         public bool $blockNetworkIdsAreHashes,
-    )
-    {
-        if ($payload === '' || strlen($payload) > self::MAX_BYTES) { throw new InvalidValueException('StartGame payload is empty or oversized.'); }
+        public DimensionId $dimension,
+    ) {
+        if ($payload === '' || strlen($payload) > self::MAX_BYTES) {
+            throw new InvalidValueException('StartGame payload is empty or oversized.');
+        }
     }
 
     /**
@@ -51,10 +53,14 @@ final readonly class StartGamePacket implements Packet
         int $rewindHistorySize = 40,
         GameType $playerGameType = GameType::Survival,
         GameType $levelGameType = GameType::Survival,
-    ): self
-    {
-        foreach ([$x, $y, $z] as $value) { CodecSupport::validateFiniteFloat($value, 'StartGame position'); }
-        foreach ([$playerPitch, $playerYaw] as $value) { CodecSupport::validateFiniteFloat($value, 'StartGame rotation'); }
+        DimensionId $dimension = DimensionId::Overworld,
+    ): self {
+        foreach ([$x, $y, $z] as $value) {
+            CodecSupport::validateFiniteFloat($value, 'StartGame position');
+        }
+        foreach ([$playerPitch, $playerYaw] as $value) {
+            CodecSupport::validateFiniteFloat($value, 'StartGame rotation');
+        }
         foreach ([$worldSpawnX, $worldSpawnY, $worldSpawnZ] as $coordinate) {
             if ($coordinate < -0x80000000 || $coordinate > 0x7fffffff) {
                 throw new InvalidValueException('StartGame world-spawn coordinate must fit a signed 32-bit integer.');
@@ -86,14 +92,18 @@ final readonly class StartGamePacket implements Packet
         $w = CodecSupport::writer()->writeSignedVarLong($uniqueEntityId)->writeUnsignedVarLong($runtimeEntityId)->writeSignedVarInt($playerGameType->value)
             ->writeFloatLE($x)->writeFloatLE($y)->writeFloatLE($z)->writeFloatLE($playerPitch)->writeFloatLE($playerYaw)
             ->writeSignedLongLE($worldSeed)->writeUnsignedShortLE(0)->writeString('plains', 16)
-            ->writeSignedVarInt(0)->writeSignedVarInt(1)->writeSignedVarInt($levelGameType->value);
+            ->writeSignedVarInt($dimension->value)->writeSignedVarInt(1)->writeSignedVarInt($levelGameType->value);
         $w = CodecSupport::writeBoolean($w, false)->writeSignedVarInt(0)->writeSignedVarInt($worldSpawnX)
             ->writeSignedVarInt($worldSpawnY)->writeSignedVarInt($worldSpawnZ);
-        foreach ([true, false, false] as $flag) { $w = CodecSupport::writeBoolean($w, $flag); }
+        foreach ([true, false, false] as $flag) {
+            $w = CodecSupport::writeBoolean($w, $flag);
+        }
         $w = CodecSupport::writeBoolean($w, false); // not exported from the editor
         $w = $w->writeSignedVarInt(-1)->writeSignedVarInt(0);
         $w = CodecSupport::writeBoolean($w, false)->writeString('', 0)->writeFloatLE(0.0)->writeFloatLE(0.0);
-        foreach ([false, true, true] as $flag) { $w = CodecSupport::writeBoolean($w, $flag); }
+        foreach ([false, true, true] as $flag) {
+            $w = CodecSupport::writeBoolean($w, $flag);
+        }
         $w = $w->writeSignedVarInt(4)->writeSignedVarInt(4);
         // Commands stay disabled until the server can follow this packet with a matching
         // AvailableCommands registry. Advertising commands without that registry leaves the
@@ -106,15 +116,22 @@ final readonly class StartGamePacket implements Packet
             $w = CodecSupport::writeBoolean($w, $experiment->enabled);
         }
         $w = CodecSupport::writeBoolean($w, $experiments !== []);
-        foreach ([false, false] as $flag) { $w = CodecSupport::writeBoolean($w, $flag); }
+        foreach ([false, false] as $flag) {
+            $w = CodecSupport::writeBoolean($w, $flag);
+        }
         $w = $w->writeUnsignedByte(1)->writeSignedIntLE(4);
-        foreach (array_fill(0, 10, false) as $flag) { $w = CodecSupport::writeBoolean($w, $flag); }
+        foreach (array_fill(0, 10, false) as $flag) {
+            $w = CodecSupport::writeBoolean($w, $flag);
+        }
         $w = $w->writeString($gameVersion, 16)->writeSignedIntLE(16)->writeSignedIntLE(16);
         $w = CodecSupport::writeBoolean($w, false)->writeString('', 0)->writeString('', 0);
-        $w = CodecSupport::writeBoolean($w, false)->writeUnsignedByte(0); $w = CodecSupport::writeBoolean($w, false);
-        $w = $w->writeSignedVarInt(0); $w = CodecSupport::writeBoolean($w, false);
+        $w = CodecSupport::writeBoolean($w, false)->writeUnsignedByte(0);
+        $w = CodecSupport::writeBoolean($w, false);
+        $w = $w->writeSignedVarInt(0);
+        $w = CodecSupport::writeBoolean($w, false);
         $w = $w->writeString($levelId, CodecSupport::MAX_SHORT_STRING_BYTES)->writeString($levelName, CodecSupport::MAX_SHORT_STRING_BYTES)->writeString('', 0);
-        $w = CodecSupport::writeBoolean($w, false)->writeSignedVarInt($rewindHistorySize); $w = CodecSupport::writeBoolean($w, true)
+        $w = CodecSupport::writeBoolean($w, false)->writeSignedVarInt($rewindHistorySize);
+        $w = CodecSupport::writeBoolean($w, true)
             ->writeSignedLongLE($currentTick)->writeSignedVarInt(0)->writeUnsignedVarInt(count($blockProperties));
         foreach ($blockProperties as $blockProperty) {
             $w = $w->writeString($blockProperty->name, 256)->writeBytes($blockProperty->networkNbt);
@@ -133,10 +150,18 @@ final readonly class StartGamePacket implements Packet
         $w = CodecSupport::writeBoolean($w, $blockNetworkIdsAreHashes);
         $w = CodecSupport::writeBoolean($w, $networkPermissionsServerAuthSounds);
         $w = CodecSupport::writeBoolean($w, $isLoggingChat);
-        foreach (array_fill(0, 4, '') as $id) { $w = $w->writeString($id, 0); }
-        return new self($w->toString(), $playerGameType, $levelGameType, $blockNetworkIdsAreHashes);
+        foreach (array_fill(0, 4, '') as $id) {
+            $w = $w->writeString($id, 0);
+        }
+        return new self($w->toString(), $playerGameType, $levelGameType, $blockNetworkIdsAreHashes, $dimension);
     }
 
-    public function packetId(): int { return PacketIds::START_GAME; }
-    public function encode(): string { return $this->payload; }
+    public function packetId(): int
+    {
+        return PacketIds::START_GAME;
+    }
+    public function encode(): string
+    {
+        return $this->payload;
+    }
 }

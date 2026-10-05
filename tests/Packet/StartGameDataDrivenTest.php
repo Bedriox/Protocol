@@ -4,18 +4,44 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Tests\Packet;
 
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Packet\BlockPropertyData;
+use Bedriox\Protocol\Packet\DimensionId;
 use Bedriox\Protocol\Packet\ExperimentData;
 use Bedriox\Protocol\Packet\GameRuleSet;
 use Bedriox\Protocol\Packet\StartGamePacket;
 use Bedriox\Protocol\Value\UnsignedLong;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 
 final class StartGameDataDrivenTest extends TestCase
 {
     private const string EMPTY_LITTLE_ENDIAN_ROOT = "\x0a\x00\x00\x00";
+
+    public function testCurrentDimensionIsProjectedWithoutChangingUnrelatedStartGameFields(): void
+    {
+        $arguments = [
+            1,
+            UnsignedLong::fromInt(2),
+            0.5,
+            65.0,
+            -0.5,
+            'level',
+            'World',
+        ];
+        $overworld = StartGamePacket::fixedFlat(...$arguments)->encode();
+        $nether = StartGamePacket::fixedFlat(...array_merge($arguments, ['dimension' => DimensionId::Nether]))->encode();
+
+        self::assertSame(strlen($overworld), strlen($nether));
+        $differences = [];
+        for ($offset = 0, $length = strlen($overworld); $offset < $length; ++$offset) {
+            if ($overworld[$offset] !== $nether[$offset]) {
+                $differences[$offset] = [ord($overworld[$offset]), ord($nether[$offset])];
+            }
+        }
+        self::assertCount(1, $differences);
+        self::assertSame([[0, 2]], array_values($differences));
+    }
 
     public function testDataDrivenPropertyAndRequiredExperimentsUseKnownWireOrderAndMarkExperimentsToggled(): void
     {
@@ -48,10 +74,10 @@ final class StartGameDataDrivenTest extends TestCase
     /** @return iterable<string, array{callable(): mixed}> */
     public static function invalidPropertyProvider(): iterable
     {
-        yield 'identifier has no namespace' => [static fn (): BlockPropertyData => BlockPropertyData::fromLittleEndianNbt('test', self::EMPTY_LITTLE_ENDIAN_ROOT)];
-        yield 'truncated little endian NBT' => [static fn (): BlockPropertyData => BlockPropertyData::fromLittleEndianNbt('minecraft:test', "\x0a\x00")];
-        yield 'little endian NBT has wrong root type' => [static fn (): BlockPropertyData => BlockPropertyData::fromLittleEndianNbt('minecraft:test', "\x09\x00\x00\x00\x00\x00\x00\x00")];
-        yield 'little endian NBT is oversized' => [static fn (): BlockPropertyData => BlockPropertyData::fromLittleEndianNbt('minecraft:test', "\x0a" . str_repeat("\0", 262_144))];
+        yield 'identifier has no namespace' => [static fn(): BlockPropertyData => BlockPropertyData::fromLittleEndianNbt('test', self::EMPTY_LITTLE_ENDIAN_ROOT)];
+        yield 'truncated little endian NBT' => [static fn(): BlockPropertyData => BlockPropertyData::fromLittleEndianNbt('minecraft:test', "\x0a\x00")];
+        yield 'little endian NBT has wrong root type' => [static fn(): BlockPropertyData => BlockPropertyData::fromLittleEndianNbt('minecraft:test', "\x09\x00\x00\x00\x00\x00\x00\x00")];
+        yield 'little endian NBT is oversized' => [static fn(): BlockPropertyData => BlockPropertyData::fromLittleEndianNbt('minecraft:test', "\x0a" . str_repeat("\0", 262_144))];
     }
 
     #[DataProvider('invalidPropertyProvider')]

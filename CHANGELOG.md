@@ -1,5 +1,6 @@
 # Changelog
 
+- Add the bounded protocol-2193 change-dimension packet, project the active dimension in StartGame, and close the client acknowledgement and loading-screen conversation through existing typed packets.
 - Project current boat buoyancy metadata so controlling clients retain water
   physics while predicting mounted movement.
 

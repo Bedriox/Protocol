@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-use Bedriox\Protocol\ProtocolVersion;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
+use Bedriox\Protocol\ProtocolVersion;
 
 /** State-independent packet-payload registry for the supported Bedrock release. */
 final class BedrockPacketCodec
@@ -63,6 +63,7 @@ final class BedrockPacketCodec
             PacketIds::MOB_ARMOR_EQUIPMENT => MobArmorEquipmentPacket::decode($payload),
             PacketIds::INTERACT => InteractPacket::decode($payload),
             PacketIds::PLAYER_ACTION => PlayerActionPacket::decode($payload),
+            PacketIds::CHANGE_DIMENSION => ChangeDimensionPacket::decode($payload),
             PacketIds::RESPAWN => RespawnPacket::decode($payload),
             PacketIds::SET_ACTOR_DATA => SetActorDataPacket::decode($payload),
             PacketIds::SET_ACTOR_MOTION => SetActorMotionPacket::decode($payload),
@@ -151,6 +152,7 @@ final class BedrockPacketCodec
             MobArmorEquipmentPacket::class => PacketIds::MOB_ARMOR_EQUIPMENT,
             InteractPacket::class => PacketIds::INTERACT,
             PlayerActionPacket::class => PacketIds::PLAYER_ACTION,
+            ChangeDimensionPacket::class => PacketIds::CHANGE_DIMENSION,
             RespawnPacket::class => PacketIds::RESPAWN,
             SetActorDataPacket::class => PacketIds::SET_ACTOR_DATA,
             SetActorMotionPacket::class => PacketIds::SET_ACTOR_MOTION,

@@ -19,7 +19,7 @@ enum PlayerActionType: int
     case StartSneaking = 11;
     case StopSneaking = 12;
     case CreativeDestroyBlock = 13;
-    case ChangeDimensionAck = 14;
+    case DimensionChangeSuccess = 14;
     case StartGliding = 15;
     case StopGliding = 16;
     case DenyDestroyBlock = 17;

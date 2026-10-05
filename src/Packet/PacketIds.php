@@ -52,6 +52,7 @@ final class PacketIds
     public const int LEVEL_CHUNK = 58;
     public const int SET_COMMANDS_ENABLED = 59;
     public const int SET_DIFFICULTY = 60;
+    public const int CHANGE_DIMENSION = 61;
     public const int SET_PLAYER_GAME_TYPE = 62;
     public const int PLAYER_LIST = 63;
     public const int CLIENTBOUND_MAP_ITEM_DATA = 67;
