@@ -1,5 +1,6 @@
 # Changelog
 
+- Add typed current-protocol Shulker presentation and End Crystal beam-target/show-bottom metadata, including bounded integer block positions.
 - Add the fixed-schema bidirectional protocol-2193 boss-event packet with typed actions, colors and overlays, bounded titles, finite progress, and current client query admission.
 - Add the bounded protocol-2193 change-dimension packet, project the active dimension in StartGame, and close the client acknowledgement and loading-screen conversation through existing typed packets.
 - Project current boat buoyancy metadata so controlling clients retain water

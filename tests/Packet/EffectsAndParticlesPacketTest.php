@@ -114,6 +114,7 @@ final class EffectsAndParticlesPacketTest extends TestCase
         self::assertCount(2, TippedArrowActorMetadata::baseline(22));
         self::assertCount(2, FishingHookActorMetadata::baseline(123));
         self::assertCount(10, AreaEffectCloudActorMetadata::baseline(3.0, 0x12345678));
+        self::assertSame(-13083194, AreaEffectCloudActorMetadata::baseline(3.0, 0xff385dc6)[1]->value);
 
         $this->assertInvalidValue(static fn() => PotionProjectileActorMetadata::baseline(0x8000, false));
         $this->assertInvalidValue(static fn() => TippedArrowActorMetadata::baseline(0x100));

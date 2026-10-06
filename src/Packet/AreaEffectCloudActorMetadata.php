@@ -17,10 +17,16 @@ final class AreaEffectCloudActorMetadata
         if (!is_finite($radius) || $radius < 0.0 || $radius > 32.0) {
             throw new InvalidValueException('Area-effect cloud radius is invalid.');
         }
+        if ($argbColor < -0x80000000 || $argbColor > 0xffffffff) {
+            throw new InvalidValueException('Area-effect cloud color is invalid.');
+        }
+        $signedColor = $argbColor > 0x7fffffff
+            ? $argbColor - 0x100000000
+            : $argbColor;
 
         return [
             ActorMetadata::long(0, 0),
-            ActorMetadata::int(8, $argbColor),
+            ActorMetadata::int(8, $signedColor),
             ActorMetadata::byte(9, 0),
             ActorMetadata::float(60, $radius),
             ActorMetadata::int(61, 0),

@@ -62,6 +62,17 @@ normal reply cannot fall through the packet registry. Decoding communicates
 presentation state only; boss encounters, participants and viewer selection
 remain server-owned.
 
+Shulker actor presentation uses typed metadata entries for its bounded shell
+peek amount, six-direction attachment face, and attached state. The helper
+preserves the current integer, byte, and short wire formats and returns entries
+in canonical metadata-ID order for spawn and subsequent actor-data packets.
+
+Integer block-position actor metadata uses three signed VarInts and retains
+each coordinate as a validated signed 32-bit value. End Crystal beam targets
+use that typed value at the current block-target metadata ID.
+The typed `ShowBottom` actor flag projects whether an End Crystal renders its
+bedrock base without exposing a numeric flag index to server code.
+
 Authoritative item-use support exposes the current typed use, release, hand,
 prediction, and cooldown values without applying gameplay state. Armor uses the
 five-descriptor packet-32 snapshot, while main-hand and offhand equipment use

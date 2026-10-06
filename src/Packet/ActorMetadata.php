@@ -17,6 +17,7 @@ final readonly class ActorMetadata
     public const int TYPE_INT = 2;
     public const int TYPE_FLOAT = 3;
     public const int TYPE_STRING = 4;
+    public const int TYPE_BLOCK_POSITION = 6;
     public const int TYPE_LONG = 7;
     public const int TYPE_VECTOR3 = 8;
 
@@ -26,7 +27,7 @@ final readonly class ActorMetadata
     private function __construct(
         public int $id,
         public int $type,
-        public int|float|string|ActorMetadataVector3 $value,
+        public int|float|string|BlockPosition|ActorMetadataVector3 $value,
     ) {
         if ($id < 0 || $id > self::MAX_ID) {
             throw new InvalidValueException('Actor metadata ID is outside its supported range.');
@@ -74,6 +75,11 @@ final readonly class ActorMetadata
         return new self($id, self::TYPE_LONG, $value);
     }
 
+    public static function blockPosition(int $id, BlockPosition $value): self
+    {
+        return new self($id, self::TYPE_BLOCK_POSITION, $value);
+    }
+
     public static function vector3(int $id, float $x, float $y, float $z): self
     {
         return new self($id, self::TYPE_VECTOR3, new ActorMetadataVector3($x, $y, $z));
@@ -91,6 +97,7 @@ final readonly class ActorMetadata
             self::TYPE_INT => $writer->writeSignedVarInt($this->integerValue()),
             self::TYPE_FLOAT => $writer->writeFloatLE($this->floatValue()),
             self::TYPE_STRING => $writer->writeString($this->stringValue(), self::MAX_STRING_BYTES),
+            self::TYPE_BLOCK_POSITION => $this->writeBlockPosition($writer),
             self::TYPE_LONG => $writer->writeSignedVarLong($this->integerValue()),
             self::TYPE_VECTOR3 => $this->writeVector3($writer),
             default => throw new InvalidValueException('Actor metadata type is unsupported.'),
@@ -116,6 +123,7 @@ final readonly class ActorMetadata
             self::TYPE_INT => self::readInt($id->value, $repeatedType->reader),
             self::TYPE_FLOAT => self::readFloat($id->value, $repeatedType->reader),
             self::TYPE_STRING => self::readString($id->value, $repeatedType->reader),
+            self::TYPE_BLOCK_POSITION => self::readBlockPosition($id->value, $repeatedType->reader),
             self::TYPE_LONG => self::readLong($id->value, $repeatedType->reader),
             self::TYPE_VECTOR3 => self::readVector3($id->value, $repeatedType->reader),
             default => throw new MalformedDataException('Actor metadata type is unsupported.'),
@@ -166,6 +174,16 @@ final readonly class ActorMetadata
     }
 
     /** @return array{self, ByteBufferReader} */
+    private static function readBlockPosition(int $id, ByteBufferReader $reader): array
+    {
+        $x = $reader->readSignedVarInt();
+        $y = $x->reader->readSignedVarInt();
+        $z = $y->reader->readSignedVarInt();
+
+        return [self::blockPosition($id, new BlockPosition($x->value, $y->value, $z->value)), $z->reader];
+    }
+
+    /** @return array{self, ByteBufferReader} */
     private static function readVector3(int $id, ByteBufferReader $reader): array
     {
         $x = $reader->readFloatLE();
@@ -185,6 +203,17 @@ final readonly class ActorMetadata
         return $writer->writeFloatLE($this->value->x)
             ->writeFloatLE($this->value->y)
             ->writeFloatLE($this->value->z);
+    }
+
+    private function writeBlockPosition(ByteBufferWriter $writer): ByteBufferWriter
+    {
+        if (!$this->value instanceof BlockPosition) {
+            throw new InvalidValueException('Actor metadata value is not a block position.');
+        }
+
+        return $writer->writeSignedVarInt($this->value->x)
+            ->writeSignedVarInt($this->value->y)
+            ->writeSignedVarInt($this->value->z);
     }
 
     private function integerValue(): int
