@@ -1,5 +1,6 @@
 # Changelog
 
+- Name the current ground-vehicle control and powered-jump actor flags used by steerable mounts.
 - Centralize the current passenger seat offset and rotation metadata used by complete vehicle projections.
 - Add typed current-protocol Shulker presentation and End Crystal beam-target/show-bottom metadata, including bounded integer block positions.
 - Add the fixed-schema bidirectional protocol-2193 boss-event packet with typed actions, colors and overlays, bounded titles, finite progress, and current client query admission.
