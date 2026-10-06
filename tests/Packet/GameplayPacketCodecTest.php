@@ -794,6 +794,12 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertTrue(PlayerActorMetadata::isAirSupply($decoded->metadata[4]));
         self::assertTrue(PlayerActorMetadata::isMaximumAirSupply($decoded->metadata[7]));
         self::assertSame(123, PlayerActorMetadata::airSupply(123)->value);
+        self::assertSame(56, PlayerActorMetadata::seatOffset(1.0, 2.0, 3.0)->id);
+        self::assertSame(57, PlayerActorMetadata::seatLockRiderRotation(true)->id);
+        self::assertSame(1, PlayerActorMetadata::seatLockRiderRotation(true)->value);
+        self::assertSame(58, PlayerActorMetadata::seatLockRiderRotationDegrees(181.0)->id);
+        self::assertSame(59, PlayerActorMetadata::seatHasRotation(true)->id);
+        self::assertSame(60, PlayerActorMetadata::seatRotationOffsetDegrees(-90.0)->id);
         self::assertSame(0, $decoded->metadata[11]->value);
         self::assertSame(0.0, $decoded->metadata[12]->value);
         self::assertInstanceOf(ActorMetadataVector3::class, $decoded->metadata[13]->value);

@@ -10,6 +10,11 @@ final class PlayerActorMetadata
     private const int FLAGS = 0;
     private const int AIR_SUPPLY = 7;
     private const int MAXIMUM_AIR_SUPPLY = 42;
+    private const int SEAT_OFFSET = 56;
+    private const int SEAT_LOCK_RIDER_ROTATION = 57;
+    private const int SEAT_LOCK_RIDER_ROTATION_DEGREES = 58;
+    private const int SEAT_HAS_ROTATION = 59;
+    private const int SEAT_ROTATION_OFFSET_DEGREES = 60;
 
     private function __construct()
     {
@@ -87,6 +92,31 @@ final class PlayerActorMetadata
     public static function maximumAirSupply(int $ticks): ActorMetadata
     {
         return ActorMetadata::short(self::MAXIMUM_AIR_SUPPLY, $ticks);
+    }
+
+    public static function seatOffset(float $x, float $y, float $z): ActorMetadata
+    {
+        return ActorMetadata::vector3(self::SEAT_OFFSET, $x, $y, $z);
+    }
+
+    public static function seatLockRiderRotation(bool $locked): ActorMetadata
+    {
+        return ActorMetadata::byte(self::SEAT_LOCK_RIDER_ROTATION, $locked ? 1 : 0);
+    }
+
+    public static function seatLockRiderRotationDegrees(float $degrees): ActorMetadata
+    {
+        return ActorMetadata::float(self::SEAT_LOCK_RIDER_ROTATION_DEGREES, $degrees);
+    }
+
+    public static function seatHasRotation(bool $rotated): ActorMetadata
+    {
+        return ActorMetadata::byte(self::SEAT_HAS_ROTATION, $rotated ? 1 : 0);
+    }
+
+    public static function seatRotationOffsetDegrees(float $degrees): ActorMetadata
+    {
+        return ActorMetadata::float(self::SEAT_ROTATION_OFFSET_DEGREES, $degrees);
     }
 
     public static function isFlags(ActorMetadata $metadata): bool
