@@ -28,7 +28,10 @@ final class HorseEquipmentNbt
             $payload .= self::named(9, 'acceptedItems') . "\x0a"
                 . SignedVarInt::encode(count($slot->acceptedItemIdentifiers));
             foreach ($slot->acceptedItemIdentifiers as $identifier) {
-                $payload .= self::named(8, 'Name') . self::string($identifier) . "\x00";
+                $payload .= self::named(10, 'slotItem')
+                    . self::named(2, 'Aux') . pack('v', 0x7fff)
+                    . self::named(8, 'Name') . self::string($identifier)
+                    . "\x00\x00";
             }
             if ($slot->equippedItemIdentifier !== null) {
                 $payload .= self::named(10, 'item')

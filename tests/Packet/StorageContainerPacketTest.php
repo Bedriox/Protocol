@@ -75,6 +75,10 @@ final class StorageContainerPacketTest extends TestCase
         ]);
 
         NetworkNbtCompound::validate($nbt);
+        self::assertSame(
+            '0a000905736c6f74730a04030a736c6f744e756d62657200090d61636365707465644974656d730a020a08736c6f744974656d0203417578ff7f08044e616d65106d696e6563726166743a736164646c6500000a046974656d08044e616d65106d696e6563726166743a736164646c650203417578ff7f0000030a736c6f744e756d62657202090d61636365707465644974656d730a040a08736c6f744974656d0203417578ff7f08044e616d65146d696e6563726166743a7265645f63617270657400000a08736c6f744974656d0203417578ff7f08044e616d65156d696e6563726166743a626c75655f63617270657400000000',
+            bin2hex($nbt),
+        );
         self::assertStringContainsString('slots', $nbt);
         self::assertStringContainsString('acceptedItems', $nbt);
         self::assertStringContainsString('minecraft:saddle', $nbt);
@@ -133,6 +137,10 @@ final class StorageContainerPacketTest extends TestCase
             self::assertNotNull(ContainerSlotType::tryFrom($id));
         }
         self::assertSame(ContainerSlotType::LevelEntity, (new FullContainerName(FullContainerName::LEVEL_ENTITY))->slotType());
+        self::assertSame(
+            ContainerSlotType::HorseEquipment,
+            (new FullContainerName(FullContainerName::HORSE_EQUIPMENT))->slotType(),
+        );
         self::assertSame(ContainerSlotType::ShulkerBox, (new FullContainerName(FullContainerName::SHULKER_BOX))->slotType());
         self::assertSame(ContainerSlotType::Barrel, (new FullContainerName(FullContainerName::BARREL))->slotType());
         self::assertSame(ContainerSlotType::DynamicContainer, (new FullContainerName(FullContainerName::DYNAMIC))->slotType());

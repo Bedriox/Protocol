@@ -16,6 +16,7 @@ final readonly class FullContainerName
     public const int HOTBAR = 28;
     public const int INVENTORY = 29;
     public const int OFFHAND = 34;
+    public const int HORSE_EQUIPMENT = 27;
     public const int CURSOR = 59;
     public const int CREATED_OUTPUT = 60;
     public const int LEVEL_ENTITY = 7;

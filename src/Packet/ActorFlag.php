@@ -47,7 +47,9 @@ enum ActorFlag: int
     case Rolling = 66;
     case Scared = 67;
     case Sleeping = 75;
+    case Stunned = 82;
     case RamAttack = 96;
+    case JumpGoalJump = 102;
     case Sniffing = 104;
     case Digging = 105;
 

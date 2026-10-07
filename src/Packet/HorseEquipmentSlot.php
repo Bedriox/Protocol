@@ -31,7 +31,8 @@ final readonly class HorseEquipmentSlot
         }
         if ($equippedItemIdentifier !== null
             && (preg_match('/^[a-z0-9_.-]+:[a-z0-9_.\/-]+$/D', $equippedItemIdentifier) !== 1
-                || strlen($equippedItemIdentifier) > 256)) {
+                || strlen($equippedItemIdentifier) > 256
+                || !isset($seen[$equippedItemIdentifier]))) {
             throw new InvalidValueException('Equipped horse item identifier is invalid.');
         }
     }
