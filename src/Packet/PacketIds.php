@@ -64,6 +64,7 @@ final class PacketIds
     public const int AVAILABLE_COMMANDS = 76;
     public const int COMMAND_REQUEST = 77;
     public const int COMMAND_OUTPUT = 79;
+    public const int UPDATE_EQUIP = 81;
     public const int PLAYER_SKIN = 93;
     public const int SERVER_SETTINGS_REQUEST = 102;
     public const int MOVE_ACTOR_DELTA = 111;

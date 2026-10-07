@@ -32,6 +32,7 @@ enum ActorFlag: int
     case Breathing = 35;
     case Chested = 36;
     case ShowBottom = 38;
+    case Standing = 39;
     case Shaking = 40;
     case WasdControlled = 44;
     case CanPowerJump = 45;

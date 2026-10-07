@@ -16,9 +16,12 @@ use Bedriox\Protocol\Packet\ContainerRegistryCleanupPacket;
 use Bedriox\Protocol\Packet\ContainerSlotType;
 use Bedriox\Protocol\Packet\ContainerType;
 use Bedriox\Protocol\Packet\FullContainerName;
+use Bedriox\Protocol\Packet\HorseEquipmentNbt;
+use Bedriox\Protocol\Packet\HorseEquipmentSlot;
 use Bedriox\Protocol\Packet\NetworkNbtCompound;
 use Bedriox\Protocol\Packet\Packet;
 use Bedriox\Protocol\Packet\PacketIds;
+use Bedriox\Protocol\Packet\UpdateEquipPacket;
 use PHPUnit\Framework\TestCase;
 
 final class StorageContainerPacketTest extends TestCase
@@ -34,6 +37,49 @@ final class StorageContainerPacketTest extends TestCase
         self::assertSame('027f040202', bin2hex($packet->encode()));
         self::assertSame(PacketIds::BLOCK_EVENT, BedrockPacketCodec::packetId($packet));
         self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::BLOCK_EVENT, $packet->encode()));
+    }
+
+    public function testHorseEquipmentDeclarationUsesTheCurrentPacketLayout(): void
+    {
+        $packet = new UpdateEquipPacket(7, ContainerType::Horse, 15, 123, self::EMPTY_NETWORK_NBT);
+
+        self::assertSame('070c1ef6010a0000', bin2hex($packet->encode()));
+        self::assertSame(PacketIds::UPDATE_EQUIP, BedrockPacketCodec::packetId($packet));
+        self::assertEquals(
+            $packet,
+            BedrockPacketCodec::decode(PacketIds::UPDATE_EQUIP, $packet->encode()),
+        );
+
+        foreach ([
+            '',
+            "\x07",
+            "\x07\x0c",
+            "\x07\x0c\x1e",
+            "\x07\x0c\x1e\xf6",
+            "\x07\x00\x1e\xf6\x01\x0a\x00\x00",
+            "\x07\x0c\x1e\xf6\x01\x00",
+        ] as $malformed) {
+            try {
+                UpdateEquipPacket::decode($malformed);
+                self::fail('Malformed update-equipment payload was accepted.');
+            } catch (CodecException) {
+            }
+        }
+    }
+
+    public function testHorseEquipmentNbtRetainsTypedAcceptedAndEquippedItems(): void
+    {
+        $nbt = HorseEquipmentNbt::encode([
+            new HorseEquipmentSlot(0, ['minecraft:saddle'], 'minecraft:saddle'),
+            new HorseEquipmentSlot(1, ['minecraft:red_carpet', 'minecraft:blue_carpet']),
+        ]);
+
+        NetworkNbtCompound::validate($nbt);
+        self::assertStringContainsString('slots', $nbt);
+        self::assertStringContainsString('acceptedItems', $nbt);
+        self::assertStringContainsString('minecraft:saddle', $nbt);
+        self::assertStringContainsString('minecraft:red_carpet', $nbt);
+        self::assertSame($nbt, (new UpdateEquipPacket(9, ContainerType::Horse, 2, 99, $nbt))->networkNbt);
     }
 
     public function testBlockActorDataUsesPositionThenOneNetworkNbtCompound(): void
