@@ -86,6 +86,61 @@ final class StorageContainerPacketTest extends TestCase
         self::assertSame($nbt, (new UpdateEquipPacket(9, ContainerType::Horse, 2, 99, $nbt))->networkNbt);
     }
 
+    public function testHorseEquipmentConversationRejectsEveryTruncationAndTrailingByte(): void
+    {
+        $packet = new UpdateEquipPacket(
+            7,
+            ContainerType::Horse,
+            17,
+            123,
+            HorseEquipmentNbt::encode([
+                new HorseEquipmentSlot(0, ['minecraft:saddle'], 'minecraft:saddle'),
+                new HorseEquipmentSlot(1, ['minecraft:iron_horse_armor']),
+            ]),
+        );
+        $wire = $packet->encode();
+        for ($length = 0; $length < strlen($wire); ++$length) {
+            try {
+                BedrockPacketCodec::decode(PacketIds::UPDATE_EQUIP, substr($wire, 0, $length));
+                self::fail("Truncated update-equipment packet was accepted at {$length} bytes.");
+            } catch (CodecException) {
+                self::addToAssertionCount(1);
+            }
+        }
+        try {
+            BedrockPacketCodec::decode(PacketIds::UPDATE_EQUIP, $wire . "\0");
+            self::fail('Update-equipment packet with trailing data was accepted.');
+        } catch (CodecException) {
+            self::addToAssertionCount(1);
+        }
+    }
+
+    public function testHorseEquipmentNbtRejectsDuplicateSlotsItemsAndUnacceptedEquipment(): void
+    {
+        foreach ([
+            static fn(): string => HorseEquipmentNbt::encode([
+                new HorseEquipmentSlot(0, ['minecraft:saddle']),
+                new HorseEquipmentSlot(0, ['minecraft:saddle']),
+            ]),
+            static fn(): HorseEquipmentSlot => new HorseEquipmentSlot(
+                0,
+                ['minecraft:saddle', 'minecraft:saddle'],
+            ),
+            static fn(): HorseEquipmentSlot => new HorseEquipmentSlot(
+                0,
+                ['minecraft:saddle'],
+                'minecraft:diamond_horse_armor',
+            ),
+        ] as $invalid) {
+            try {
+                $invalid();
+                self::fail('Invalid horse-equipment declaration was accepted.');
+            } catch (InvalidValueException) {
+                self::addToAssertionCount(1);
+            }
+        }
+    }
+
     public function testBlockActorDataUsesPositionThenOneNetworkNbtCompound(): void
     {
         $packet = new BlockActorDataPacket(new BlockPosition(1, -64, 2), self::EMPTY_NETWORK_NBT);

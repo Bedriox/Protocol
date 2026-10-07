@@ -26,7 +26,7 @@
     },
     "scripts": {
         "test": "phpunit",
-        "analyse": "phpstan analyse --no-progress",
+        "analyse": "phpstan analyse --no-progress --memory-limit=1G",
         "check:ci": [
             "composer validate --strict",
             "composer audit --locked",
