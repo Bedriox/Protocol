@@ -125,6 +125,12 @@ final class ActorPacketTest extends TestCase
         $flags = ActorFlag::combine(ActorFlag::OnFire, ActorFlag::HasCollision, ActorFlag::HasGravity);
         self::assertSame(1, ActorFlag::OnFire->mask());
         self::assertSame(1, $flags & ActorFlag::OnFire->mask());
+        self::assertSame(1, ActorFlag::Sneezing->word());
+        self::assertSame(1 << 1, ActorFlag::Trusting->mask());
+        self::assertSame(
+            ActorFlag::Trusting->mask() | ActorFlag::Sleeping->mask(),
+            ActorFlag::combineSecondWord(ActorFlag::OnFire, ActorFlag::Trusting, ActorFlag::Sleeping),
+        );
 
         $packet = new SetActorDataPacket(
             UnsignedLong::fromInt(7),

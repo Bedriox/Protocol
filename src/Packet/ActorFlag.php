@@ -13,6 +13,8 @@ enum ActorFlag: int
     case Sprinting = 3;
     case UsingItem = 4;
     case Invisible = 5;
+    case Tempted = 6;
+    case InLove = 7;
     case Saddled = 8;
     case Powered = 9;
     case Ignited = 10;
@@ -25,8 +27,10 @@ enum ActorFlag: int
     case Angry = 25;
     case Charged = 27;
     case Tamed = 28;
+    case Leashed = 30;
     case Sheared = 31;
     case Breathing = 35;
+    case Chested = 36;
     case ShowBottom = 38;
     case Shaking = 40;
     case WasdControlled = 44;
@@ -35,18 +39,48 @@ enum ActorFlag: int
     case HasCollision = 48;
     case HasGravity = 49;
     case FireImmune = 50;
+    case Eating = 62;
+    case LayingDown = 63;
+    case Sneezing = 64;
+    case Trusting = 65;
+    case Rolling = 66;
+    case Scared = 67;
+    case Sleeping = 75;
+    case RamAttack = 96;
+    case Sniffing = 104;
+    case Digging = 105;
 
     public function mask(): int
     {
-        return 1 << $this->value;
+        return 1 << ($this->value % 64);
+    }
+
+    public function word(): int
+    {
+        return intdiv($this->value, 64);
     }
 
     public static function combine(self ...$flags): int
     {
         $mask = 0;
         foreach ($flags as $flag) {
+            if ($flag->word() !== 0) {
+                continue;
+            }
             $mask |= $flag->mask();
         }
+        return $mask;
+    }
+
+    public static function combineSecondWord(self ...$flags): int
+    {
+        $mask = 0;
+        foreach ($flags as $flag) {
+            if ($flag->word() === 1) {
+                $mask |= $flag->mask();
+            }
+        }
+
         return $mask;
     }
 }
