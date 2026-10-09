@@ -35,6 +35,7 @@ final class PacketIds
     public const int MOB_EQUIPMENT = 31;
     public const int MOB_ARMOR_EQUIPMENT = 32;
     public const int INTERACT = 33;
+    public const int BLOCK_PICK_REQUEST = 34;
     public const int PLAYER_ACTION = 36;
     public const int SET_ACTOR_DATA = 39;
     public const int SET_ACTOR_MOTION = 40;
@@ -67,6 +68,7 @@ final class PacketIds
     public const int UPDATE_EQUIP = 81;
     public const int PLAYER_SKIN = 93;
     public const int SERVER_SETTINGS_REQUEST = 102;
+    public const int UPDATE_BLOCK_SYNCED = 110;
     public const int MOVE_ACTOR_DELTA = 111;
     public const int SET_LOCAL_PLAYER_AS_INITIALIZED = 113;
     public const int UPDATE_SOFT_ENUM = 114;

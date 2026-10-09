@@ -1,5 +1,9 @@
 # Changelog
 
+- Add the bounded current-protocol block-pick request packet used by creative item selection.
+
+- Add synchronized block updates for actor-backed block transitions such as falling blocks.
+
 - Name the current ground-vehicle control and powered-jump actor flags used by steerable mounts.
 - Centralize the current passenger seat offset and rotation metadata used by complete vehicle projections.
 - Add typed current-protocol Shulker presentation and End Crystal beam-target/show-bottom metadata, including bounded integer block positions.

@@ -29,6 +29,7 @@ enum ActorFlag: int
     case Tamed = 28;
     case Leashed = 30;
     case Sheared = 31;
+    case Moving = 34;
     case Breathing = 35;
     case Chested = 36;
     case ShowBottom = 38;
