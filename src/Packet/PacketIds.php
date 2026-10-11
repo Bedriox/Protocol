@@ -36,6 +36,7 @@ final class PacketIds
     public const int MOB_ARMOR_EQUIPMENT = 32;
     public const int INTERACT = 33;
     public const int BLOCK_PICK_REQUEST = 34;
+    public const int ENTITY_PICK_REQUEST = 35;
     public const int PLAYER_ACTION = 36;
     public const int SET_ACTOR_DATA = 39;
     public const int SET_ACTOR_MOTION = 40;

@@ -1,6 +1,9 @@
 # Changelog
 
+- Add typed metadata projections for lightweight text displays and invisible bounded interaction actors.
+
 - Add the bounded current-protocol block-pick request packet used by creative item selection.
+- Add the bounded current-protocol entity-pick request packet used by creative entity selection.
 
 - Add synchronized block updates for actor-backed block transitions such as falling blocks.
 
