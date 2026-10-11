@@ -36,6 +36,7 @@ final class PacketIds
     public const int MOB_ARMOR_EQUIPMENT = 32;
     public const int INTERACT = 33;
     public const int BLOCK_PICK_REQUEST = 34;
+    public const int ENTITY_PICK_REQUEST = 35;
     public const int PLAYER_ACTION = 36;
     public const int SET_ACTOR_DATA = 39;
     public const int SET_ACTOR_MOTION = 40;
@@ -100,6 +101,7 @@ final class PacketIds
     public const int UPDATE_ADVENTURE_SETTINGS = 188;
     public const int DEATH_INFO = 189;
     public const int TRIM_DATA = 302;
+    public const int OPEN_SIGN = 303;
     public const int SET_PLAYER_INVENTORY_OPTIONS = 307;
     public const int CONTAINER_REGISTRY_CLEANUP = 317;
     public const int SERVERBOUND_LOADING_SCREEN = 312;

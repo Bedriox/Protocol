@@ -28,6 +28,11 @@ All expected codec failures derive from `CodecException`. Applications may catch
 
 Current `PlayerAuthInput` block actions are target-bearing except `StopDestroyBlock`. Stop is represented explicitly without a position or face so the following conditional fields remain aligned; constructors reject every mismatched action/target shape.
 
+Current creative entity selection uses packet 35 with one fixed signed 64-bit
+little-endian runtime entity ID, an unsigned-byte hotbar slot, and a canonical
+boolean controlling whether actor data is requested. The decoder rejects every
+truncation, noncanonical boolean value, and trailing byte.
+
 `PacketBatchCodec` represents an uncompressed batch as one or more packet frames, each preceded by its canonical unsigned-VarInt byte length. `BatchLimits` independently caps network input, decompressed bytes, compression ratio, packet count, and individual packet bytes before slicing or retaining data.
 
 `BedrockBatchCodec` adds the `0xfe` game-packet marker and delegates compression framing. Its explicit modes are `Uncompressed` before NetworkSettings, negotiated `None` (`0xff`), threshold-aware `NegotiatedZlib`, and legacy unprefixed RFC 1950 `Zlib`. Negotiated zlib emits `0xff` with plain bytes below the configured threshold and `0x00` with raw DEFLATE at or above it. Threshold zero therefore compresses every non-empty batch; disabling compression requires negotiating `None`. Decoding dispatches the prefix per batch, accepts only the representation permitted by the threshold, and rejects Snappy or unknown prefixes.
@@ -72,6 +77,14 @@ each coordinate as a validated signed 32-bit value. End Crystal beam targets
 use that typed value at the current block-target metadata ID.
 The typed `ShowBottom` actor flag projects whether an End Crystal renders its
 bedrock base without exposing a numeric flag index to server code.
+
+Lightweight text displays use a falling-block actor with the canonical air
+network ID, the current can-show-name flag and always-show-name byte, a bounded
+name tag, zero client collision bounds, and a non-zero minimal scale. Invisible
+interaction actors use an armor-stand projection with positive, bounded,
+float32-representable width and height. These helpers describe wire metadata
+only; display ownership, visibility, click admission, and actor lifecycle
+remain server responsibilities.
 
 Authoritative item-use support exposes the current typed use, release, hand,
 prediction, and cooldown values without applying gameplay state. Armor uses the

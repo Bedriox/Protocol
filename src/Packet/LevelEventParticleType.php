@@ -106,4 +106,5 @@ enum LevelEventParticleType: int
     case GreenFlame = 98;
     case PauseMobGrowth = 99;
     case ResetMobGrowth = 100;
+    case SulfurCube = 101;
 }
