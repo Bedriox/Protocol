@@ -1,5 +1,9 @@
 # Changelog
 
+- Add typed current-protocol ordinary and chest minecart metadata, including
+  structural damage, hurt animation, display offset, and optional signed chest
+  block-state projection.
+
 - Add bounded hard-enum value constraints for current semantic command parameters and item-aware client suggestions.
 
 - Add typed metadata projections for lightweight text displays and invisible bounded interaction actors.

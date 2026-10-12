@@ -8,6 +8,13 @@ Creative item-stack requests may carry the protocol-2193 deprecated craft-result
 
 Current actor metadata factories include bounded player, living actor, projectile, area-effect cloud, experience-orb, tipped-arrow, and fishing-hook baselines. Fishing hooks require the owning player's positive runtime actor ID so the client can render the authoritative line between owner and hook without server code repeating a numeric metadata index.
 
+`MinecartActorMetadata` provides the current ordinary and chest-minecart
+presentation fields in canonical metadata order. It includes collision,
+structural damage, hurt amplitude and direction, display offset, and the custom
+display marker. Chest carts additionally require the owning server to resolve
+and supply the signed current-network runtime ID for the chest block state;
+Protocol validates and encodes that value but does not own block translation.
+
 Processing-station display support includes `PlayerEnchantOptionsPacket` (146), whose three bounded choices carry the current byte-sized cost, little-endian primary slot, three typed enchant lists, display name and network ID. Enchant identifiers use current unsigned VarInts and levels use unsigned bytes. Protocol 2193 also introduces bidirectional `SetPlayerFurnaceOptionsPacket` (351) with closed furnace-kind, recipe-book tab and layout enums plus its filtering flag. These packets describe client presentation and intent only; experience costs, recipe validity and furnace authority belong to Bedriox.
 
 Map conversations use `MapInfoRequestPacket` (68) for a signed map ID and up to 16,384 client-generated pixel samples, and `ClientboundMapItemDataPacket` (67) for bounded optional tracked entities, tracked objects, decorations, texture geometry and colors. Every optional section retains its independent wire presence marker, all collections are allocation-bounded, and tracked-object type markers must agree with their entity or block payload. Map identity, persistence, rendering and update audience remain server responsibilities.
