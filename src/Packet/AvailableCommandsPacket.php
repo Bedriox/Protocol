@@ -17,6 +17,8 @@ final readonly class AvailableCommandsPacket implements Packet
     public const int MAX_PARAMETERS = 64;
     public const int MAX_ENUMS = 1_024;
     public const int MAX_ENUM_VALUES = 4_096;
+    public const int MAX_ENUM_CONSTRAINTS = 4_096;
+    public const int MAX_CONSTRAINTS_PER_VALUE = 4;
 
     /** @param list<CommandDefinition> $commands */
     public function __construct(public array $commands)
@@ -102,7 +104,33 @@ final readonly class AvailableCommandsPacket implements Packet
             $writer = $writer->writeString($enum->name, CodecSupport::MAX_SHORT_STRING_BYTES);
             $writer = self::writeStrings($writer, $enum->values);
         }
-        return $writer->writeUnsignedVarInt(0)->toString();
+        $constraintRecords = [];
+        foreach ($hardEnums as $enumIndex => $enum) {
+            foreach ($enum->values as $value) {
+                $constraints = $enum->constraintsFor($value);
+                if ($constraints === []) {
+                    continue;
+                }
+                $valueIndex = array_search($value, $enumValues, true);
+                if (!is_int($valueIndex)) {
+                    throw new InvalidValueException('Constrained enum value is absent from the shared value table.');
+                }
+                $constraintRecords[] = [$valueIndex, $enumIndex, $constraints];
+            }
+        }
+        if (count($constraintRecords) > self::MAX_ENUM_CONSTRAINTS) {
+            throw new InvalidValueException('Command enum constraint count exceeds its limit.');
+        }
+        $writer = $writer->writeUnsignedVarInt(count($constraintRecords));
+        foreach ($constraintRecords as [$valueIndex, $enumIndex, $constraints]) {
+            $writer = $writer->writeUnsignedIntLE($valueIndex)
+                ->writeUnsignedIntLE($enumIndex)
+                ->writeUnsignedVarInt(count($constraints));
+            foreach ($constraints as $constraint) {
+                $writer = $writer->writeUnsignedByte($constraint->value);
+            }
+        }
+        return $writer->toString();
     }
 
     public static function decode(string $bytes): self
@@ -221,11 +249,52 @@ final readonly class AvailableCommandsPacket implements Packet
             [$values, $reader] = self::readStrings($name->reader, self::MAX_ENUM_VALUES, 'Soft command enum value');
             $softEnums[] = self::enumFromWire($name->value, $values, true);
         }
-        $constraints = $reader->readUnsignedVarInt();
-        if ($constraints->value !== 0) {
-            throw new MalformedDataException('Command enum constraints are unsupported.');
+        $constraintCount = $reader->readUnsignedVarInt();
+        if ($constraintCount->value > self::MAX_ENUM_CONSTRAINTS) {
+            throw new MalformedDataException('Command enum constraint count exceeds its limit.');
         }
-        CodecSupport::requireEnd($constraints->reader);
+        $reader = $constraintCount->reader;
+        $constraintsByEnum = [];
+        for ($index = 0; $index < $constraintCount->value; ++$index) {
+            $valueIndex = $reader->readUnsignedIntLE();
+            $enumIndex = $valueIndex->reader->readUnsignedIntLE();
+            if (!isset($enumValues[$valueIndex->value]) || !isset($hardEnums[$enumIndex->value])) {
+                throw new MalformedDataException('Command enum constraint references an unknown enum or value.');
+            }
+            $value = $enumValues[$valueIndex->value];
+            if (!in_array($value, $hardEnums[$enumIndex->value]->values, true)) {
+                throw new MalformedDataException('Command enum constraint value is absent from its enum.');
+            }
+            if (isset($constraintsByEnum[$enumIndex->value][$value])) {
+                throw new MalformedDataException('Command enum constraint records must be unique.');
+            }
+            $count = $enumIndex->reader->readUnsignedVarInt();
+            if ($count->value === 0 || $count->value > self::MAX_CONSTRAINTS_PER_VALUE) {
+                throw new MalformedDataException('Command enum value constraint count is invalid.');
+            }
+            $reader = $count->reader;
+            $valueConstraints = [];
+            $seenConstraints = [];
+            for ($constraintIndex = 0; $constraintIndex < $count->value; ++$constraintIndex) {
+                $wireConstraint = $reader->readUnsignedByte();
+                $constraint = CommandEnumConstraint::tryFrom($wireConstraint->value);
+                if ($constraint === null || isset($seenConstraints[$constraint->value])) {
+                    throw new MalformedDataException('Command enum constraint is unknown or duplicated.');
+                }
+                $valueConstraints[] = $constraint;
+                $seenConstraints[$constraint->value] = true;
+                $reader = $wireConstraint->reader;
+            }
+            $constraintsByEnum[$enumIndex->value][$value] = $valueConstraints;
+        }
+        CodecSupport::requireEnd($reader);
+        $constrainedHardEnums = [];
+        foreach ($hardEnums as $enumIndex => $enum) {
+            $constrainedHardEnums[] = isset($constraintsByEnum[$enumIndex])
+                ? self::enumFromWire($enum->name, $enum->values, false, $constraintsByEnum[$enumIndex])
+                : $enum;
+        }
+        $hardEnums = $constrainedHardEnums;
 
         try {
             $commands = [];
@@ -274,6 +343,13 @@ final readonly class AvailableCommandsPacket implements Packet
                     }
                 }
             }
+        }
+        $constraintCount = 0;
+        foreach ($hardEnums as $enum) {
+            $constraintCount += count($enum->constraints);
+        }
+        if ($constraintCount > self::MAX_ENUM_CONSTRAINTS) {
+            throw new InvalidValueException('Command enum constraint count exceeds its limit.');
         }
         return [$enumValues, $hardEnums, $softEnums, $aliasIndexes];
     }
@@ -364,11 +440,14 @@ final readonly class AvailableCommandsPacket implements Packet
         return $options;
     }
 
-    /** @param list<string> $values */
-    private static function enumFromWire(string $name, array $values, bool $soft): CommandEnum
+    /**
+     * @param list<string> $values
+     * @param array<string, list<CommandEnumConstraint>> $constraints
+     */
+    private static function enumFromWire(string $name, array $values, bool $soft, array $constraints = []): CommandEnum
     {
         try {
-            return new CommandEnum($name, $values, $soft);
+            return new CommandEnum($name, $values, $soft, $constraints);
         } catch (InvalidValueException $exception) {
             throw new MalformedDataException('Command enum is invalid.', previous: $exception);
         }

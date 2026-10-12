@@ -12,6 +12,7 @@ use Bedriox\Protocol\Packet\BedrockPacketCodec;
 use Bedriox\Protocol\Packet\CommandArgumentType;
 use Bedriox\Protocol\Packet\CommandDefinition;
 use Bedriox\Protocol\Packet\CommandEnum;
+use Bedriox\Protocol\Packet\CommandEnumConstraint;
 use Bedriox\Protocol\Packet\CommandOrigin;
 use Bedriox\Protocol\Packet\CommandOriginType;
 use Bedriox\Protocol\Packet\CommandOutputMessage;
@@ -19,6 +20,7 @@ use Bedriox\Protocol\Packet\CommandOutputPacket;
 use Bedriox\Protocol\Packet\CommandOutputType;
 use Bedriox\Protocol\Packet\CommandOverload;
 use Bedriox\Protocol\Packet\CommandParameter;
+use Bedriox\Protocol\Packet\CommandParameterOption;
 use Bedriox\Protocol\Packet\CommandPermission;
 use Bedriox\Protocol\Packet\CommandRequestPacket;
 use Bedriox\Protocol\Packet\PacketIds;
@@ -108,6 +110,34 @@ final class CommandPacketTest extends TestCase
         self::assertIsString($wire);
         self::assertSame($wire, $packet->encode());
         self::assertEquals($packet, AvailableCommandsPacket::decode($wire));
+    }
+
+    public function testAvailableCommandsMatchesCurrentSemanticItemConstraintVector(): void
+    {
+        $item = new CommandEnum('Item', ['minecraft:stone', 'stone'], false, [
+            'minecraft:stone' => [CommandEnumConstraint::AllowAliases],
+        ]);
+        $packet = new AvailableCommandsPacket([
+            new CommandDefinition('give', 'Give item', overloads: [new CommandOverload([
+                new CommandParameter('item', $item, options: [CommandParameterOption::HasSemanticConstraint]),
+            ])]),
+        ]);
+        $wire = hex2bin(
+            '020f6d696e6563726166743a73746f6e650573746f6e650000' .
+            '01044974656d0200000000010000000001' .
+            '04676976650947697665206974656d000003616e79ffffffff00010001' .
+            '046974656d000030000002' .
+            '00' .
+            '0100000000000000000103',
+        );
+        self::assertIsString($wire);
+        self::assertSame($wire, $packet->encode());
+        $decoded = AvailableCommandsPacket::decode($wire);
+        self::assertEquals($packet, $decoded);
+        $decodedType = $decoded->commands[0]->overloads[0]->parameters[0]->type;
+        self::assertInstanceOf(CommandEnum::class, $decodedType);
+        self::assertSame([CommandEnumConstraint::AllowAliases], $decodedType->constraintsFor('minecraft:stone'));
+        self::assertSame([], $decodedType->constraintsFor('stone'));
     }
 
     public function testAvailableCommandsAllowsPrimaryNameInOwnAliasEnum(): void
@@ -215,6 +245,17 @@ final class CommandPacketTest extends TestCase
                 ])]),
             ]);
         }];
+        yield 'soft enum carries constraints' => [static function (): void {
+            new CommandEnum('items', ['stone'], true, ['stone' => [CommandEnumConstraint::AllowAliases]]);
+        }];
+        yield 'constraint references missing value' => [static function (): void {
+            new CommandEnum('Item', ['stone'], false, ['dirt' => [CommandEnumConstraint::AllowAliases]]);
+        }];
+        yield 'constraint is duplicated' => [static function (): void {
+            new CommandEnum('Item', ['stone'], false, [
+                'stone' => [CommandEnumConstraint::AllowAliases, CommandEnumConstraint::AllowAliases],
+            ]);
+        }];
     }
 
     #[DataProvider('invalidModelProvider')]
@@ -317,11 +358,62 @@ final class CommandPacketTest extends TestCase
         AvailableCommandsPacket::decode("\x81\x20");
     }
 
+    /** @return iterable<string, array{string}> */
+    public static function malformedConstraintProvider(): iterable
+    {
+        yield 'unknown constraint' => ['0100000000000000000104'];
+        yield 'duplicate constraint' => ['010000000000000000020303'];
+        yield 'empty constraint list' => ['01000000000000000000'];
+        yield 'unknown shared value' => ['0102000000000000000103'];
+        yield 'unknown hard enum' => ['0100000000020000000103'];
+        yield 'duplicate records' => ['020000000000000000010300000000000000000103'];
+        yield 'oversized record count' => ['8120'];
+    }
+
+    #[DataProvider('malformedConstraintProvider')]
+    public function testMalformedCommandEnumConstraintsAreRejected(string $constraintTail): void
+    {
+        $packet = new AvailableCommandsPacket([
+            new CommandDefinition('give', 'Give item', overloads: [new CommandOverload([
+                new CommandParameter('item', new CommandEnum('Item', ['stone'])),
+            ])]),
+        ]);
+        $wire = $packet->encode();
+        self::assertSame("\x00", substr($wire, -1));
+        $tail = hex2bin($constraintTail);
+        self::assertIsString($tail);
+
+        $this->expectException(MalformedDataException::class);
+        AvailableCommandsPacket::decode(substr($wire, 0, -1) . $tail);
+    }
+
+    public function testConstraintValueMustBelongToReferencedHardEnum(): void
+    {
+        $packet = new AvailableCommandsPacket([
+            new CommandDefinition('test', 'Test', overloads: [new CommandOverload([
+                new CommandParameter('first', new CommandEnum('First', ['one'])),
+                new CommandParameter('second', new CommandEnum('Second', ['two'])),
+            ])]),
+        ]);
+        $wire = $packet->encode();
+        self::assertSame("\x00", substr($wire, -1));
+        $constraintTail = hex2bin('0100000000010000000103');
+        self::assertIsString($constraintTail);
+
+        $this->expectException(MalformedDataException::class);
+        AvailableCommandsPacket::decode(substr($wire, 0, -1) . $constraintTail);
+    }
+
     public function testTruncatedPacketsAreRejectedAtEveryBoundary(): void
     {
         $packets = [
             new CommandRequestPacket('/version', new CommandOrigin(CommandOriginType::Player, self::NIL_UUID, 'id')),
             new AvailableCommandsPacket([new CommandDefinition('version', 'Version', overloads: [new CommandOverload()])]),
+            new AvailableCommandsPacket([new CommandDefinition('give', 'Give', overloads: [new CommandOverload([
+                new CommandParameter('item', new CommandEnum('Item', ['minecraft:stone'], false, [
+                    'minecraft:stone' => [CommandEnumConstraint::AllowAliases],
+                ]), options: [CommandParameterOption::HasSemanticConstraint]),
+            ])])]),
             new CommandOutputPacket(new CommandOrigin(CommandOriginType::Player, self::NIL_UUID, 'id'), CommandOutputType::AllOutput, 0),
             new UpdateSoftEnumPacket('players', ['Alex', 'Steve'], SoftEnumUpdateType::Replace),
         ];

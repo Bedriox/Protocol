@@ -1,5 +1,7 @@
 # Changelog
 
+- Add bounded hard-enum value constraints for current semantic command parameters and item-aware client suggestions.
+
 - Add typed metadata projections for lightweight text displays and invisible bounded interaction actors.
 
 - Add the bounded current-protocol block-pick request packet used by creative item selection.
