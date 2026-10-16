@@ -24,7 +24,7 @@ All expected codec failures derive from `CodecException`. Applications may catch
 
 ## Bedrock packet and batch framing
 
-`PacketHeader` packs a 10-bit packet ID, 2-bit sender subclient ID, and 2-bit target subclient ID into one canonical unsigned VarInt. Decoding rejects non-canonical VarInts and any reserved bit above bit 13. `PacketFrame` retains the still-uninterpreted packet payload; this layer does not assign packet IDs or implement login policy.
+`PacketHeader` packs a 10-bit packet ID, 2-bit sender subclient ID, and 2-bit target subclient ID into one canonical unsigned VarInt. Decoding rejects non-canonical VarInts and any reserved bit above bit 13. `PacketFrame` retains the still-uninterpreted packet payload; this layer does not assign packet IDs or implement login policy. Batch decoding therefore preserves unknown but correctly framed packets independently from following frames. Consumers may query `BedrockPacketCodec::supportsDecoding()` before interpreting a payload. Calling `decode()` for an unregistered ID raises `UnsupportedPacketException`, which is distinct from malformed bytes in a registered packet.
 
 Current `PlayerAuthInput` block actions are target-bearing except `StopDestroyBlock`. Stop is represented explicitly without a position or face so the following conditional fields remain aligned; constructors reject every mismatched action/target shape.
 

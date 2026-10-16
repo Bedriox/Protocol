@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Bedriox\Protocol\Packet;
 
 use Bedriox\Protocol\Exception\InvalidValueException;
-use Bedriox\Protocol\Exception\MalformedDataException;
+use Bedriox\Protocol\Exception\UnsupportedPacketException;
 use Bedriox\Protocol\ProtocolVersion;
 
 /** State-independent packet-payload registry for the supported Bedrock release. */
@@ -115,7 +115,112 @@ final class BedrockPacketCodec
             PacketIds::SET_PLAYER_INVENTORY_OPTIONS => SetPlayerInventoryOptionsPacket::decode($payload),
             PacketIds::CONTAINER_REGISTRY_CLEANUP => ContainerRegistryCleanupPacket::decode($payload),
             PacketIds::SET_PLAYER_FURNACE_OPTIONS => SetPlayerFurnaceOptionsPacket::decode($payload),
-            default => throw new MalformedDataException('Packet ID is not registered in the Bedrock codec.'),
+            default => throw new UnsupportedPacketException($packetId),
+        };
+    }
+
+    /**
+     * Reports whether this registry can decode the packet payload without
+     * interpreting or retaining any untrusted packet bytes.
+     */
+    public static function supportsDecoding(
+        int $packetId,
+        int $protocolVersion = ProtocolVersion::CURRENT,
+    ): bool {
+        if (!ProtocolVersion::supports($protocolVersion)) {
+            return false;
+        }
+
+        return match ($packetId) {
+            PacketIds::REQUEST_NETWORK_SETTINGS,
+            PacketIds::NETWORK_SETTINGS,
+            PacketIds::LOGIN,
+            PacketIds::PLAY_STATUS,
+            PacketIds::SERVER_TO_CLIENT_HANDSHAKE,
+            PacketIds::CLIENT_TO_SERVER_HANDSHAKE,
+            PacketIds::DISCONNECT,
+            PacketIds::RESOURCE_PACKS_INFO,
+            PacketIds::RESOURCE_PACK_STACK,
+            PacketIds::RESOURCE_PACK_CLIENT_RESPONSE,
+            PacketIds::TEXT,
+            PacketIds::BOSS_EVENT,
+            PacketIds::SET_TITLE,
+            PacketIds::AVAILABLE_COMMANDS,
+            PacketIds::COMMAND_REQUEST,
+            PacketIds::COMMAND_OUTPUT,
+            PacketIds::UPDATE_TRADE,
+            PacketIds::UPDATE_EQUIP,
+            PacketIds::ANIMATE,
+            PacketIds::ADD_PLAYER,
+            PacketIds::ADD_ACTOR,
+            PacketIds::REMOVE_ACTOR,
+            PacketIds::ADD_ITEM_ACTOR,
+            PacketIds::TAKE_ITEM_ACTOR,
+            PacketIds::MOVE_ACTOR_ABSOLUTE,
+            PacketIds::MOVE_ACTOR_DELTA,
+            PacketIds::MOVE_PLAYER,
+            PacketIds::UPDATE_BLOCK,
+            PacketIds::UPDATE_BLOCK_SYNCED,
+            PacketIds::LEVEL_EVENT,
+            PacketIds::BLOCK_EVENT,
+            PacketIds::LEVEL_SOUND_EVENT,
+            PacketIds::ACTOR_EVENT,
+            PacketIds::MOB_EFFECT,
+            PacketIds::UPDATE_ATTRIBUTES,
+            PacketIds::INVENTORY_TRANSACTION,
+            PacketIds::MOB_EQUIPMENT,
+            PacketIds::MOB_ARMOR_EQUIPMENT,
+            PacketIds::INTERACT,
+            PacketIds::BLOCK_PICK_REQUEST,
+            PacketIds::ENTITY_PICK_REQUEST,
+            PacketIds::PLAYER_ACTION,
+            PacketIds::CHANGE_DIMENSION,
+            PacketIds::RESPAWN,
+            PacketIds::SET_ACTOR_DATA,
+            PacketIds::SET_ACTOR_MOTION,
+            PacketIds::SET_ACTOR_LINK,
+            PacketIds::LEVEL_CHUNK,
+            PacketIds::PLAYER_LIST,
+            PacketIds::CLIENTBOUND_MAP_ITEM_DATA,
+            PacketIds::MAP_INFO_REQUEST,
+            PacketIds::PLAYER_SKIN,
+            PacketIds::CONTAINER_OPEN,
+            PacketIds::CONTAINER_CLOSE,
+            PacketIds::INVENTORY_CONTENT,
+            PacketIds::INVENTORY_SLOT,
+            PacketIds::CONTAINER_SET_DATA,
+            PacketIds::CRAFTING_DATA,
+            PacketIds::PLAYER_ENCHANT_OPTIONS,
+            PacketIds::BLOCK_ACTOR_DATA,
+            PacketIds::OPEN_SIGN,
+            PacketIds::REQUEST_CHUNK_RADIUS,
+            PacketIds::CHUNK_RADIUS_UPDATED,
+            PacketIds::SET_PLAYER_GAME_TYPE,
+            PacketIds::SERVER_SETTINGS_REQUEST,
+            PacketIds::SET_LOCAL_PLAYER_AS_INITIALIZED,
+            PacketIds::UPDATE_SOFT_ENUM,
+            PacketIds::NETWORK_STACK_LATENCY,
+            PacketIds::CLIENT_CACHE_STATUS,
+            PacketIds::EMOTE,
+            PacketIds::SPAWN_PARTICLE_EFFECT,
+            PacketIds::CORRECT_PLAYER_MOVE_PREDICTION,
+            PacketIds::NETWORK_CHUNK_PUBLISHER_UPDATE,
+            PacketIds::PLAYER_AUTH_INPUT,
+            PacketIds::SUB_CHUNK_REQUEST,
+            PacketIds::ITEM_STACK_REQUEST,
+            PacketIds::CREATIVE_CONTENT,
+            PacketIds::UPDATE_PLAYER_GAME_TYPE,
+            PacketIds::EMOTE_LIST,
+            PacketIds::REQUEST_ABILITY,
+            PacketIds::REQUEST_PERMISSIONS,
+            PacketIds::DEATH_INFO,
+            PacketIds::TOAST_REQUEST,
+            PacketIds::SERVERBOUND_LOADING_SCREEN,
+            PacketIds::MOVEMENT_PREDICTION_SYNC,
+            PacketIds::SET_PLAYER_INVENTORY_OPTIONS,
+            PacketIds::CONTAINER_REGISTRY_CLEANUP,
+            PacketIds::SET_PLAYER_FURNACE_OPTIONS => true,
+            default => false,
         };
     }
 

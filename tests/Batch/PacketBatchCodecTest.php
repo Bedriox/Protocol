@@ -28,6 +28,20 @@ final class PacketBatchCodecTest extends TestCase
         self::assertEquals($packets, PacketBatchCodec::decode($encoded, $limits));
     }
 
+    public function testUnknownFrameDoesNotDiscardFollowingFrames(): void
+    {
+        $packets = [
+            new PacketFrame(new PacketHeader(0x3ff), "\xde\xad"),
+            new PacketFrame(new PacketHeader(1), "\xaa"),
+        ];
+        $limits = new BatchLimits();
+
+        self::assertEquals($packets, PacketBatchCodec::decode(
+            PacketBatchCodec::encode($packets, $limits),
+            $limits,
+        ));
+    }
+
     public function testEveryTruncationOfKnownBatchFails(): void
     {
         $encoded = hex2bin('0501aabbccdd');

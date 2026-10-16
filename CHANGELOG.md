@@ -1,5 +1,7 @@
 # Changelog
 
+- Distinguish unsupported packet IDs from malformed registered payloads and expose a payload-free decode-support query.
+
 - Add the bounded protocol-2193 villager trade-window packet, current trade metadata identifiers, and named trade container slots.
 
 - Add typed current-protocol ordinary and chest minecart metadata, including
