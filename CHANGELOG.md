@@ -1,5 +1,7 @@
 # Changelog
 
+- Add bounded protocol-2193 scoreboard objective, display, score-entry, and player-identity packets with typed slots, ordering, entry kinds, and identity actions.
+
 - Distinguish unsupported packet IDs from malformed registered payloads and expose a payload-free decode-support query.
 
 - Add the bounded protocol-2193 villager trade-window packet, current trade metadata identifiers, and named trade container slots.

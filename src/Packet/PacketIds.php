@@ -70,8 +70,12 @@ final class PacketIds
     public const int UPDATE_EQUIP = 81;
     public const int PLAYER_SKIN = 93;
     public const int SERVER_SETTINGS_REQUEST = 102;
+    public const int REMOVE_OBJECTIVE = 106;
+    public const int SET_DISPLAY_OBJECTIVE = 107;
+    public const int SET_SCORE = 108;
     public const int UPDATE_BLOCK_SYNCED = 110;
     public const int MOVE_ACTOR_DELTA = 111;
+    public const int SET_SCOREBOARD_IDENTITY = 112;
     public const int SET_LOCAL_PLAYER_AS_INITIALIZED = 113;
     public const int UPDATE_SOFT_ENUM = 114;
     public const int NETWORK_STACK_LATENCY = 115;

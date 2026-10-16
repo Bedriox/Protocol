@@ -67,6 +67,15 @@ normal reply cannot fall through the packet registry. Decoding communicates
 presentation state only; boss encounters, participants and viewer selection
 remain server-owned.
 
+Scoreboard presentation uses packets 106, 107, 108, and 112 for objective
+removal, display selection, typed score-entry changes, and player-identity
+registration. Modern score changes carry a type ordinal and its matching wire
+name on every entry; they do not use the legacy packet-level set/remove action.
+The codec bounds entry counts and strings, rejects mismatched type names and
+optional identity fields, and preserves signed 64-bit scoreboard and actor
+identifiers. Objective ownership, viewer selection, line limits, and update
+coalescing remain server responsibilities.
+
 Shulker actor presentation uses typed metadata entries for its bounded shell
 peek amount, six-direction attachment face, and attached state. The helper
 preserves the current integer, byte, and short wire formats and returns entries
