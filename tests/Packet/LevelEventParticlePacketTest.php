@@ -27,10 +27,10 @@ final class LevelEventParticlePacketTest extends TestCase
     {
         $values = array_map(static fn(LevelEventParticleType $type): int => $type->value, LevelEventParticleType::cases());
 
-        self::assertCount(99, $values);
-        self::assertCount(99, array_unique($values));
+        self::assertCount(100, $values);
+        self::assertCount(100, array_unique($values));
         self::assertSame(1, min($values));
-        self::assertSame(100, max($values));
+        self::assertSame(101, max($values));
         self::assertNotContains(24, $values);
     }
 

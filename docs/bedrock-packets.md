@@ -1,5 +1,14 @@
 # Bedrock packet codec
 
+Villager trading uses clientbound packet 80 (`UpdateTradePacket`) with the
+current trade-container discriminator, zero-sized window marker, bounded tier
+and display-name fields, signed unique actor IDs, UI/economy flags, and one
+structurally validated network-NBT offer compound. Trade ingredient and result
+slots use the typed `ContainerSlotType`/`FullContainerName` identifiers already
+shared by item-stack requests. `VillagerActorMetadata` names the current
+variant, trade target, tier, experience, and cured-discount metadata IDs; the
+server remains responsible for offer semantics and atomic inventory policy.
+
 Failed item-stack request actions carry a bounded decode location and fixed category for diagnostics. These values contain no packet bytes or item content. Protocol 2193 action bodies carry a second action byte that uses the action enum ordinal; it is not always equal to the preceding wire discriminator. The codec checks the current mapping and emits the matching marker for supported actions.
 
 Creative item-stack requests may carry the protocol-2193 deprecated craft-results action in either standalone packet 147 or the request embedded in player-auth input. The codec preserves bounded result descriptors and user data but does not assign them inventory authority; the server decides whether a request succeeds.

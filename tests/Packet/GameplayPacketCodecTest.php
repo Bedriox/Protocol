@@ -51,6 +51,9 @@ use Bedriox\Protocol\Packet\PlayerListAddPacket;
 use Bedriox\Protocol\Packet\PlayerPermission;
 use Bedriox\Protocol\Packet\PlayerSkin;
 use Bedriox\Protocol\Packet\PlayerSkinPacket;
+use Bedriox\Protocol\Packet\PlayerSkinPersonaPiece;
+use Bedriox\Protocol\Packet\PlayerSkinPersonaPieceType;
+use Bedriox\Protocol\Packet\PlayerSkinPersonaTint;
 use Bedriox\Protocol\Packet\PlayerAbilities;
 use Bedriox\Protocol\Packet\PlayerActorMetadata;
 use Bedriox\Protocol\Packet\PlayerAuthInputFlag;
@@ -911,6 +914,30 @@ final class GameplayPacketCodecTest extends TestCase
         } catch (MalformedDataException) {
             self::addToAssertionCount(1);
         }
+    }
+
+    public function testPlayerSkinUpdateRetainsCurrentPersonaPiecesAndTints(): void
+    {
+        $skin = new PlayerSkin(
+            64, 32, str_repeat("\x01", 64 * 32 * 4), 0, 0, '', '{}', [],
+            'persona-skin', '', '{"geometry":{"default":"geometry.humanoid.custom"}}',
+            persona: true,
+            personaPieces: [new PlayerSkinPersonaPiece(
+                'piece', PlayerSkinPersonaPieceType::Top, '00112233-4455-6677-8899-aabbccddeeff', true, 'product',
+            )],
+            personaTints: [new PlayerSkinPersonaTint(
+                PlayerSkinPersonaPieceType::Top, [-16_711_936, -65_536, -256, -1],
+            )],
+        );
+        $packet = new PlayerSkinPacket('00112233-4455-6677-8899-aabbccddeeff', $skin, 'new', 'old');
+
+        $decoded = BedrockPacketCodec::decode(PacketIds::PLAYER_SKIN, $packet->encode());
+
+        self::assertInstanceOf(PlayerSkinPacket::class, $decoded);
+        self::assertEquals($packet, $decoded);
+        self::assertTrue($decoded->skin->persona);
+        self::assertSame(PlayerSkinPersonaPieceType::Top, $decoded->skin->personaPieces[0]->type);
+        self::assertSame([-16_711_936, -65_536, -256, -1], $decoded->skin->personaTints[0]->colors);
     }
 
     public function testLittleEndianComponentNbtIsConvertedAndBounded(): void

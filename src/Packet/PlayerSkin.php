@@ -25,6 +25,9 @@ final readonly class PlayerSkin
         public bool $premium = false, public bool $capeOnClassic = false, public bool $primaryUser = false,
         public bool $overridingPlayerAppearance = false,
         public string $profileHash = '',
+        public bool $persona = false,
+        /** @var list<PlayerSkinPersonaPiece> */ public array $personaPieces = [],
+        /** @var list<PlayerSkinPersonaTint> */ public array $personaTints = [],
     ) {
         if ($skinId === '' || $resourcePatchJson === '') {
             throw new InvalidValueException('Player-list skin ID and resource patch must be retained from verified client data.');
@@ -65,6 +68,14 @@ final readonly class PlayerSkin
             CodecSupport::validateString($string, 65_536, 'Skin string');
         }
         CodecSupport::validateString($profileHash, 4_096, 'Skin profile hash');
+        CodecSupport::validateCount($personaPieces, 128, 'Persona pieces');
+        foreach ($personaPieces as $piece) {
+            if (!$piece instanceof PlayerSkinPersonaPiece) { throw new InvalidValueException('Persona pieces must contain typed values.'); }
+        }
+        CodecSupport::validateCount($personaTints, 32, 'Persona tints');
+        foreach ($personaTints as $tint) {
+            if (!$tint instanceof PlayerSkinPersonaTint) { throw new InvalidValueException('Persona tints must contain typed values.'); }
+        }
     }
 
     public static function fromVerifiedClientData(VerifiedClientData $data): self
@@ -79,7 +90,7 @@ final readonly class PlayerSkin
             $data->skinResourcePatchJson, $data->geometryEngineVersion, $data->animationDataJson,
             $data->capeId, $data->fullSkinId, $data->armSize, $data->skinColor,
             $data->premium, $data->capeOnClassic, $data->primaryUser, $data->overridingPlayerAppearance,
-            $data->profileHash,
+            $data->profileHash, $data->persona,
         );
     }
 
@@ -100,9 +111,18 @@ final readonly class PlayerSkin
             $writer = $writer->writeString($string, 65_536);
         }
         $writer = $writer->writeUnsignedByte(strtolower($this->armSize) === 'wide' ? 1 : 0)
-            ->writeSignedIntLE(self::skinColorToInt($this->skinColor))
-            ->writeUnsignedVarInt(0)->writeUnsignedVarInt(0);
-        foreach ([$this->premium, false, $this->capeOnClassic, $this->primaryUser, $this->overridingPlayerAppearance] as $flag) {
+            ->writeSignedIntLE(self::skinColorToInt($this->skinColor))->writeUnsignedVarInt(count($this->personaPieces));
+        foreach ($this->personaPieces as $piece) {
+            $writer = $writer->writeString($piece->id, 4_096)->writeSignedIntLE($piece->type->value)
+                ->writeBytes(CodecSupport::uuidToWire($piece->packId));
+            $writer = CodecSupport::writeBoolean($writer, $piece->default)->writeString($piece->productId, 4_096);
+        }
+        $writer = $writer->writeUnsignedVarInt(count($this->personaTints));
+        foreach ($this->personaTints as $tint) {
+            $writer = $writer->writeString($tint->type->wireName(), 64);
+            foreach ($tint->colors as $color) { $writer = $writer->writeSignedIntLE($color); }
+        }
+        foreach ([$this->premium, $this->persona, $this->capeOnClassic, $this->primaryUser, $this->overridingPlayerAppearance] as $flag) {
             $writer = CodecSupport::writeBoolean($writer, $flag);
         }
         return $writer->writeString($trusted ? 'true' : 'false', 5)->writeString($this->profileHash, 4_096);
@@ -133,12 +153,28 @@ final readonly class PlayerSkin
         if ($armSize->value > 1) { throw new MalformedDataException('Skin arm size is invalid.'); }
         $skinColor = $armSize->reader->readSignedIntLE();
         $pieces = $skinColor->reader->readUnsignedVarInt();
-        if ($pieces->value !== 0) { throw new MalformedDataException('Persona pieces are outside the MVP player-list slice.'); }
-        $tints = $pieces->reader->readUnsignedVarInt();
-        if ($tints->value !== 0) { throw new MalformedDataException('Persona tints are outside the MVP player-list slice.'); }
-        $flags = []; $reader = $tints->reader;
+        if ($pieces->value > 128) { throw new MalformedDataException('Persona piece count exceeds its limit.'); }
+        $personaPieces = []; $reader = $pieces->reader;
+        for ($i = 0; $i < $pieces->value; ++$i) {
+            $id = $reader->readString(4_096); $type = $id->reader->readSignedIntLE();
+            $pieceType = PlayerSkinPersonaPieceType::tryFrom($type->value);
+            if ($pieceType === null) { throw new MalformedDataException('Persona piece type is invalid.'); }
+            $packId = $type->reader->readBytes(16); [$default, $reader] = CodecSupport::readBoolean($packId->reader);
+            $productId = $reader->readString(4_096); $reader = $productId->reader;
+            try { $personaPieces[] = new PlayerSkinPersonaPiece($id->value, $pieceType, CodecSupport::uuidFromWire($packId->value), $default, $productId->value); }
+            catch (\Throwable $error) { throw new MalformedDataException('Persona piece is invalid.', previous: $error); }
+        }
+        $tints = $reader->readUnsignedVarInt();
+        if ($tints->value > 32) { throw new MalformedDataException('Persona tint count exceeds its limit.'); }
+        $personaTints = []; $reader = $tints->reader;
+        for ($i = 0; $i < $tints->value; ++$i) {
+            $type = $reader->readString(64); $colors = []; $reader = $type->reader;
+            for ($color = 0; $color < 4; ++$color) { $value = $reader->readSignedIntLE(); $colors[] = $value->value; $reader = $value->reader; }
+            try { $personaTints[] = new PlayerSkinPersonaTint(PlayerSkinPersonaPieceType::fromWireName($type->value), $colors); }
+            catch (\Throwable $error) { throw new MalformedDataException('Persona tint is invalid.', previous: $error); }
+        }
+        $flags = [];
         for ($i = 0; $i < 5; ++$i) { [$flag, $reader] = CodecSupport::readBoolean($reader); $flags[] = $flag; }
-        if ($flags[1]) { throw new MalformedDataException('Persona skins are outside the MVP player-list slice.'); }
         $trusted = $reader->readString(5);
         if (!in_array($trusted->value, ['unset', 'false', 'true'], true)) {
             throw new MalformedDataException('Trusted-skin flag is invalid.');
@@ -149,7 +185,7 @@ final readonly class PlayerSkin
             $skinValue = new self($skinWidth, $skinHeight, $skin, $capeWidth, $capeHeight, $cape, $strings[0], $animations,
                 $skinId->value, $playFab->value, $patch->value, $strings[1], $strings[2], $strings[3], $strings[4],
                 $armSize->value === 1 ? 'wide' : '', $skinColor->value === 0 ? '' : sprintf('#%x', $skinColor->value & 0xffffffff),
-                $flags[0], $flags[2], $flags[3], $flags[4], $profileHash->value);
+                $flags[0], $flags[2], $flags[3], $flags[4], $profileHash->value, $flags[1], $personaPieces, $personaTints);
         } catch (\Throwable $e) {
             throw new MalformedDataException('Player-list skin payload is invalid.', previous: $e);
         }

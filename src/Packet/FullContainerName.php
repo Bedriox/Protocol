@@ -21,6 +21,12 @@ final readonly class FullContainerName
     public const int CREATED_OUTPUT = 60;
     public const int LEVEL_ENTITY = 7;
     public const int SHULKER_BOX = 30;
+    public const int TRADE_INGREDIENT_ONE = 31;
+    public const int TRADE_INGREDIENT_TWO = 32;
+    public const int TRADE_RESULT = 33;
+    public const int TRADE_TWO_INGREDIENT_ONE = 47;
+    public const int TRADE_TWO_INGREDIENT_TWO = 48;
+    public const int TRADE_TWO_RESULT = 49;
     public const int BARREL = 58;
     public const int DYNAMIC = 63;
     public const int MAXIMUM_CONTAINER_NAME_ID = 66;
