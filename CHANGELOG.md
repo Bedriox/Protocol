@@ -1,6 +1,10 @@
 # Changelog
 
+- Add a bounded transport-neutral Gateway control frame, authenticated handshake tokens, shared-secret session-key derivation, and direction-bound AES-256-GCM payload protection.
+
 - Add bounded protocol-2193 scoreboard objective, display, score-entry, and player-identity packets with typed slots, ordering, entry kinds, and identity actions.
+
+- Add bounded HMAC-SHA-256 Gateway forwarding claims and re-signing of already verified client presentation data for trusted downstream Bedriox sessions.
 
 - Distinguish unsupported packet IDs from malformed registered payloads and expose a payload-free decode-support query.
 
