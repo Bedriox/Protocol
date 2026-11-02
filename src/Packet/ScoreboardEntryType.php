@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Per-entry operation and scorer type used by SetScore in protocol 2193. */
+/** Per-entry operation and scorer type used by SetScore in protocol 2225. */
 enum ScoreboardEntryType: int
 {
     case REMOVE = 0;

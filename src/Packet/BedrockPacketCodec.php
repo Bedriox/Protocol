@@ -119,6 +119,14 @@ final class BedrockPacketCodec
             PacketIds::SET_PLAYER_INVENTORY_OPTIONS => SetPlayerInventoryOptionsPacket::decode($payload),
             PacketIds::CONTAINER_REGISTRY_CLEANUP => ContainerRegistryCleanupPacket::decode($payload),
             PacketIds::SET_PLAYER_FURNACE_OPTIONS => SetPlayerFurnaceOptionsPacket::decode($payload),
+            PacketIds::CLIENTBOUND_MATCHMAKING_STATE => ClientboundMatchmakingStatePacket::decode($payload),
+            PacketIds::SERVERBOUND_STONECUTTER_SET_RECIPE => ServerboundStonecutterSetRecipePacket::decode($payload),
+            PacketIds::CLIENTBOUND_STONECUTTER_SET_RECIPE => ClientboundStonecutterSetRecipePacket::decode($payload),
+            PacketIds::SERVERBOUND_MATCHMAKING_CANCEL => ServerboundMatchmakingCancelPacket::decode($payload),
+            PacketIds::SET_PASSENGER_OF_BLOCK => SetPassengerOfBlockPacket::decode($payload),
+            PacketIds::SERVERBOUND_CURSOR_ITEM_DRAG => ServerboundCursorItemDragPacket::decode($payload),
+            PacketIds::CLIENTBOUND_PLAY_AUDIO_CONTENT => ClientboundPlayAudioContentPacket::decode($payload),
+            PacketIds::SERVERBOUND_REGISTER_AUDIO_CONTENT => ServerboundRegisterAudioContentPacket::decode($payload),
             default => throw new UnsupportedPacketException($packetId),
         };
     }
@@ -227,7 +235,15 @@ final class BedrockPacketCodec
             PacketIds::MOVEMENT_PREDICTION_SYNC,
             PacketIds::SET_PLAYER_INVENTORY_OPTIONS,
             PacketIds::CONTAINER_REGISTRY_CLEANUP,
-            PacketIds::SET_PLAYER_FURNACE_OPTIONS => true,
+            PacketIds::SET_PLAYER_FURNACE_OPTIONS,
+            PacketIds::CLIENTBOUND_MATCHMAKING_STATE,
+            PacketIds::SERVERBOUND_STONECUTTER_SET_RECIPE,
+            PacketIds::CLIENTBOUND_STONECUTTER_SET_RECIPE,
+            PacketIds::SERVERBOUND_MATCHMAKING_CANCEL,
+            PacketIds::SET_PASSENGER_OF_BLOCK,
+            PacketIds::SERVERBOUND_CURSOR_ITEM_DRAG,
+            PacketIds::CLIENTBOUND_PLAY_AUDIO_CONTENT,
+            PacketIds::SERVERBOUND_REGISTER_AUDIO_CONTENT => true,
             default => false,
         };
     }
@@ -347,6 +363,14 @@ final class BedrockPacketCodec
             SetPlayerInventoryOptionsPacket::class => PacketIds::SET_PLAYER_INVENTORY_OPTIONS,
             ContainerRegistryCleanupPacket::class => PacketIds::CONTAINER_REGISTRY_CLEANUP,
             SetPlayerFurnaceOptionsPacket::class => PacketIds::SET_PLAYER_FURNACE_OPTIONS,
+            ClientboundMatchmakingStatePacket::class => PacketIds::CLIENTBOUND_MATCHMAKING_STATE,
+            ServerboundStonecutterSetRecipePacket::class => PacketIds::SERVERBOUND_STONECUTTER_SET_RECIPE,
+            ClientboundStonecutterSetRecipePacket::class => PacketIds::CLIENTBOUND_STONECUTTER_SET_RECIPE,
+            ServerboundMatchmakingCancelPacket::class => PacketIds::SERVERBOUND_MATCHMAKING_CANCEL,
+            SetPassengerOfBlockPacket::class => PacketIds::SET_PASSENGER_OF_BLOCK,
+            ServerboundCursorItemDragPacket::class => PacketIds::SERVERBOUND_CURSOR_ITEM_DRAG,
+            ClientboundPlayAudioContentPacket::class => PacketIds::CLIENTBOUND_PLAY_AUDIO_CONTENT,
+            ServerboundRegisterAudioContentPacket::class => PacketIds::SERVERBOUND_REGISTER_AUDIO_CONTENT,
             default => throw new InvalidValueException('Packet type is not registered in the Bedrock codec.'),
         };
     }

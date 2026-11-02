@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Named protocol-2193 level events used by authoritative block interaction. */
+/** Named protocol-2225 level events used by authoritative block interaction. */
 enum LevelEventType: int
 {
     case PotionSplash = 2002;

@@ -7,7 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Bounded serverbound protocol-2193 item-stack request batch. */
+/** Bounded serverbound protocol-2225 item-stack request batch. */
 final readonly class ItemStackRequestPacket implements Packet
 {
     public const int MAXIMUM_REQUESTS = 100;

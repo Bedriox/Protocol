@@ -1,5 +1,7 @@
 # Changelog
 
+- Move the sole wire target to Minecraft 1.26.60 / protocol 2225, qualify Minecraft 1.26.61, update changed packet layouts, and add the bounded matchmaking, stonecutter-selection, cursor-drag, passenger-of-block, and audio-content packet family.
+
 - Add a bounded transport-neutral Gateway control frame, authenticated handshake tokens, shared-secret session-key derivation, and direction-bound AES-256-GCM payload protection.
 
 - Add bounded protocol-2193 scoreboard objective, display, score-entry, and player-identity packets with typed slots, ordering, entry kinds, and identity actions.
@@ -109,7 +111,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 - Added typed, bounded protocol-2193 container-open, exact-empty server-settings-request, and current movement-rewind codecs.
 - Added bounded protocol-2193 codecs for bidirectional emote notifications and clientbound level-event and block-update packets, with typed flags and exact literal vectors.
 - Added a typed, bounded protocol-2193 packet-30 inventory-transaction codec covering every official transaction variant, exact source/item framing, and adversarial validation without applying game state.
-- Add an immutable, bounded protocol-2193 Bedrock server advertisement with semantic game modes, typed Nintendo-limited encoding, exact literal vectors, and no RakNet transport dependency.
+- Add an immutable, bounded protocol-2193 Bedrock server advertisement with semantic game modes, typed Nintendo-limited encoding, exact literal vectors, and no transport dependency.
 - Added configurable signed 64-bit world seeds and bounded signed 32-bit world-spawn coordinates to the fixed-flat StartGame factory while preserving its existing defaults.
 - Added a bidirectional, bounded protocol-2193 `EmoteListPacket` codec for actor runtime IDs and canonical emote-piece UUID lists.
 - Added bounded StartGame data-driven block properties and required experiment declarations, retained biome tags, and typed PlayerAuthInput block-action and packed item-use projections for protocol 2193.
@@ -156,7 +158,7 @@ All notable changes will be documented here. The format follows Keep a Changelog
 - Corrected `PlayerAuthInputPacket` conditional-payload indexes and nested presence decoding, and accept the valid absent input-data representation as an empty flag set.
 - Accept the bounded Interact action-byte domain shared by current schema ordinals and retail legacy-valued notifications while retaining exact structural validation.
 - Name MovePlayer mode 1 `RESPAWN`, matching the current packet schema; teleport mode 2 remains distinct.
-- Replaced parallel versioned packet and encryption APIs with the sole unversioned `Packet` namespace, `BedrockPacketCodec`, `BedrockEncryptor`, `BedrockDecryptor`, and `BedrockEncryptedEnvelopeCodec`; compatibility is centralized in `ProtocolVersion`.
+- Replaced parallel versioned packet and encryption APIs with the sole unversioned `Packet` namespace, `BedrockPacketCodec`, `BedrockEncryptor`, `BedrockDecryptor`, and `BedrockEncryptedBatchCodec`; compatibility is centralized in `ProtocolVersion`.
 - Aligned protocol-2169 startup state with independently verified wire behavior: ItemV4 empty descriptors now include the required empty stack-network ID, StartGame uses signed block-position coordinates, the byte-sized member permission field, and current vanilla defaults, and player spawn uses the player-spawn discriminator.
 - Aligned protocol-2169 admission data with the retail schema: retain and emit the signed client `ProfileHash`, build the available-actor network NBT from admitted server actor types, and encode full-column biome storage with the conservative V2 palette shape.
 - Corrected the protocol-2169 `StartGamePacket` level-settings layout by serializing the editor-export flag before the day-cycle lock time.

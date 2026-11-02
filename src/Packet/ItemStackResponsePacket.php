@@ -9,7 +9,7 @@ use Bedriox\Protocol\Codec\ByteBufferWriter;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Bounded clientbound protocol-2193 item-stack responses. */
+/** Bounded clientbound protocol-2225 item-stack responses. */
 final readonly class ItemStackResponsePacket implements Packet
 {
     public const int STATUS_ERROR = ItemStackResponse::STATUS_ERROR;

@@ -153,7 +153,7 @@ final class GameplayMilestonePacketTest extends TestCase
 
     public function testCreativeRequestCanCarryBoundedCraftResultsAdvisory(): void
     {
-        $wire = hex2bin('0106020c0e09011113000100ffffffff');
+        $wire = hex2bin('0106020c0e09011214000100ffffffff');
         self::assertNotFalse($wire);
         $packet = ItemStackRequestPacket::decode($wire);
         self::assertCount(2, $packet->requests[0]->actions);
@@ -177,7 +177,7 @@ final class GameplayMilestonePacketTest extends TestCase
 
     public function testUnknownActionReportsOnlyItsBoundedDecodeLocation(): void
     {
-        $wire = hex2bin('010001121400ffffffff');
+        $wire = hex2bin('010001131500ffffffff');
         self::assertNotFalse($wire);
         try {
             ItemStackRequestPacket::decode($wire);
@@ -187,14 +187,14 @@ final class GameplayMilestonePacketTest extends TestCase
             self::assertSame('unsupported_action_type', $failure->detailCode);
             self::assertSame(3, $failure->byteOffset);
             self::assertSame(0, $failure->actionIndex);
-            self::assertSame(18, $failure->actionType);
+            self::assertSame(19, $failure->actionType);
             self::assertStringNotContainsString(bin2hex($wire), $failure->getMessage());
         }
     }
 
     public function testCraftResultsWithBlockItemDescriptorHasKnownVector(): void
     {
-        $wire = hex2bin('0106011113010101156d696e6563726166743a636f62626c6573746f6e65000100a082d1df0d000100ffffffff');
+        $wire = hex2bin('0106011214010101156d696e6563726166743a636f62626c6573746f6e65000100a082d1df0d000100ffffffff');
         self::assertNotFalse($wire);
         $packet = ItemStackRequestPacket::decode($wire);
         $action = $packet->requests[0]->actions[0];
@@ -204,7 +204,7 @@ final class GameplayMilestonePacketTest extends TestCase
         self::assertSame($wire, $packet->encode());
         $this->assertRejectsEveryTruncation(ItemStackRequestPacket::decode(...), $wire);
 
-        $oversized = hex2bin('010601111111');
+        $oversized = hex2bin('010601121411');
         self::assertNotFalse($oversized);
         $this->expectException(\Bedriox\Protocol\Exception\MalformedDataException::class);
         ItemStackRequestPacket::decode($oversized);
@@ -326,7 +326,7 @@ final class GameplayMilestonePacketTest extends TestCase
         self::assertSame(GameType::Survival, $default->playerGameType);
         self::assertSame(GameType::Survival, $default->levelGameType);
         self::assertTrue($default->blockNetworkIdsAreHashes);
-        self::assertSame('2dc8ba6efcb2b6ed7ad0215a5ec418cf51c4b56c27e8ee4cd1bd343eccb3fc2b', hash('sha256', $default->encode()));
+        self::assertSame('b9e5942cc81d87a91d5a82abba1c0651fdc5a29ce82d8de425e815c8d20a5432', hash('sha256', $default->encode()));
 
         $configured = StartGamePacket::fixedFlat(
             1,

@@ -13,7 +13,7 @@ use Bedriox\Protocol\Exception\BufferUnderflowException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\Value\BlockNetworkId;
 
-/** Internal bounded protocol-2193 codec for one item-stack request entry. */
+/** Internal bounded protocol-2225 codec for one item-stack request entry. */
 final class ItemStackRequestCodec
 {
     /** @return array{ItemStackRequest, ByteBufferReader} */
@@ -219,6 +219,14 @@ final class ItemStackRequestCodec
                     $timesCrafted->value,
                 ), $timesCrafted->reader];
             }
+            if ($actionType === ItemStackRequestActionType::Reserved) {
+                $reservedId = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
+                $numberOfCrafts = $reservedId->reader->readUnsignedByte();
+                return [new CraftReservedItemStackRequestAction(
+                    $reservedId->value,
+                    $numberOfCrafts->value,
+                ), $numberOfCrafts->reader];
+            }
             if ($actionType === ItemStackRequestActionType::CraftNonImplemented) {
                 return [new CraftNonImplementedItemStackRequestAction(), $reader];
             }
@@ -337,6 +345,10 @@ final class ItemStackRequestCodec
         if ($action instanceof CraftLoomItemStackRequestAction) {
             return $writer->writeString($action->patternId, CodecSupport::MAX_SHORT_STRING_BYTES)
                 ->writeUnsignedByte($action->timesCrafted);
+        }
+        if ($action instanceof CraftReservedItemStackRequestAction) {
+            return $writer->writeString($action->reservedId, CodecSupport::MAX_SHORT_STRING_BYTES)
+                ->writeUnsignedByte($action->numberOfCrafts);
         }
         if ($action instanceof CraftNonImplementedItemStackRequestAction) {
             return $writer;

@@ -114,4 +114,12 @@ final class PacketIds
     public const int MOVEMENT_PREDICTION_SYNC = 322;
     public const int VOXEL_SHAPES = 337;
     public const int SET_PLAYER_FURNACE_OPTIONS = 351;
+    public const int CLIENTBOUND_MATCHMAKING_STATE = 353;
+    public const int SERVERBOUND_STONECUTTER_SET_RECIPE = 354;
+    public const int CLIENTBOUND_STONECUTTER_SET_RECIPE = 355;
+    public const int SERVERBOUND_MATCHMAKING_CANCEL = 356;
+    public const int SET_PASSENGER_OF_BLOCK = 357;
+    public const int SERVERBOUND_CURSOR_ITEM_DRAG = 358;
+    public const int CLIENTBOUND_PLAY_AUDIO_CONTENT = 359;
+    public const int SERVERBOUND_REGISTER_AUDIO_CONTENT = 360;
 }

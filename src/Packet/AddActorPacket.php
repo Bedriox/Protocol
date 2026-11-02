@@ -8,7 +8,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\Value\UnsignedLong;
 
-/** Complete protocol-2193 spawn snapshot for one non-player actor. */
+/** Complete protocol-2225 spawn snapshot for one non-player actor. */
 final readonly class AddActorPacket implements Packet
 {
     private const int MAXIMUM_IDENTIFIER_BYTES = 128;
@@ -38,6 +38,7 @@ final readonly class AddActorPacket implements Packet
         public array $metadata = [],
         public ActorProperties $properties = new ActorProperties(),
         public array $links = [],
+        public ?PassengerOfBlockArguments $passengerOfBlock = null,
     ) {
         CodecSupport::validateString($identifier, self::MAXIMUM_IDENTIFIER_BYTES, 'Actor identifier');
         if ($identifier === '') {
@@ -113,6 +114,10 @@ final readonly class AddActorPacket implements Packet
         foreach ($this->links as $link) {
             $writer = $link->write($writer);
         }
+        $writer = CodecSupport::writeBoolean($writer, $this->passengerOfBlock !== null);
+        if ($this->passengerOfBlock !== null) {
+            $writer = $this->passengerOfBlock->write($writer);
+        }
         return $writer->toString();
     }
 
@@ -150,6 +155,11 @@ final readonly class AddActorPacket implements Packet
         for ($index = 0; $index < $linkCount->value; ++$index) {
             [$links[], $reader] = ActorLink::read($reader);
         }
+        [$hasPassengerOfBlock, $reader] = CodecSupport::readBoolean($reader);
+        $passengerOfBlock = null;
+        if ($hasPassengerOfBlock) {
+            [$passengerOfBlock, $reader] = PassengerOfBlockArguments::read($reader);
+        }
         CodecSupport::requireEnd($reader);
 
         try {
@@ -171,6 +181,7 @@ final readonly class AddActorPacket implements Packet
                 $metadata,
                 $properties,
                 $links,
+                $passengerOfBlock,
             );
         } catch (InvalidValueException $e) {
             throw new MalformedDataException('Add-actor packet is invalid.', previous: $e);

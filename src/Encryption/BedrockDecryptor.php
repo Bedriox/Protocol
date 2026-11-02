@@ -6,7 +6,6 @@ namespace Bedriox\Protocol\Encryption;
 
 use LogicException;
 use Throwable;
-use Bedriox\Protocol\Batch\BedrockBatchCodec;
 use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\Exception\InvalidValueException;
 
@@ -36,23 +35,8 @@ final class BedrockDecryptor
         $this->close();
     }
 
-    /** Decrypts a complete Bedrock envelope whose 0xfe marker remains clear. */
-    public function decryptEnvelope(string $encryptedEnvelope): string
-    {
-        $this->ensureOpen();
-        if ($encryptedEnvelope === '' || \ord($encryptedEnvelope[0]) !== BedrockBatchCodec::GAME_PACKET_MARKER) {
-            throw new MalformedDataException('Encrypted Bedrock envelope must begin with the clear 0xfe marker.');
-        }
-        if (\strlen($encryptedEnvelope) - 1 > $this->limits->maximumCompressedBatchBytes + self::TRAILER_BYTES) {
-            $this->close();
-            throw new MalformedDataException('Encrypted Bedrock envelope exceeds the encryption limit.');
-        }
-        $encryptedPayload = \substr($encryptedEnvelope, 1);
-
-        return \chr(BedrockBatchCodec::GAME_PACKET_MARKER) . $this->decryptEncryptedBatch($encryptedPayload);
-    }
-
-    private function decryptEncryptedBatch(string $encryptedPayload): string
+    /** Decrypts one encrypted Bedrock batch body received over NetherNet. */
+    public function decryptBatch(string $encryptedPayload): string
     {
         $this->ensureOpen();
         $length = strlen($encryptedPayload);

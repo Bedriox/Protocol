@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Bedriox\Protocol\Batch;
 
 use Bedriox\Protocol\Exception\BufferOverflowException;
-use Bedriox\Protocol\Exception\MalformedDataException;
-
 final class BedrockBatchCodec
 {
-    public const int GAME_PACKET_MARKER = 0xfe;
-
     private function __construct() {}
 
     public static function encode(BedrockBatch $batch, BatchLimits $limits): string
@@ -23,7 +19,7 @@ final class BedrockBatchCodec
             $batch->compressionThreshold,
         );
 
-        return \chr(self::GAME_PACKET_MARKER) . $payload;
+        return $payload;
     }
 
     public static function decode(
@@ -33,14 +29,11 @@ final class BedrockBatchCodec
         int $compressionThreshold = 1,
     ): BedrockBatch
     {
-        if ($bytes !== '' && \strlen($bytes) - 1 > $limits->maximumInputBytes) {
-            throw new BufferOverflowException('Bedrock batch envelope exceeds its configured input limit.');
-        }
-        if ($bytes === '' || \ord($bytes[0]) !== self::GAME_PACKET_MARKER) {
-            throw new MalformedDataException('Bedrock batch game-packet marker is missing or invalid.');
+        if (\strlen($bytes) > $limits->maximumInputBytes) {
+            throw new BufferOverflowException('Bedrock batch exceeds its configured input limit.');
         }
 
-        $uncompressed = BatchCompressionCodec::decode(\substr($bytes, 1), $mode, $limits, $compressionThreshold);
+        $uncompressed = BatchCompressionCodec::decode($bytes, $mode, $limits, $compressionThreshold);
 
         return new BedrockBatch(PacketBatchCodec::decode($uncompressed, $limits), $mode, $compressionThreshold);
     }

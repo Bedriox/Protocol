@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Batch;
 
-/** Explicit compression framing used during RakNet 11 login negotiation. */
+/** Explicit compression framing used during Bedrock login negotiation. */
 enum CompressionMode
 {
-    /** Pre-NetworkSettings RakNet 11 batch with no algorithm byte. */
+    /** Pre-NetworkSettings batch with no algorithm byte. */
     case Uncompressed;
     /** Legacy RFC 1950 zlib stream without an algorithm byte. */
     case Zlib;

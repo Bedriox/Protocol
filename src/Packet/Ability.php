@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Protocol-2193 ability ordinals and mask bits. */
+/** Protocol-2225 ability ordinals and mask bits. */
 enum Ability: int
 {
     case Build = 0;

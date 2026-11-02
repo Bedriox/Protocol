@@ -28,6 +28,7 @@ final readonly class PlayerListAddPacket implements Packet
             $writer = $writer->writeUnsignedVarInt(1)->writeUnsignedByte(0)
                 ->writeBytes(CodecSupport::uuidToWire($entry->uuid))->writeSignedVarLong($entry->uniqueEntityId)
                 ->writeString($entry->name, CodecSupport::MAX_PLAYER_NAME_BYTES)->writeString($entry->xuid, CodecSupport::MAX_SHORT_STRING_BYTES)
+                ->writeString($entry->skin->playFabId, CodecSupport::MAX_SHORT_STRING_BYTES)
                 ->writeString($entry->platformChatId, CodecSupport::MAX_SHORT_STRING_BYTES)->writeSignedIntLE($entry->buildPlatform->value);
             $writer = $entry->skin->write($writer, $entry->trustedSkin);
             $writer = CodecSupport::writeBoolean($writer, $entry->teacher);
@@ -50,10 +51,18 @@ final readonly class PlayerListAddPacket implements Packet
             }
             $uuid = $legacyAction->reader->readBytes(16); $entityId = $uuid->reader->readSignedVarLong();
             $name = $entityId->reader->readString(CodecSupport::MAX_PLAYER_NAME_BYTES); $xuid = $name->reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
-            $platformChat = $xuid->reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES); $platform = $platformChat->reader->readSignedIntLE();
+            $playFabId = $xuid->reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES);
+            $platformChat = $playFabId->reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES); $platform = $platformChat->reader->readSignedIntLE();
             $buildPlatform = BuildPlatform::tryFrom($platform->value);
             if ($buildPlatform === null) { throw new MalformedDataException('Player-list build platform is invalid.'); }
             [$skin, $reader, $trusted] = PlayerSkin::read($platform->reader);
+            $skin = new PlayerSkin(
+                $skin->skinWidth, $skin->skinHeight, $skin->skin, $skin->capeWidth, $skin->capeHeight, $skin->cape,
+                $skin->geometryJson, $skin->animations, $skin->skinId, $playFabId->value, $skin->resourcePatchJson,
+                $skin->geometryEngineVersion, $skin->animationDataJson, $skin->capeId, $skin->fullSkinId,
+                $skin->armSize, $skin->skinColor, $skin->premium, $skin->capeOnClassic, $skin->primaryUser,
+                $skin->overridingPlayerAppearance, $skin->profileHash, $skin->persona, $skin->personaPieces, $skin->personaTints,
+            );
             [$teacher, $reader] = CodecSupport::readBoolean($reader); [$host, $reader] = CodecSupport::readBoolean($reader);
             [$subClient, $reader] = CodecSupport::readBoolean($reader); $color = $reader->readUnsignedIntLE(); $reader = $color->reader;
             $base[] = new PlayerListAddEntry(CodecSupport::uuidFromWire($uuid->value), $entityId->value, $name->value, $xuid->value,

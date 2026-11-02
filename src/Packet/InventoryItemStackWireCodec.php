@@ -9,7 +9,7 @@ use Bedriox\Protocol\Codec\ByteBufferWriter;
 use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\Value\BlockNetworkId;
 
-/** Internal protocol-2193 NetworkItemStackDescriptor codec shared by transaction forms. */
+/** Internal protocol-2225 NetworkItemStackDescriptor codec shared by transaction forms. */
 final class InventoryItemStackWireCodec
 {
     /** @return array{InventoryItemStack, ByteBufferReader} */

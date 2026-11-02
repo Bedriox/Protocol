@@ -7,7 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Remaining protocol-2193 text variants not represented by the dedicated chat/system/translation packets. */
+/** Remaining protocol-2225 text variants not represented by the dedicated chat/system/translation packets. */
 final readonly class TextPacket implements Packet
 {
     private const int MAXIMUM_PARAMETERS = 16;
@@ -137,7 +137,7 @@ final readonly class TextPacket implements Packet
         $variant = TextPayloadVariant::tryFrom($variantWire->value);
         $type = TextPacketType::tryFrom($typeWire->value);
         if ($variant === null || $type === null || !self::isSupportedType($type) || self::variantFor($type) !== $variant) {
-            throw new MalformedDataException('Text type does not match its protocol-2193 payload variant.');
+            throw new MalformedDataException('Text type does not match its protocol-2225 payload variant.');
         }
 
         $reader = $typeWire->reader;

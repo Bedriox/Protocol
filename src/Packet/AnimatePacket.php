@@ -14,7 +14,13 @@ final readonly class AnimatePacket implements Packet
     /** @var list<int> */
     private const array ACTIONS = [0, self::SWING, 3, 4, 5, 128, 129];
 
-    public function __construct(public int $action, public UnsignedLong $runtimeEntityId, public float $data, public ?string $swingSource)
+    public function __construct(
+        public int $action,
+        public UnsignedLong $runtimeEntityId,
+        public float $data,
+        public ?string $swingSource,
+        public HandSlot $hand = HandSlot::Mainhand,
+    )
     {
         if (!in_array($action, self::ACTIONS, true)) {
             throw new InvalidValueException('Animation action is unknown.');
@@ -30,7 +36,8 @@ final readonly class AnimatePacket implements Packet
     {
         $writer = CodecSupport::writer()->writeUnsignedByte($this->action)->writeUnsignedVarLong($this->runtimeEntityId)->writeFloatLE($this->data);
         $writer = CodecSupport::writeBoolean($writer, $this->swingSource !== null);
-        return ($this->swingSource === null ? $writer : $writer->writeString($this->swingSource, 16))->toString();
+        $writer = $this->swingSource === null ? $writer : $writer->writeString($this->swingSource, 16);
+        return $writer->writeUnsignedByte($this->hand->value)->toString();
     }
     public static function decode(string $bytes): self
     {
@@ -49,7 +56,10 @@ final readonly class AnimatePacket implements Packet
                 throw new MalformedDataException('Animation swing source is unknown.');
             }
         }
-        CodecSupport::requireEnd($reader);
-        return new self($action->value, $runtime->value, $data->value, $source);
+        $hand = $reader->readUnsignedByte();
+        $handSlot = HandSlot::tryFrom($hand->value)
+            ?? throw new MalformedDataException('Animation hand is unknown.');
+        CodecSupport::requireEnd($hand->reader);
+        return new self($action->value, $runtime->value, $data->value, $source, $handSlot);
     }
 }

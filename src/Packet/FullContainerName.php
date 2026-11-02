@@ -6,7 +6,7 @@ namespace Bedriox\Protocol\Packet;
 
 use Bedriox\Protocol\Exception\InvalidValueException;
 
-/** Current FullContainerName wire value; container-name IDs are defined by protocol 2193. */
+/** Current FullContainerName wire value; container-name IDs are defined by protocol 2225. */
 final readonly class FullContainerName
 {
     public const int ARMOR = 6;
@@ -29,7 +29,7 @@ final readonly class FullContainerName
     public const int TRADE_TWO_RESULT = 49;
     public const int BARREL = 58;
     public const int DYNAMIC = 63;
-    public const int MAXIMUM_CONTAINER_NAME_ID = 66;
+    public const int MAXIMUM_CONTAINER_NAME_ID = 70;
 
     public int $containerNameId;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Current protocol-2193 villager presentation and trade-state metadata identifiers. */
+/** Current protocol-2225 villager presentation and trade-state metadata identifiers. */
 final class VillagerActorMetadata
 {
     public const int VARIANT = 2;

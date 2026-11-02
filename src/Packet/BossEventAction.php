@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Operations in the fixed protocol-2193 boss-event payload. */
+/** Operations in the fixed protocol-2225 boss-event payload. */
 enum BossEventAction: int
 {
     case CREATE = 0;

@@ -7,7 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Bounded clientbound protocol-2193 villager trade-window snapshot. */
+/** Bounded clientbound protocol-2225 villager trade-window snapshot. */
 final readonly class UpdateTradePacket implements Packet
 {
     public const int MAXIMUM_DISPLAY_NAME_BYTES = 256;

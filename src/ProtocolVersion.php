@@ -8,8 +8,8 @@ use InvalidArgumentException;
 
 final readonly class ProtocolVersion
 {
-    public const int CURRENT = 2193;
-    public const string GAME_VERSION = '1.26.50';
+    public const int CURRENT = 2225;
+    public const string GAME_VERSION = '1.26.60';
 
     /** @var list<int> */
     public const array SUPPORTED = [self::CURRENT];

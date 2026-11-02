@@ -91,7 +91,7 @@ final class CreativeContentPacketTest extends TestCase
         $standalone = new ItemStackRequestPacket([$request]);
 
         self::assertSame(
-            '0119040c0e80d0acf30e010606321113010101136d696e6563726166743a746573745f6974656d5e0100b1a8030effff010a00000000000000000000010000013c0032f3ffffff1c00010000000000ffffffff',
+            '0119040c0e80d0acf30e010606321214010101136d696e6563726166743a746573745f6974656d5e0100b1a8030effff010a00000000000000000000010000013c0032f3ffffff1c00010000000000ffffffff',
             bin2hex($standalone->encode()),
         );
         self::assertEquals($standalone, ItemStackRequestPacket::decode($standalone->encode()));
@@ -131,7 +131,7 @@ final class CreativeContentPacketTest extends TestCase
         $decoded = PlayerAuthInputPacket::decode($embedded->encode());
 
         self::assertEquals($request, $decoded->itemStackRequest);
-        self::assertSame('cde85ebbf4dd84f854f56f513229164539ee96f3233b3315d9d6910ec2580220', hash('sha256', $embedded->encode()));
+        self::assertSame('ac44f02fdcf10b04bf589a8052b1c7351b00998d16952ffbd5bd1bc5514bc83a', hash('sha256', $embedded->encode()));
         $this->assertRejectsEveryTruncation(PlayerAuthInputPacket::decode(...), $embedded->encode());
     }
 

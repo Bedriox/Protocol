@@ -6,7 +6,6 @@ namespace Bedriox\Protocol\Encryption;
 
 use LogicException;
 use Throwable;
-use Bedriox\Protocol\Batch\BedrockBatchCodec;
 use Bedriox\Protocol\Exception\InvalidValueException;
 
 /** One outbound Bedrock encryption direction. */
@@ -33,25 +32,8 @@ final class BedrockEncryptor
         $this->close();
     }
 
-    /** Encrypts a complete clear Bedrock envelope while leaving its 0xfe marker clear. */
-    public function encryptEnvelope(string $clearEnvelope): string
-    {
-        $this->ensureOpen();
-        if ($clearEnvelope === '' || \ord($clearEnvelope[0]) !== BedrockBatchCodec::GAME_PACKET_MARKER) {
-            throw new InvalidValueException('Clear Bedrock envelope must begin with the 0xfe marker.');
-        }
-        if (\strlen($clearEnvelope) - 1 > $this->limits->maximumCompressedBatchBytes) {
-            throw new InvalidValueException('Clear Bedrock envelope exceeds the encryption limit.');
-        }
-        $compressedBatch = \substr($clearEnvelope, 1);
-        if ($compressedBatch === '') {
-            throw new InvalidValueException('Clear Bedrock envelope must contain a compressed batch.');
-        }
-
-        return \chr(BedrockBatchCodec::GAME_PACKET_MARKER) . $this->encryptCompressedBatch($compressedBatch);
-    }
-
-    private function encryptCompressedBatch(string $compressedBatch): string
+    /** Encrypts one compressed Bedrock batch body for NetherNet delivery. */
+    public function encryptBatch(string $compressedBatch): string
     {
         $this->ensureOpen();
         $length = strlen($compressedBatch);

@@ -96,8 +96,7 @@ final readonly class PlayerSkin
 
     public function write(ByteBufferWriter $writer, bool $trusted): ByteBufferWriter
     {
-        $writer = $writer->writeString($this->skinId, 65_536)->writeString($this->playFabId, 65_536)
-            ->writeString($this->resourcePatchJson, 65_536);
+        $writer = $writer->writeString($this->skinId, 65_536)->writeString($this->resourcePatchJson, 65_536);
         $writer = self::writeImage($writer, $this->skinWidth, $this->skinHeight, $this->skin)
             ->writeUnsignedVarInt(count($this->animations));
         foreach ($this->animations as $animation) {
@@ -131,8 +130,8 @@ final readonly class PlayerSkin
     /** @return array{self, ByteBufferReader, bool} */
     public static function read(ByteBufferReader $reader): array
     {
-        $skinId = $reader->readString(65_536); $playFab = $skinId->reader->readString(65_536);
-        $patch = $playFab->reader->readString(65_536);
+        $skinId = $reader->readString(65_536);
+        $patch = $skinId->reader->readString(65_536);
         [$skinWidth, $skinHeight, $skin, $reader] = self::readImage($patch->reader, 262_144, false);
         $count = $reader->readUnsignedVarInt();
         if ($count->value > 32) { throw new MalformedDataException('Skin animation count exceeds its limit.'); }
@@ -183,7 +182,7 @@ final readonly class PlayerSkin
         $reader = $profileHash->reader;
         try {
             $skinValue = new self($skinWidth, $skinHeight, $skin, $capeWidth, $capeHeight, $cape, $strings[0], $animations,
-                $skinId->value, $playFab->value, $patch->value, $strings[1], $strings[2], $strings[3], $strings[4],
+                $skinId->value, '', $patch->value, $strings[1], $strings[2], $strings[3], $strings[4],
                 $armSize->value === 1 ? 'wide' : '', $skinColor->value === 0 ? '' : sprintf('#%x', $skinColor->value & 0xffffffff),
                 $flags[0], $flags[2], $flags[3], $flags[4], $profileHash->value, $flags[1], $personaPieces, $personaTints);
         } catch (\Throwable $e) {

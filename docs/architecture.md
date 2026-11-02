@@ -4,7 +4,7 @@
 
 This package translates bounded byte sequences for Bedriox's single supported Bedrock release into protocol values and back. It has no socket, event-loop, player, world, command, or persistence responsibility.
 
-The intended dependency direction is `Bedriox server -> Bedriox Protocol -> immutable Bedriox Data artifacts`. Protocol must never import the server or RakNet packages. Any data dependency must be explicit, versioned, and read-only.
+The intended dependency direction is `Bedriox server -> Bedriox Protocol -> immutable Bedriox Data artifacts`. Protocol must never import the server or NetherNet packages. Any data dependency must be explicit, versioned, and read-only.
 
 ## Implemented layers
 
@@ -13,7 +13,7 @@ The intended dependency direction is `Bedriox server -> Bedriox Protocol -> immu
 3. `Discovery`: the immutable typed MCBE server advertisement and its bounded semicolon payload. UDP, ping/pong framing, server identity generation, and socket policy remain outside this package.
 4. `Packet`: generic headers, immutable framed-payload values, and the sole supported Bedrock packet set in an unversioned namespace.
 5. `Version`: one centralized protocol and game-version declaration used by admission and discovery.
-6. `Batch` and `Encryption`: implemented bounded packet batching, threshold-aware negotiated zlib framing, and stateful AES-256-CTR envelopes with a clear `0xfe` marker.
+6. `Batch` and `Encryption`: implemented bounded packet batching, threshold-aware negotiated zlib framing, and stateful AES-256-CTR encryption of marker-free NetherNet batch bodies.
 7. `Security`: bounded encoding and OpenSSL-backed ES384/P-384 handshake primitives; authentication and trust policy remain in the server layer.
 
 Decoding APIs must fail closed on truncation, overflow, invalid state, or configured limits. Packet classes cannot mutate server state. The consumer validates session state before dispatch.

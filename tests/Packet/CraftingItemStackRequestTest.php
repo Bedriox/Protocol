@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
 
 final class CraftingItemStackRequestTest extends TestCase
 {
-    private const string VECTOR = '010a080a0c07020b0d08030201010f6d696e6563726166743a73746f6e65feff03010003030e6d696e6563726166743a6c6f677302000c0e09010d0f0affffffff0e10feffffff01080f11067374726970650210121113000100ffffffff';
+    private const string VECTOR = '010a080a0c07020b0d08030201010f6d696e6563726166743a73746f6e65feff03010003030e6d696e6563726166743a6c6f677302000c0e09010d0f0affffffff0e10feffffff01080f11067374726970650211131214000100ffffffff';
 
     public function testCompleteCraftingActionFamilyHasExactVectorAndRoundTrips(): void
     {
@@ -49,7 +49,7 @@ final class CraftingItemStackRequestTest extends TestCase
         self::assertEquals($packet, ItemStackRequestPacket::decode($packet->encode()));
         self::assertSame(12, ItemStackRequestActionType::CraftRecipe->marker());
         self::assertSame(13, ItemStackRequestActionType::AutoCraftRecipe->marker());
-        self::assertSame(19, ItemStackRequestActionType::CraftResults->marker());
+        self::assertSame(20, ItemStackRequestActionType::CraftResults->marker());
     }
 
     public function testEveryCraftingActionTruncationFailsClosed(): void

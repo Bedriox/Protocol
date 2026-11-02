@@ -9,7 +9,7 @@ Bedriox Protocol is the bounded Minecraft: Bedrock Edition wire-protocol library
 - Bedrock packet batching, compression, encryption framing, and NBT when implemented.
 - Stable boundaries that do not depend on server, player, or world objects.
 
-RakNet transport, gameplay, authentication policy, and copyrighted game data are out of scope.
+NetherNet transport, gameplay, authentication policy, and copyrighted game data are out of scope.
 
 ## Install and use
 
@@ -38,4 +38,4 @@ See the [codebase map](docs/codebase-map.md), [packet contract](docs/packet-cont
 
 ## Status and license
 
-The sole wire target is Minecraft 1.26.50 / protocol 2193; Minecraft 1.26.51 is qualified as a same-protocol retail client. The library provides a bounded gameplay/bootstrap subset and dataset-backed fixed-flat chunk generation. Packet names remain unversioned because upgrades replace this single current target rather than creating parallel protocol APIs. Other protocol numbers fail closed. This is not a claim of complete gameplay interoperability. Original source code is licensed under GPL-3.0-only. Required third-party legal attribution is recorded in `NOTICE` or `THIRD_PARTY_NOTICES.md` when applicable.
+The sole wire target is Minecraft 1.26.60 / protocol 2225; Minecraft 1.26.61 is qualified as a same-protocol retail client. The library provides a bounded gameplay/bootstrap subset and dataset-backed fixed-flat chunk generation. Packet names remain unversioned because upgrades replace this single current target rather than creating parallel protocol APIs. Other protocol numbers fail closed. This is not a claim of complete gameplay interoperability. Original source code is licensed under GPL-3.0-only. Required third-party legal attribution is recorded in `NOTICE` or `THIRD_PARTY_NOTICES.md` when applicable.

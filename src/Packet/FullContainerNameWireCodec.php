@@ -9,7 +9,7 @@ use Bedriox\Protocol\Codec\ByteBufferWriter;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Internal protocol-2193 FullContainerName encoder. */
+/** Internal protocol-2225 FullContainerName encoder. */
 final class FullContainerNameWireCodec
 {
     /** @return array{FullContainerName, ByteBufferReader} */

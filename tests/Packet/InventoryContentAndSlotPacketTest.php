@@ -93,7 +93,7 @@ final class InventoryContentAndSlotPacketTest extends TestCase
     {
         yield 'content count above limit' => [static fn () => InventoryContentPacket::decode("\0\x81\x01")];
         yield 'content unknown full-container name' => [static fn () => InventoryContentPacket::decode(
-            "\0\0\x43\0\0\0\1\0\0\0\0\0",
+            "\0\0\x47\0\0\0\1\0\0\0\0\0",
         )];
         yield 'slot container above byte range' => [static fn () => InventorySlotPacket::decode("\x80\x02")];
         yield 'slot invalid container-name presence' => [static fn () => InventorySlotPacket::decode("\0\0\2")];
@@ -119,7 +119,7 @@ final class InventoryContentAndSlotPacketTest extends TestCase
         yield 'slot above unsigned integer range' => [
             static fn () => new InventorySlotPacket(0, 0x100000000, InventoryItemStack::empty()),
         ];
-        yield 'unknown container name' => [static fn () => new FullContainerName(67)];
+        yield 'unknown container name' => [static fn () => new FullContainerName(71)];
         yield 'dynamic ID above unsigned integer range' => [static fn () => new FullContainerName(0, 0x100000000)];
     }
 

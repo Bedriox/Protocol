@@ -11,7 +11,7 @@ use Bedriox\Protocol\Batch\CompressionMode;
 use Bedriox\Protocol\Codec\ByteBufferReader;
 use Bedriox\Protocol\Codec\ByteBufferWriter;
 use Bedriox\Protocol\Encryption\BedrockDecryptor;
-use Bedriox\Protocol\Encryption\BedrockEncryptedEnvelopeCodec;
+use Bedriox\Protocol\Encryption\BedrockEncryptedBatchCodec;
 use Bedriox\Protocol\Encryption\BedrockEncryptor;
 use Bedriox\Protocol\Exception\CodecException;
 use Bedriox\Protocol\Exception\InvalidValueException;
@@ -58,7 +58,7 @@ final class ActorPacketTest extends TestCase
             . '01106d696e6563726166743a6865616c746800000000000070410000a041'
             . '0104040403436f77'
             . '01020501030000c03f'
-            . '0103060101000000803e',
+            . '0103060101000000803e00',
             bin2hex($packet->encode()),
         );
         self::assertSame(PacketIds::ADD_ACTOR, BedrockPacketCodec::packetId($packet));
@@ -101,7 +101,7 @@ final class ActorPacketTest extends TestCase
         self::assertSame(
             '0307106d696e6563726166743a78705f6f7262'
             . '0000803f00000040000040400000803e0000003f000040bf00000000000000000000000000000000'
-            . '00010f02020e000000',
+            . '00010f02020e00000000',
             bin2hex($packet->encode()),
         );
         self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::ADD_ACTOR, $packet->encode()));
@@ -221,8 +221,8 @@ final class ActorPacketTest extends TestCase
         $clear = BedrockBatchCodec::encode(new BedrockBatch($frames, CompressionMode::NegotiatedZlib), $limits);
         $key = hex2bin(self::KEY_HEX);
         self::assertIsString($key);
-        $wire = BedrockEncryptedEnvelopeCodec::encode($clear, new BedrockEncryptor($key));
-        $decodedClear = BedrockEncryptedEnvelopeCodec::decode($wire, new BedrockDecryptor($key));
+        $wire = BedrockEncryptedBatchCodec::encode($clear, new BedrockEncryptor($key));
+        $decodedClear = BedrockEncryptedBatchCodec::decode($wire, new BedrockDecryptor($key));
         $decoded = BedrockBatchCodec::decode($decodedClear, CompressionMode::NegotiatedZlib, $limits);
 
         self::assertCount(count($packets), $decoded->packets);

@@ -7,7 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Fixed-schema bidirectional boss-event state for protocol 2193. */
+/** Fixed-schema bidirectional boss-event state for protocol 2225. */
 final readonly class BossEventPacket implements Packet
 {
     public function __construct(

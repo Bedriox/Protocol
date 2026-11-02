@@ -4,13 +4,13 @@
 
 This repository provides Minecraft: Bedrock Edition wire primitives and packet codecs for one explicitly bounded compatible release family. It may own bounded binary/NBT codecs, immutable packet values, the current packet registry, batching, compression framing, and encryption framing.
 
-It does not own sockets, RakNet reliability, authentication policy, sessions, players, worlds, commands, persistence, or server behavior. Dependency direction is:
+It does not own sockets, NetherNet delivery, authentication policy, sessions, players, worlds, commands, persistence, or server behavior. Dependency direction is:
 
 ```text
 Bedriox server -> Bedriox/Protocol -> immutable, versioned Bedriox/Data artifacts
 ```
 
-Protocol must never depend on Bedriox or Bedriox/RakNet. A future Bedriox/Data dependency must be explicit, versioned, and read-only.
+Protocol must never depend on Bedriox or Bedriox/NetherNet. A future Bedriox/Data dependency must be explicit, versioned, and read-only.
 
 ## Repository layout
 
@@ -48,7 +48,7 @@ Follow [`docs/change-safety.md`](docs/change-safety.md) for the required baselin
 - Packet values must not mutate server state. The protocol version and packet registry must be explicit; never infer compatibility from a client version string.
 - Keep packet names unversioned. The repository has one current Bedrock target; an upgrade replaces its wire authority and golden vectors rather than adding parallel version namespaces.
 - Keep terrain delivery request-driven for the current Bedrock family: LevelChunk carries the bounded biome shell and SubChunk responses carry section data. Bound request counts, coordinates, response bytes, and palette sizes before allocation.
-- Maintain exactly one supported Bedrock target. The wire authority is Minecraft 1.26.50 / protocol 2193; Minecraft 1.26.51 is a qualified same-protocol retail client. Upgrades replace this authority and its golden vectors rather than adding parallel version branches.
+- Maintain exactly one supported Bedrock target. The wire authority is Minecraft 1.26.60 / protocol 2225; Minecraft 1.26.61 is a qualified same-protocol retail client. Upgrades replace this authority and its golden vectors rather than adding parallel version branches.
 - Prove generated terrain semantically: tests must decode every cell, palette entry, biome copy-last marker, and both height maps. Packet length checks alone are insufficient.
 - Unsupported inventory actions may be rejected by request ID but must never mutate state or be registered as unbounded opaque no-ops.
 - Use platform-independent pack/unpack formats and add known byte vectors, not only encode/decode round trips.
@@ -76,7 +76,7 @@ Enforce explicit limits before slicing, iterating, decompressing, or allocating.
 
 ## Cross-repository coordination
 
-- Protocol owns wire representations; Bedriox owns session policy and state; Bedriox/RakNet owns transport; Bedriox/Data owns approved immutable registries and artifacts.
+- Protocol owns wire representations; Bedriox owns session policy and state; Bedriox/NetherNet owns transport; Bedriox/Data owns approved immutable registries and artifacts.
 - Do not move domain behavior across these boundaries for convenience.
 - Coordinate breaking public API or supported-version changes with Bedriox consumers and compatibility manifests.
 - Do not edit sibling repositories unless the task explicitly includes them. Run each affected repository's quality gate after coordinated changes.

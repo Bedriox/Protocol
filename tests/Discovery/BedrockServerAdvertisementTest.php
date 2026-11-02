@@ -13,7 +13,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 
 final class BedrockServerAdvertisementTest extends TestCase
 {
-    public function testEncodesIndependentLiteralProtocol2193Vector(): void
+    public function testEncodesIndependentLiteralProtocol2225Vector(): void
     {
         $advertisement = new BedrockServerAdvertisement(
             motd: 'Bedriox',
@@ -28,7 +28,7 @@ final class BedrockServerAdvertisementTest extends TestCase
         );
 
         self::assertSame(
-            'MCPE;Bedriox;2193;1.26.50;3;20;1234;Fast PHP;Survival;1;19132;19133;',
+            'MCPE;Bedriox;2225;1.26.60;3;20;1234;Fast PHP;Survival;1;19132;19133;',
             $advertisement->encode(),
         );
         self::assertLessThanOrEqual(BedrockServerAdvertisement::MAXIMUM_ENCODED_BYTES, \strlen($advertisement->encode()));

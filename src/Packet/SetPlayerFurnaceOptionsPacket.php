@@ -6,7 +6,7 @@ namespace Bedriox\Protocol\Packet;
 
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Protocol-2193 furnace recipe-book display preferences. */
+/** Protocol-2225 furnace recipe-book display preferences. */
 final readonly class SetPlayerFurnaceOptionsPacket implements Packet
 {
     public function __construct(public FurnaceType $type, public FurnaceOptions $options) {}

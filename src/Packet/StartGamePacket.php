@@ -99,6 +99,7 @@ final readonly class StartGamePacket implements Packet
             $w = CodecSupport::writeBoolean($w, $flag);
         }
         $w = CodecSupport::writeBoolean($w, false); // not exported from the editor
+        $w = $w->writeUnsignedByte(0); // no editor-level migration
         $w = $w->writeSignedVarInt(-1)->writeSignedVarInt(0);
         $w = CodecSupport::writeBoolean($w, false)->writeString('', 0)->writeFloatLE(0.0)->writeFloatLE(0.0);
         foreach ([false, true, true] as $flag) {

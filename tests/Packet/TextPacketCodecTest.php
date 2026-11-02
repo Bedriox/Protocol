@@ -98,7 +98,7 @@ final class TextPacketCodecTest extends TestCase
         }
     }
 
-    public function testTypedDiscriminatorsMatchProtocol2193(): void
+    public function testTypedDiscriminatorsMatchProtocol2225(): void
     {
         self::assertSame(0, TextPayloadVariant::MessageOnly->value);
         self::assertSame(1, TextPayloadVariant::AuthorAndMessage->value);

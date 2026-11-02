@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 final class SignPacketTest extends TestCase
 {
-    public function testOpenSignUsesProtocol2193LayoutAndRegistry(): void
+    public function testOpenSignUsesProtocol2225LayoutAndRegistry(): void
     {
         $packet = new OpenSignPacket(new BlockPosition(-1, 64, 2), true);
 

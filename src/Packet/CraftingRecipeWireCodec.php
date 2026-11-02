@@ -9,7 +9,7 @@ use Bedriox\Protocol\Codec\ByteBufferWriter;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Internal bounded protocol-2193 recipe wire codec. */
+/** Internal bounded protocol-2225 recipe wire codec. */
 final class CraftingRecipeWireCodec
 {
     /** @return array{CraftingRecipeIngredient, ByteBufferReader} */

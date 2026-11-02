@@ -187,7 +187,7 @@ final class StorageContainerPacketTest extends TestCase
 
     public function testCurrentContainerSlotTypeDomainIsCompleteAndNamed(): void
     {
-        self::assertCount(67, ContainerSlotType::cases());
+        self::assertCount(71, ContainerSlotType::cases());
         foreach (range(0, FullContainerName::MAXIMUM_CONTAINER_NAME_ID) as $id) {
             self::assertNotNull(ContainerSlotType::tryFrom($id));
         }

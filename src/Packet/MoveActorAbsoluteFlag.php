@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Current protocol-2193 MoveActorAbsolute header bits. */
+/** Current protocol-2225 MoveActorAbsolute header bits. */
 enum MoveActorAbsoluteFlag: int
 {
     case OnGround = 0x01;

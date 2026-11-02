@@ -37,7 +37,7 @@ truncation, noncanonical boolean value, and trailing byte.
 
 `BedrockBatchCodec` adds the `0xfe` game-packet marker and delegates compression framing. Its explicit modes are `Uncompressed` before NetworkSettings, negotiated `None` (`0xff`), threshold-aware `NegotiatedZlib`, and legacy unprefixed RFC 1950 `Zlib`. Negotiated zlib emits `0xff` with plain bytes below the configured threshold and `0x00` with raw DEFLATE at or above it. Threshold zero therefore compresses every non-empty batch; disabling compression requires negotiating `None`. Decoding dispatches the prefix per batch, accepts only the representation permitted by the threshold, and rejects Snappy or unknown prefixes.
 
-`BedrockEncryptedEnvelopeCodec` is the safe composition boundary for encrypted traffic. It removes the clear `0xfe` marker before the compressed batch and integrity trailer enter the continuous cipher, then restores the marker outside the ciphertext. The reverse path validates the marker before consuming decryptor state.
+`BedrockEncryptedBatchCodec` is the safe composition boundary for encrypted traffic. The complete compressed batch body and integrity trailer enter the continuous cipher. NetherNet carries this batch body directly, without the retired RakNet game-packet marker.
 
 ## Chunk palette storage
 
@@ -53,13 +53,13 @@ clientbound death information, and the three-state bidirectional respawn
 conversation. Actor events use the current optional fire-position field;
 unsupported event types and malformed optional values fail closed.
 
-Protocol-2193 player display support covers all twelve current text variants,
+Protocol-2225 player display support covers all twelve current text variants,
 all nine title operations, and toast notifications. Text payload variants are
 validated against their text types before fields are retained. Title timing is
 encoded as signed VarInts, and current XUID, platform identity, and filtered
 text fields remain explicit bounded strings.
 
-Boss-event packet 74 uses protocol 2193's fixed payload for every operation: a
+Boss-event packet 74 uses protocol 2225's fixed payload for every operation: a
 signed boss unique-entity ID, typed action byte, bounded title and filtered
 title, finite `0.0..1.0` progress, typed color byte and typed overlay byte. The
 complete current action domain includes the client `QUERY` notification, so a

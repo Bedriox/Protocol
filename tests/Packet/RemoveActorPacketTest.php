@@ -24,7 +24,7 @@ final class RemoveActorPacketTest extends TestCase
     }
 
     #[DataProvider('literalVectors')]
-    public function testSignedUniqueIdUsesExactProtocol2193WireForm(int $actorUniqueId, string $hex): void
+    public function testSignedUniqueIdUsesExactProtocol2225WireForm(int $actorUniqueId, string $hex): void
     {
         $packet = new RemoveActorPacket($actorUniqueId);
 

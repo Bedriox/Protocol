@@ -38,14 +38,14 @@ final class PacketCodecTest extends TestCase
     /** @return iterable<string, array{Packet, string}> */
     public static function vectors(): iterable
     {
-        yield 'request network settings' => [new RequestNetworkSettingsPacket(), '00000891'];
+        yield 'request network settings' => [new RequestNetworkSettingsPacket(), '000008b1'];
         yield 'network settings' => [
             new NetworkSettingsPacket(256, CompressionAlgorithm::None, true, 5, 1.5),
             '0001020001050000c03f',
         ];
         yield 'login token envelope' => [
-            new LoginPacket(2193, new LoginAuthentication(AuthenticationType::Full, 'tok'), 'client'),
-            '0000089145370000007b2241757468656e7469636174696f6e54797065223a302c22546f6b656e223a22746f6b222c224365727469666963617465223a22227d06000000636c69656e74',
+            new LoginPacket(2225, new LoginAuthentication(AuthenticationType::Full, 'tok'), 'client'),
+            '000008b145370000007b2241757468656e7469636174696f6e54797065223a302c22546f6b656e223a22746f6b222c224365727469666963617465223a22227d06000000636c69656e74',
         ];
         yield 'play status' => [new PlayStatusPacket(PlayStatus::LoginSuccess), '00000000'];
         yield 'server handshake' => [new ServerToClientHandshakePacket('abc'), '03616263'];
@@ -59,8 +59,8 @@ final class PacketCodecTest extends TestCase
             '000000000000000000000000000000000000000003312e3000',
         ];
         yield 'empty pack stack' => [
-            new ResourcePackStackPacket(false, [], '1.26.51', [], false, false),
-            '000007312e32362e3531000000000000',
+            new ResourcePackStackPacket(false, [], '1.26.60', [], false, false),
+            '000007312e32362e3630000000000000',
         ];
         yield 'non-empty pack information' => [
             new ResourcePacksInfoPacket(
@@ -89,12 +89,12 @@ final class PacketCodecTest extends TestCase
             new ResourcePackStackPacket(
                 true,
                 [new ResourcePackStackEntry('pack', '1.0.0', 'sub')],
-                '1.26.51',
+                '1.26.60',
                 [new Experiment('experiment', true)],
                 true,
                 false,
             ),
-            '0101047061636b05312e302e300373756207312e32362e3531010000000a6578706572696d656e74010100',
+            '0101047061636b05312e302e300373756207312e32362e3630010000000a6578706572696d656e74010100',
         ];
         yield 'pack response' => [
             new ResourcePackClientResponsePacket(ResourcePackResponseStatus::Completed, [], 'completed'),
@@ -156,7 +156,7 @@ final class PacketCodecTest extends TestCase
         $stack = new ResourcePackStackPacket(
             true,
             [new ResourcePackStackEntry('pack', '1.0.0', 'sub')],
-            '1.26.51',
+            '1.26.60',
             [new Experiment('experiment', true)],
             true,
             false,
@@ -167,7 +167,7 @@ final class PacketCodecTest extends TestCase
     public function testCertificateAuthenticationRoundTrip(): void
     {
         $packet = new LoginPacket(
-            2193,
+            2225,
             new LoginAuthentication(AuthenticationType::SelfSigned, certificateChain: ['first.jwt', 'second.jwt']),
             'client.jwt',
         );
@@ -178,13 +178,13 @@ final class PacketCodecTest extends TestCase
     {
         $authentication = new LoginAuthentication(AuthenticationType::Full, 'token');
         try {
-            new LoginPacket(2193, $authentication, '');
+            new LoginPacket(2225, $authentication, '');
             self::fail('Empty caller client JWT was accepted.');
         } catch (InvalidValueException) {
             self::addToAssertionCount(1);
         }
 
-        $valid = (new LoginPacket(2193, $authentication, 'x'))->encode();
+        $valid = (new LoginPacket(2225, $authentication, 'x'))->encode();
         $emptyClientJwt = substr($valid, 0, -5) . pack('V', 0);
         $authenticationEnvelopeLength = ord($emptyClientJwt[4]);
         self::assertGreaterThan(0, $authenticationEnvelopeLength);

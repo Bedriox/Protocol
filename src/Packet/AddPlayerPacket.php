@@ -18,6 +18,7 @@ final readonly class AddPlayerPacket implements Packet
         public float $pitch, public float $yaw, public float $headYaw, public int $gameType,
         public PlayerAbilities $abilities, public string $deviceId = '', public BuildPlatform $buildPlatform = BuildPlatform::Unknown,
         /** @var list<ActorMetadata> */ public array $metadata = [],
+        public ?PassengerOfBlockArguments $passengerOfBlock = null,
     ) {
         CodecSupport::uuidToWire($uuid);
         CodecSupport::validateString($username, CodecSupport::MAX_PLAYER_NAME_BYTES, 'Username');
@@ -47,8 +48,13 @@ final readonly class AddPlayerPacket implements Packet
             ->writeSignedVarInt($this->gameType);
         $writer = ActorMetadataCollection::write($writer, $this->metadata)
             ->writeUnsignedVarInt(0)->writeUnsignedVarInt(0);
-        return $this->abilities->write($writer)->writeUnsignedVarInt(0)
-            ->writeString($this->deviceId, CodecSupport::MAX_SHORT_STRING_BYTES)->writeSignedIntLE($this->buildPlatform->value)->toString();
+        $writer = $this->abilities->write($writer)->writeUnsignedVarInt(0);
+        $writer = CodecSupport::writeBoolean($writer, $this->passengerOfBlock !== null);
+        if ($this->passengerOfBlock !== null) {
+            $writer = $this->passengerOfBlock->write($writer);
+        }
+        return $writer->writeString($this->deviceId, CodecSupport::MAX_SHORT_STRING_BYTES)
+            ->writeSignedIntLE($this->buildPlatform->value)->toString();
     }
 
     public static function decode(string $bytes): self
@@ -79,14 +85,19 @@ final readonly class AddPlayerPacket implements Packet
         }
         [$abilities, $reader] = PlayerAbilities::read($floats->reader); $links = $reader->readUnsignedVarInt();
         if ($links->value !== 0) { throw new MalformedDataException('Only empty AddPlayer entity links are supported.'); }
-        $device = $links->reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES); $platform = $device->reader->readSignedIntLE();
+        [$hasPassengerOfBlock, $reader] = CodecSupport::readBoolean($links->reader);
+        $passengerOfBlock = null;
+        if ($hasPassengerOfBlock) {
+            [$passengerOfBlock, $reader] = PassengerOfBlockArguments::read($reader);
+        }
+        $device = $reader->readString(CodecSupport::MAX_SHORT_STRING_BYTES); $platform = $device->reader->readSignedIntLE();
         $buildPlatform = BuildPlatform::tryFrom($platform->value);
         if ($buildPlatform === null) { throw new MalformedDataException('Add-player build platform is invalid.'); }
         CodecSupport::requireEnd($platform->reader);
         return new self(
             CodecSupport::uuidFromWire($uuid->value), $username->value, $runtime->value, $chat->value,
             $vectors[0], $vectors[1], $vectors[2], $vectors[3], $vectors[4], $vectors[5], $vectors[6], $vectors[7], $vectors[8],
-            $gameType->value, $abilities, $device->value, $buildPlatform, $metadata,
+            $gameType->value, $abilities, $device->value, $buildPlatform, $metadata, $passengerOfBlock,
         );
     }
 }

@@ -18,7 +18,7 @@ final class MoveActorAbsolutePacketTest extends TestCase
 {
     private const string VECTOR = 'ac02090000803f000000c000006040204080';
 
-    public function testProtocol2193LiteralVectorAndTypedGroundState(): void
+    public function testProtocol2225LiteralVectorAndTypedGroundState(): void
     {
         $packet = new MoveActorAbsolutePacket(
             UnsignedLong::fromInt(300),

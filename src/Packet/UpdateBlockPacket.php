@@ -8,7 +8,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\Value\BlockNetworkId;
 
-/** Clientbound block-state update; runtime IDs must already be translated for protocol 2193. */
+/** Clientbound block-state update; runtime IDs must already be translated for protocol 2225. */
 final readonly class UpdateBlockPacket implements Packet
 {
     /** @param list<UpdateBlockFlag> $flags */

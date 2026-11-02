@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Colors supported by the protocol-2193 boss-event schema. */
+/** Colors supported by the protocol-2225 boss-event schema. */
 enum BossEventColor: int
 {
     case PINK = 0;

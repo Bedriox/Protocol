@@ -23,7 +23,7 @@ use Bedriox\Protocol\Packet\TakeItemStackRequestAction;
 
 final class ItemStackResponsePacketTest extends TestCase
 {
-    public function testCurrentInventoryContainerIdsMatchProtocol2193(): void
+    public function testCurrentInventoryContainerIdsMatchProtocol2225(): void
     {
         self::assertSame(6, FullContainerName::ARMOR);
         self::assertSame(12, FullContainerName::COMBINED_HOTBAR_AND_INVENTORY);

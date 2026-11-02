@@ -22,7 +22,7 @@ final class BatchCompressionCodecTest extends TestCase
     private const string ZLIB_VECTOR = "\x78\xda\x63\x62\x5c\xc5\xc8\x04\x00\x02\x15\x00\xb1";
     private const string RAW_DEFLATE_VECTOR = "\x63\x62\x5c\xc5\xc8\x04\x00";
 
-    public function testIndependentCompressionAndEnvelopeVectors(): void
+    public function testIndependentCompressionAndBatchVectors(): void
     {
         $limits = new BatchLimits();
         self::assertSame(self::RAW_BATCH, BatchCompressionCodec::decode(self::ZLIB_VECTOR, CompressionMode::Zlib, $limits));
@@ -36,12 +36,12 @@ final class BatchCompressionCodecTest extends TestCase
             new PacketFrame(new PacketHeader(2), ''),
         ];
         self::assertSame(
-            'feff0201aa0102',
+            'ff0201aa0102',
             bin2hex(BedrockBatchCodec::encode(new BedrockBatch($packets, CompressionMode::PrefixedNone), $limits)),
         );
         self::assertEquals(
             $packets,
-            BedrockBatchCodec::decode("\xfe\x00" . self::RAW_DEFLATE_VECTOR, CompressionMode::NegotiatedZlib, $limits)->packets,
+            BedrockBatchCodec::decode("\x00" . self::RAW_DEFLATE_VECTOR, CompressionMode::NegotiatedZlib, $limits)->packets,
         );
     }
 
@@ -150,12 +150,12 @@ final class BatchCompressionCodecTest extends TestCase
         BatchCompressionCodec::decode('12345', CompressionMode::Uncompressed, new BatchLimits(maximumInputBytes: 4));
     }
 
-    public function testMarkerAndBatchTrailingGarbageFail(): void
+    public function testInvalidCompressionPrefixAndBatchTrailingGarbageFail(): void
     {
-        foreach ([self::RAW_BATCH, "\xff" . self::RAW_BATCH, "\xfe\xff" . self::RAW_BATCH . "\x00"] as $encoded) {
+        foreach ([self::RAW_BATCH, "\x01" . self::RAW_BATCH, "\xff" . self::RAW_BATCH . "\x00"] as $encoded) {
             try {
                 BedrockBatchCodec::decode($encoded, CompressionMode::PrefixedNone, new BatchLimits());
-                self::fail('Invalid envelope or trailing batch garbage was accepted.');
+                self::fail('Invalid batch body or trailing batch garbage was accepted.');
             } catch (CodecException) {
             }
         }

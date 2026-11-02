@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Protocol-2193 text payload union discriminators. */
+/** Protocol-2225 text payload union discriminators. */
 enum TextPayloadVariant: int
 {
     case MessageOnly = 0;

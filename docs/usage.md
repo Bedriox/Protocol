@@ -25,23 +25,23 @@ use Bedriox\Protocol\Batch\BedrockBatchCodec;
 use Bedriox\Protocol\Batch\CompressionMode;
 
 $limits = new BatchLimits();
-$batch = BedrockBatchCodec::decode($rakNetPayload, CompressionMode::Uncompressed, $limits);
+$batch = BedrockBatchCodec::decode($transportPayload, CompressionMode::Uncompressed, $limits);
 ```
 
-After NetworkSettings negotiates zlib for a RakNet 11 connection, use `CompressionMode::NegotiatedZlib` and pass the exact advertised threshold. Encoding deterministically selects `0xff` plain bytes below the threshold and `0x00` raw DEFLATE at or above it; decoding validates and dispatches either prefix per batch.
+After NetworkSettings negotiates zlib for the Bedrock session, use `CompressionMode::NegotiatedZlib` and pass the exact advertised threshold. Encoding deterministically selects `0xff` plain bytes below the threshold and `0x00` raw DEFLATE at or above it; decoding validates and dispatches either prefix per batch.
 
 For encrypted traffic, compose the layers without exposing marker placement to the caller:
 
 ```php
-use Bedriox\Protocol\Encryption\BedrockEncryptedEnvelopeCodec;
+use Bedriox\Protocol\Encryption\BedrockEncryptedBatchCodec;
 
-$wirePayload = BedrockEncryptedEnvelopeCodec::encode($clearBatchEnvelope, $outboundEncryptor);
-$clearBatchEnvelope = BedrockEncryptedEnvelopeCodec::decode($wirePayload, $inboundDecryptor);
+$wirePayload = BedrockEncryptedBatchCodec::encode($clearBatch, $outboundEncryptor);
+$clearBatch = BedrockEncryptedBatchCodec::decode($wirePayload, $inboundDecryptor);
 ```
 
 The codec guarantees that the outer `0xfe` marker remains clear. Each connection and direction requires its own encryptor or decryptor.
 
-Bedrock discovery semantics are constructed independently from RakNet transport:
+Bedrock advertisement semantics are constructed independently from NetherNet transport:
 
 ```php
 use Bedriox\Protocol\Discovery\AdvertisedGameMode;
@@ -59,10 +59,10 @@ $advertisement = new BedrockServerAdvertisement(
     ipv6Port: 19133,
 );
 
-$opaqueRakNetStatus = $advertisement->encode();
+$opaqueStatus = $advertisement->encode();
 ```
 
-The edition, protocol 2193, and game version 1.26.50 fields come from Protocol's current authority rather than caller-provided numbers. The Nintendo-limited field is a boolean API: `true` encodes the verified wire value `0`, while `false` encodes `1`. Counts, ports, UTF-8 text, separators, controls, and the complete 352-byte transport budget are validated before a payload is returned.
+The edition, protocol 2225, and game version 1.26.60 fields come from Protocol's current authority rather than caller-provided numbers. The Nintendo-limited field is a boolean API: `true` encodes the verified wire value `0`, while `false` encodes `1`. Counts, ports, UTF-8 text, separators, controls, and the complete 352-byte transport budget are validated before a payload is returned.
 
 `Survival` is deliberately the only advertised game-mode case because it is the qualified Bedriox configuration. Adding another spelling requires an independently sourced exact vector and retail discovery qualification; ordinary gameplay game-mode enums do not establish server-list compatibility.
 

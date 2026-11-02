@@ -7,7 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\Value\UnsignedLong;
 
-/** Protocol-2193 sparse actor movement update with an authoritative tick. */
+/** Protocol-2225 sparse actor movement update with an authoritative tick. */
 final readonly class MoveActorDeltaPacket implements Packet
 {
     private const float DEGREES_PER_BYTE = 360.0 / 256.0;

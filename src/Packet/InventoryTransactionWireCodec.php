@@ -10,7 +10,7 @@ use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 use Bedriox\Protocol\Value\BlockNetworkId;
 
-/** Internal bounded protocol-2193 packet-30 codec. */
+/** Internal bounded protocol-2225 packet-30 codec. */
 final class InventoryTransactionWireCodec
 {
     public static function decode(string $bytes): InventoryTransactionPacket
@@ -153,16 +153,18 @@ final class InventoryTransactionWireCodec
             $entity = $reader->readUnsignedVarLong();
             $action = self::readEnum($entity->reader, ItemUseOnEntityActionType::class, 'item-use-on-entity action');
             $hotbar = $action[1]->readSignedVarInt();
-            [$item, $reader] = InventoryItemStackWireCodec::read($hotbar->reader);
+            $hand = self::readByteEnum($hotbar->reader, HandSlot::class, 'item-use-on-entity hand');
+            [$item, $reader] = InventoryItemStackWireCodec::read($hand[1]);
             [$player, $reader] = self::readVector($reader);
             [$click, $reader] = self::readVector($reader);
-            return [new ItemUseOnEntityInventoryTransaction($entity->value, $action[0], $hotbar->value, $item, $player, $click), $reader];
+            return [new ItemUseOnEntityInventoryTransaction($entity->value, $action[0], $hotbar->value, $item, $player, $click, $hand[0]), $reader];
         }
         $action = self::readEnum($reader, ItemReleaseActionType::class, 'item-release action');
         $hotbar = $action[1]->readSignedVarInt();
         [$item, $reader] = InventoryItemStackWireCodec::read($hotbar->reader);
         [$head, $reader] = self::readVector($reader);
-        return [new ItemReleaseInventoryTransaction($action[0], $hotbar->value, $item, $head), $reader];
+        $hand = self::readByteEnum($reader, HandSlot::class, 'item-release hand');
+        return [new ItemReleaseInventoryTransaction($action[0], $hotbar->value, $item, $head, $hand[0]), $hand[1]];
     }
 
     private static function writeTransaction(ByteBufferWriter $writer, InventoryTransactionData $value): ByteBufferWriter
@@ -181,12 +183,13 @@ final class InventoryTransactionWireCodec
         }
         if ($value instanceof ItemUseOnEntityInventoryTransaction) {
             $writer = $writer->writeUnsignedVarLong($value->runtimeEntityId)->writeSignedVarInt($value->action->value)
-                ->writeSignedVarInt($value->hotbarSlot);
+                ->writeSignedVarInt($value->hotbarSlot)->writeUnsignedByte($value->hand->value);
             return self::writeVector(self::writeVector(InventoryItemStackWireCodec::write($writer, $value->item), $value->playerPosition), $value->clickPosition);
         }
         if ($value instanceof ItemReleaseInventoryTransaction) {
             $writer = $writer->writeSignedVarInt($value->action->value)->writeSignedVarInt($value->hotbarSlot);
-            return self::writeVector(InventoryItemStackWireCodec::write($writer, $value->item), $value->headPosition);
+            return self::writeVector(InventoryItemStackWireCodec::write($writer, $value->item), $value->headPosition)
+                ->writeUnsignedByte($value->hand->value);
         }
         throw new InvalidValueException('Inventory transaction payload type is unsupported.');
     }

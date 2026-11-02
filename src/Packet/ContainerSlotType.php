@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Current protocol-2193 full-container-name domain used by stack requests and corrections. */
+/** Current protocol-2225 full-container-name domain used by stack requests and corrections. */
 enum ContainerSlotType: int
 {
     case AnvilInput = 0;
@@ -74,4 +74,8 @@ enum ContainerSlotType: int
     case RecipeFoodContainer = 64;
     case RecipeBlocksContainer = 65;
     case RecipeFurnaceItemsContainer = 66;
+    case ReservedContainerA = 67;
+    case ReservedContainerB = 68;
+    case ReservedContainerC = 69;
+    case ReservedContainerD = 70;
 }

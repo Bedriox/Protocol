@@ -124,7 +124,7 @@ final class GameplayPacketCodecTest extends TestCase
                 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 10.0, 20.0, 30.0, 0,
                 new PlayerAbilities(1, PlayerPermission::Member, CommandPermissionLevel::Normal, [new AbilityLayer(0, 0, 0, 0.05000000074505806, 1.0, 0.10000000149011612)]),
             ),
-            '7766554433221100ffeeddccbbaa9988015002000000803f0000004000004040000000000000000000000000000020410000a0410000f041000000000000000000000000010000000000000001000100000000000000000000cdcc4c3d0000803fcdcccc3d0000ffffffff',
+            '7766554433221100ffeeddccbbaa9988015002000000803f0000004000004040000000000000000000000000000020410000a0410000f041000000000000000000000000010000000000000001000100000000000000000000cdcc4c3d0000803fcdcccc3d000000ffffffff',
         ];
         yield 'add player complete actor baseline' => [
             new AddPlayerPacket(
@@ -133,13 +133,13 @@ final class GameplayPacketCodecTest extends TestCase
                 new PlayerAbilities(1, PlayerPermission::Member, CommandPermissionLevel::Normal, [new AbilityLayer(0, 0, 0, 0.05000000074505806, 1.0, 0.10000000149011612)]),
                 metadata: PlayerActorMetadata::baseline('Player'),
             ),
-            '7766554433221100ffeeddccbbaa9988015002000000803f0000004000004040000000000000000000000000000020410000a0410000f0410000000000000000000e0007078080c28080828003010202280300000004040406506c617965720701019001250707012603030000803f2a010190013503039a99193f3603036666e63f510000015c07070078030300000000820108089a99193f6666e63f9a99193f0000010000000000000001000100000000000000000000cdcc4c3d0000803fcdcccc3d0000ffffffff',
+            '7766554433221100ffeeddccbbaa9988015002000000803f0000004000004040000000000000000000000000000020410000a0410000f0410000000000000000000e0007078080c28080828003010202280300000004040406506c617965720701019001250707012603030000803f2a010190013503039a99193f3603036666e63f510000015c07070078030300000000820108089a99193f6666e63f9a99193f0000010000000000000001000100000000000000000000cdcc4c3d0000803fcdcccc3d000000ffffffff',
         ];
         yield 'chat' => [new ChatPacket('Name', 'hi', 'xid'), '000101044e616d65026869037869640000'];
         yield 'open inventory interaction' => [new InteractPacket(InteractPacket::OPEN_INVENTORY, UnsignedLong::fromInt(0)), '060000'];
         yield 'swing animation' => [
             new AnimatePacket(AnimatePacket::SWING, UnsignedLong::fromInt(7), 0.0, 'interact'),
-            '0107000000000108696e746572616374',
+            '0107000000000108696e74657261637400',
         ];
         yield 'player action' => [
             new PlayerActionPacket(
@@ -158,7 +158,7 @@ final class GameplayPacketCodecTest extends TestCase
         ];
         yield 'request boolean ability' => [new RequestAbilityPacket(9, AbilityValueType::Bool, true, 1.0), '1201010000803f'];
         yield 'request vertical fly speed ability' => [new RequestAbilityPacket(19, AbilityValueType::Float, false, 1.0), '2602000000803f'];
-        yield 'level chunk envelope' => [new LevelChunkPacket(0, 0, 0, 1, 'abc'), '0000000100000003616263'];
+        yield 'level chunk envelope' => [new LevelChunkPacket(0, 0, 0, 1, 'abc'), '000000010000000361626300'];
         yield 'player list remove' => [
             new PlayerListRemovePacket(['00112233-4455-6677-8899-aabbccddeeff']),
             '0100017766554433221100ffeeddccbbaa9988',
@@ -397,11 +397,11 @@ final class GameplayPacketCodecTest extends TestCase
             gameRules: new GameRuleSet([]),
         );
         self::assertSame(
-            '0202000000003f00008242000000bf00000000000000000000000000000000000006706c61696e730002000000008001000100000001000000000000000000000000010108080000000300000011646174615f64726976656e5f6974656d7301197570636f6d696e675f63726561746f725f6665617475726573011c6578706572696d656e74616c5f6d6f6c616e675f66656174757265730101000001040000000000000000000000000007312e32362e353010000000100000000000000000000000056c6576656c04466c617400005001000000000000000000000001000a00000000000000000000000000000000000000000000000000000001010000000000',
+            '0202000000003f00008242000000bf00000000000000000000000000000000000006706c61696e73000200000000800100010000000001000000000000000000000000010108080000000300000011646174615f64726976656e5f6974656d7301197570636f6d696e675f63726561746f725f6665617475726573011c6578706572696d656e74616c5f6d6f6c616e675f66656174757265730101000001040000000000000000000000000007312e32362e363010000000100000000000000000000000056c6576656c04466c617400005001000000000000000000000001000a00000000000000000000000000000000000000000000000000000001010000000000',
             bin2hex($packet->encode()),
         );
-        self::assertStringContainsString("1.26.50", $packet->encode());
-        self::assertStringContainsString('1.26.51', StartGamePacket::fixedFlat(
+        self::assertStringContainsString("1.26.60", $packet->encode());
+        self::assertStringContainsString('1.26.61', StartGamePacket::fixedFlat(
             1,
             UnsignedLong::fromInt(2),
             0.5,
@@ -410,7 +410,7 @@ final class GameplayPacketCodecTest extends TestCase
             'level',
             'Flat',
             gameRules: new GameRuleSet([]),
-            gameVersion: '1.26.51',
+            gameVersion: '1.26.61',
         )->encode());
         self::assertStringNotContainsString('Bedriox', $packet->encode());
         self::assertSame(PacketIds::START_GAME, BedrockPacketCodec::packetId($packet));
@@ -419,9 +419,9 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame(727, strlen($defaultRules));
         self::assertSame('ba21a8681ddfe9fb4bc60282f97423486dcae532336c34ed6d13de910a4f4541', hash('sha256', $defaultRules));
         $defaultStart = StartGamePacket::fixedFlat(1, UnsignedLong::fromInt(2), 0.5, 65.0, -0.5, 'level', 'Flat');
-        self::assertSame(984, strlen($defaultStart->encode()));
+        self::assertSame(985, strlen($defaultStart->encode()));
         self::assertTrue($defaultStart->blockNetworkIdsAreHashes);
-        self::assertSame('2dc8ba6efcb2b6ed7ad0215a5ec418cf51c4b56c27e8ee4cd1bd343eccb3fc2b', hash('sha256', $defaultStart->encode()));
+        self::assertSame('b9e5942cc81d87a91d5a82abba1c0651fdc5a29ce82d8de425e815c8d20a5432', hash('sha256', $defaultStart->encode()));
     }
 
     public function testFixedFlatStartGameEncodesBoundedRewindHistoryBeforeAuthoritativeBlockBreaking(): void
@@ -449,9 +449,9 @@ final class GameplayPacketCodecTest extends TestCase
         )->encode();
 
         // premium template ID, trial, rewind history, authoritative block breaking,
-        // current tick, and enchantment seed in their protocol-2193 order.
-        self::assertSame('00005001000000000000000000', bin2hex(substr($default, 206, 13)));
-        self::assertSame('0000d80401000000000000000000', bin2hex(substr($configured, 206, 14)));
+        // current tick, and enchantment seed in their protocol-2225 order.
+        self::assertSame('00005001000000000000000000', bin2hex(substr($default, 207, 13)));
+        self::assertSame('0000d80401000000000000000000', bin2hex(substr($configured, 207, 14)));
     }
 
     public function testFixedFlatStartGameBoundsRewindHistoryToItsNonNegativeWireDomain(): void
@@ -507,7 +507,7 @@ final class GameplayPacketCodecTest extends TestCase
         );
 
         self::assertSame(
-            '0202000000003f00008242000000bf0000000000000000feffffffffffffff000006706c61696e7300020000001743700100000001000000000000000000000000010108080000000300000011646174615f64726976656e5f6974656d7301197570636f6d696e675f63726561746f725f6665617475726573011c6578706572696d656e74616c5f6d6f6c616e675f66656174757265730101000001040000000000000000000000000007312e32362e353010000000100000000000000000000000056c6576656c04466c617400005001000000000000000000000001000a00000000000000000000000000000000000000000000000000000001010000000000',
+            '0202000000003f00008242000000bf0000000000000000feffffffffffffff000006706c61696e730002000000174370010000000001000000000000000000000000010108080000000300000011646174615f64726976656e5f6974656d7301197570636f6d696e675f63726561746f725f6665617475726573011c6578706572696d656e74616c5f6d6f6c616e675f66656174757265730101000001040000000000000000000000000007312e32362e363010000000100000000000000000000000056c6576656c04466c617400005001000000000000000000000001000a00000000000000000000000000000000000000000000000000000001010000000000',
             bin2hex($packet->encode()),
         );
     }
@@ -638,8 +638,8 @@ final class GameplayPacketCodecTest extends TestCase
         self::assertSame(2, $response->responses[2]->result);
         self::assertSame(256, strlen($response->responses[0]->heightMap ?? ''));
         self::assertSame(1_041, strlen($response->responses[0]->data ?? ''));
-        self::assertSame($response->encode(), BedrockPacketCodec::encode($response, 2193));
-        self::assertSame('00', bin2hex(BedrockPacketCodec::encode($response, 2193)[0]));
+        self::assertSame($response->encode(), BedrockPacketCodec::encode($response, 2225));
+        self::assertSame('00', bin2hex(BedrockPacketCodec::encode($response, 2225)[0]));
     }
 
     public function testBedrockBootstrapStateVectors(): void
@@ -854,7 +854,7 @@ final class GameplayPacketCodecTest extends TestCase
         $packet = new PlayerListAddPacket([new PlayerListAddEntry(
             '00112233-4455-6677-8899-aabbccddeeff', 1, 'P', '', '', BuildPlatform::Unknown, PlayerSkin::fromVerifiedClientData($appearance),
         )]);
-        self::assertSame('ed32f5decab78d32edb8a35aa034fc029bf9000cdc8ef46a2c3f4781ac378e1f', hash('sha256', $packet->encode()));
+        self::assertSame('ba771339dc71c22fff51d21c6fa76dab40a1be6b65d9daa9af31e0000f43dcbb', hash('sha256', $packet->encode()));
         self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::PLAYER_LIST, $packet->encode()));
     }
 
@@ -880,7 +880,7 @@ final class GameplayPacketCodecTest extends TestCase
             PlayerSkin::fromVerifiedClientData($appearance),
         )]);
         $wire = $list->encode();
-        $platformOffset = 1 + 1 + 1 + 16 + 1 + 1 + 1 + 1 + 1;
+        $platformOffset = 1 + 1 + 1 + 16 + 1 + 1 + 1 + 1 + 1 + 1;
         $invalidList = substr_replace($wire, "\0\0\0\0", $platformOffset, 4);
         $this->expectException(MalformedDataException::class);
         PlayerListAddPacket::decode($invalidList);
@@ -899,7 +899,7 @@ final class GameplayPacketCodecTest extends TestCase
         $wire = $packet->encode();
 
         self::assertSame(PacketIds::PLAYER_SKIN, BedrockPacketCodec::packetId($packet));
-        self::assertSame('7f87385b6788edf8430fd092dcb34728acc7f05bc66e03060b7ff4ab42fb2e02', hash('sha256', $wire));
+        self::assertSame('eab6b41d7784070f6e4c829d188d0e7a57b4528e598560655d2d520244a51025', hash('sha256', $wire));
         self::assertEquals($packet, BedrockPacketCodec::decode(PacketIds::PLAYER_SKIN, $wire));
         for ($length = 0; $length < strlen($wire); ++$length) {
             try {
@@ -1001,7 +1001,7 @@ final class GameplayPacketCodecTest extends TestCase
         $wire = hex2bin('000020410000a0410000803ff43d8342000000400000803e0000403f0000a041015a010001000020410000a0414dcdcccc3dcdcc4c3e9a99993e000000010000a0c000000c4201a4130000803e0000403f000000000000803f000000000000803e0000403f');
         self::assertIsString($wire);
 
-        $packet = BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $wire, 2193);
+        $packet = BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $wire, 2225);
         self::assertInstanceOf(PlayerAuthInputPacket::class, $packet);
         self::assertTrue($packet->hasInput(PlayerAuthInputFlag::IsInClientPredictedVehicle));
         self::assertEqualsWithDelta(-5.0, $packet->vehicleRotationPitch, 0.000001);
@@ -1014,7 +1014,7 @@ final class GameplayPacketCodecTest extends TestCase
             substr($wire, 0, 70) . "\0" . substr($wire, 71),
         ] as $missingMountedField) {
             try {
-                BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $missingMountedField, 2193);
+                BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $missingMountedField, 2225);
                 self::fail('Mounted PlayerAuthInput accepted a missing conditional field.');
             } catch (CodecException) {
                 self::addToAssertionCount(1);
@@ -1029,13 +1029,13 @@ final class GameplayPacketCodecTest extends TestCase
             0.0, 0.0, UnsignedLong::fromInt(0), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         ))->encode();
 
-        $decoded = BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $ordinary, 2193);
+        $decoded = BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $ordinary, 2225);
         self::assertInstanceOf(PlayerAuthInputPacket::class, $decoded);
         self::assertFalse($decoded->ignoredOptionalPayload);
 
         $stackBase = substr($ordinary, 0, 32) . "\1\x48" . substr($ordinary, 33);
         $withStackRequest = substr($stackBase, 0, 59) . "\1\x0e\0\0\xff\xff\xff\xff" . substr($stackBase, 60);
-        $decoded = BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $withStackRequest, 2193);
+        $decoded = BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $withStackRequest, 2225);
         self::assertInstanceOf(PlayerAuthInputPacket::class, $decoded);
         self::assertTrue($decoded->ignoredOptionalPayload);
         self::assertSame(7, $decoded->itemStackRequestId);
@@ -1045,7 +1045,7 @@ final class GameplayPacketCodecTest extends TestCase
             substr($ordinary, 0, 58) . "\1\x0e\1" . substr($ordinary, 59),
         ] as $unsupported) {
             try {
-                BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $unsupported, 2193);
+                BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $unsupported, 2225);
                 self::fail('Unsupported conditional payload was accepted opaquely.');
             } catch (CodecException) {
                 self::addToAssertionCount(1);
@@ -1066,7 +1066,7 @@ final class GameplayPacketCodecTest extends TestCase
 
         foreach ([substr($ordinary, 0, 57) . "\2", substr($ordinary, 0, 57) . "\1"] as $truncated) {
             try {
-                BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $truncated, 2193);
+                BedrockPacketCodec::decode(PacketIds::PLAYER_AUTH_INPUT, $truncated, 2225);
                 self::fail('Malformed current conditional presence was accepted.');
             } catch (CodecException) {
                 self::addToAssertionCount(1);

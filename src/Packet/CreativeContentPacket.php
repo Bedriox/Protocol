@@ -7,7 +7,7 @@ namespace Bedriox\Protocol\Packet;
 use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Exception\MalformedDataException;
 
-/** Bounded protocol-2193 creative groups and item entries. */
+/** Bounded protocol-2225 creative groups and item entries. */
 final readonly class CreativeContentPacket implements Packet
 {
     public const int MAXIMUM_GROUPS = 256;

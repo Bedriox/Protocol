@@ -25,8 +25,9 @@ enum ItemStackRequestActionType: int
     case CraftRecipeOptional = 13;
     case CraftRepairAndDisenchant = 14;
     case CraftLoom = 15;
-    case CraftNonImplemented = 16;
-    case CraftResults = 17;
+    case Reserved = 16;
+    case CraftNonImplemented = 17;
+    case CraftResults = 18;
 
     public function marker(): int
     {
@@ -40,8 +41,9 @@ enum ItemStackRequestActionType: int
             self::CraftRecipeOptional => 15,
             self::CraftRepairAndDisenchant => 16,
             self::CraftLoom => 17,
-            self::CraftNonImplemented => 18,
-            self::CraftResults => 19,
+            self::Reserved => 18,
+            self::CraftNonImplemented => 19,
+            self::CraftResults => 20,
             default => $this->value,
         };
     }

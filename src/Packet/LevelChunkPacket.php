@@ -26,6 +26,7 @@ final readonly class LevelChunkPacket implements Packet
         public string $data,
         public bool $requestSubChunks = false,
         public int $subChunkLimit = 0,
+        public bool $clientBiomeUpdate = false,
     ) {
         foreach ([$chunkX, $chunkZ, $dimension] as $value) {
             if ($value < -0x80000000 || $value > 0x7fffffff) {
@@ -124,6 +125,7 @@ final readonly class LevelChunkPacket implements Packet
             ->writeUnsignedVarInt(0) // empty cache metadata
             ->writeUnsignedVarInt(strlen($this->data))
             ->writeBytes($this->data)
+            ->writeUnsignedByte($this->clientBiomeUpdate ? 1 : 0)
             ->toString();
     }
 
@@ -162,7 +164,8 @@ final readonly class LevelChunkPacket implements Packet
             throw new MalformedDataException('Chunk data exceeds its byte limit.');
         }
         $data = $length->reader->readBytes($length->value);
-        CodecSupport::requireEnd($data->reader);
-        return new self($x->value, $z->value, $dimension->value, $count->value, $data->value, $hasRequestLimit, $subChunkLimit);
+        [$clientBiomeUpdate, $reader] = CodecSupport::readBoolean($data->reader);
+        CodecSupport::requireEnd($reader);
+        return new self($x->value, $z->value, $dimension->value, $count->value, $data->value, $hasRequestLimit, $subChunkLimit, $clientBiomeUpdate);
     }
 }

@@ -13,6 +13,7 @@ final readonly class ItemReleaseInventoryTransaction implements InventoryTransac
         public int $hotbarSlot,
         public InventoryItemStack $item,
         public InventoryVector3 $headPosition,
+        public HandSlot $hand = HandSlot::Mainhand,
     ) {
         if ($hotbarSlot < -0x80000000 || $hotbarSlot > 0x7fffffff) {
             throw new InvalidValueException('Item-release hotbar slot must fit a signed 32-bit integer.');

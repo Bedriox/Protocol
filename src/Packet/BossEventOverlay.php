@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bedriox\Protocol\Packet;
 
-/** Visual divisions supported by the protocol-2193 boss-event schema. */
+/** Visual divisions supported by the protocol-2225 boss-event schema. */
 enum BossEventOverlay: int
 {
     case PROGRESS = 0;
