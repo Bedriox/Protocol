@@ -68,6 +68,9 @@ final class PacketIds
     public const int COMMAND_OUTPUT = 79;
     public const int UPDATE_TRADE = 80;
     public const int UPDATE_EQUIP = 81;
+    public const int RESOURCE_PACK_DATA_INFO = 82;
+    public const int RESOURCE_PACK_CHUNK_DATA = 83;
+    public const int RESOURCE_PACK_CHUNK_REQUEST = 84;
     public const int PLAYER_SKIN = 93;
     public const int SERVER_SETTINGS_REQUEST = 102;
     public const int REMOVE_OBJECTIVE = 106;

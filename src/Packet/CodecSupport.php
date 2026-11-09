@@ -15,6 +15,10 @@ final class CodecSupport
     public const int MAX_JWT_BYTES = 1_048_576;
     public const int MAX_SHORT_STRING_BYTES = 4_096;
     public const int MAX_PACKS = 256;
+    public const int MAX_RESOURCE_PACK_IDENTITY_BYTES = 128;
+    public const int RESOURCE_PACK_HASH_BYTES = 32;
+    public const int MAX_RESOURCE_PACK_CHUNK_BYTES = 1_048_576;
+    public const int MAX_RESOURCE_PACK_CHUNKS = 1_048_576;
     public const int MAX_EXPERIMENTS = 128;
     public const int MAX_CHAT_BYTES = 512;
     public const int MAX_PLAYER_NAME_BYTES = 64;
@@ -130,6 +134,51 @@ final class CodecSupport
         $hex = bin2hex(strrev(substr($wire, 0, 8)) . strrev(substr($wire, 8, 8)));
         return substr($hex, 0, 8) . '-' . substr($hex, 8, 4) . '-' . substr($hex, 12, 4) . '-'
             . substr($hex, 16, 4) . '-' . substr($hex, 20, 12);
+    }
+
+    public static function validateResourcePackIdentity(string $packId, string $packVersion, bool $wire = false): void
+    {
+        $exception = $wire ? MalformedDataException::class : InvalidValueException::class;
+        if (preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/D', $packId) !== 1) {
+            throw new $exception('Resource-pack ID must use canonical UUID form.');
+        }
+        if ($packVersion === '') {
+            throw new $exception('Resource-pack version cannot be empty.');
+        }
+        if (str_contains($packVersion, "\0")) {
+            throw new $exception('Resource-pack version cannot contain a null byte.');
+        }
+        if ($wire) {
+            self::validateWireString($packVersion, self::MAX_SHORT_STRING_BYTES, 'Resource-pack version');
+        } else {
+            self::validateString($packVersion, self::MAX_SHORT_STRING_BYTES, 'Resource-pack version');
+        }
+        if (strlen($packId . '_' . $packVersion) > self::MAX_RESOURCE_PACK_IDENTITY_BYTES) {
+            throw new $exception('Resource-pack identity exceeds its byte limit.');
+        }
+    }
+
+    public static function writeResourcePackIdentity(
+        ByteBufferWriter $writer,
+        string $packId,
+        string $packVersion,
+    ): ByteBufferWriter {
+        self::validateResourcePackIdentity($packId, $packVersion);
+        return $writer->writeString($packId . '_' . $packVersion, self::MAX_RESOURCE_PACK_IDENTITY_BYTES);
+    }
+
+    /** @return array{string, string, ByteBufferReader} */
+    public static function readResourcePackIdentity(ByteBufferReader $reader): array
+    {
+        $identity = $reader->readString(self::MAX_RESOURCE_PACK_IDENTITY_BYTES);
+        $separator = strpos($identity->value, '_');
+        if ($separator === false) {
+            throw new MalformedDataException('Resource-pack identity is missing its version separator.');
+        }
+        $packId = substr($identity->value, 0, $separator);
+        $packVersion = substr($identity->value, $separator + 1);
+        self::validateResourcePackIdentity($packId, $packVersion, true);
+        return [$packId, $packVersion, $identity->reader];
     }
 
     /** @return array{list<ResourcePackStackEntry>, ByteBufferReader} */
