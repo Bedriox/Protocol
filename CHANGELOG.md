@@ -1,5 +1,7 @@
 # Changelog
 
+- Add bounded action, message, and modal form request/response packets, current cancellation reasons, and the clientbound close-form packet.
+
 - Add the bounded protocol-2225 resource-pack data-information, chunk-data, and chunk-request transfer conversation with typed pack kinds, canonical pack identities, fixed SHA-256 values, and allocation-safe chunk limits.
 
 - Move the sole wire target to Minecraft 1.26.60 / protocol 2225, qualify Minecraft 1.26.61, update changed packet layouts, and add the bounded matchmaking, stonecutter-selection, cursor-drag, passenger-of-block, and audio-content packet family.

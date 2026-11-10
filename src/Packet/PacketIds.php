@@ -72,6 +72,8 @@ final class PacketIds
     public const int RESOURCE_PACK_CHUNK_DATA = 83;
     public const int RESOURCE_PACK_CHUNK_REQUEST = 84;
     public const int PLAYER_SKIN = 93;
+    public const int MODAL_FORM_REQUEST = 100;
+    public const int MODAL_FORM_RESPONSE = 101;
     public const int SERVER_SETTINGS_REQUEST = 102;
     public const int REMOVE_OBJECTIVE = 106;
     public const int SET_DISPLAY_OBJECTIVE = 107;
@@ -110,6 +112,7 @@ final class PacketIds
     public const int DEATH_INFO = 189;
     public const int TRIM_DATA = 302;
     public const int OPEN_SIGN = 303;
+    public const int CLIENTBOUND_CLOSE_FORM = 310;
     public const int SET_PLAYER_INVENTORY_OPTIONS = 307;
     public const int CONTAINER_REGISTRY_CLEANUP = 317;
     public const int SERVERBOUND_LOADING_SCREEN = 312;

@@ -1,5 +1,7 @@
 # Bedrock packet codec
 
+The current form conversation uses `ModalFormRequestPacket` (100), `ModalFormResponsePacket` (101), and `ClientboundCloseFormPacket` (310). Definitions are bounded to 256 KiB and responses to 32 KiB. Response and cancellation fields retain their independent wire-presence markers so the server can classify contradictory but structurally valid client input without losing packet alignment. Unknown future cancellation bytes are preserved for the session layer to handle safely.
+
 Villager trading uses clientbound packet 80 (`UpdateTradePacket`) with the
 current trade-container discriminator, zero-sized window marker, bounded tier
 and display-name fields, signed unique actor IDs, UI/economy flags, and one
