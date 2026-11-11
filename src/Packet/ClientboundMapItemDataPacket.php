@@ -23,6 +23,7 @@ final readonly class ClientboundMapItemDataPacket implements Packet
     public ?array $decorations;
     /** @var null|list<int> */
     public ?array $colors;
+    public ?PackedMapColors $packedColors;
 
     /**
      * @param null|list<int> $trackedEntityIds
@@ -44,6 +45,7 @@ final readonly class ClientboundMapItemDataPacket implements Packet
         public ?int $xOffset = null,
         public ?int $yOffset = null,
         ?array $colors = null,
+        ?PackedMapColors $packedColors = null,
     ) {
         if ($dimensionId < 0 || $dimensionId > 0xff || ($scale !== null && ($scale < -0x80 || $scale > 0x7f))) {
             throw new InvalidValueException('Map data contains an out-of-range dimension or scale.');
@@ -81,10 +83,14 @@ final readonly class ClientboundMapItemDataPacket implements Packet
             }
         }
         $this->decorations = $decorations;
+        if ($colors !== null && $packedColors !== null) {
+            throw new InvalidValueException('Map colors must use exactly one representation.');
+        }
         if ($colors !== null && (!array_is_list($colors) || count($colors) > self::MAXIMUM_COLORS)) {
             throw new InvalidValueException('Map color list must be bounded.');
         }
         $this->colors = $colors;
+        $this->packedColors = $packedColors;
         foreach ([$width, $height, $xOffset, $yOffset] as $value) {
             if ($value !== null && ($value < -0x80000000 || $value > 0x7fffffff)) {
                 throw new InvalidValueException('Map texture geometry is outside its wire range.');
@@ -111,6 +117,12 @@ final readonly class ClientboundMapItemDataPacket implements Packet
         $writer = self::writeOptionalList($writer, $this->decorations, self::writeDecoration(...));
         foreach ([$this->width, $this->height, $this->xOffset, $this->yOffset] as $value) {
             $writer = self::writeOptionalScalar($writer, $value, static fn (ByteBufferWriter $w, int $v): ByteBufferWriter => $w->writeSignedVarInt($v));
+        }
+        if ($this->packedColors !== null) {
+            return CodecSupport::writeBoolean($writer, true)
+                ->writeUnsignedVarInt($this->packedColors->count)
+                ->writeBytes($this->packedColors->bytes)
+                ->toString();
         }
         return self::writeOptionalList(
             $writer,

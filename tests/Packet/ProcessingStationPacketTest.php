@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bedriox\Protocol\Tests\Packet;
 
 use Bedriox\Protocol\Exception\BufferUnderflowException;
+use Bedriox\Protocol\Exception\InvalidValueException;
 use Bedriox\Protocol\Packet\BedrockPacketCodec;
 use Bedriox\Protocol\Packet\BlockPosition;
 use Bedriox\Protocol\Packet\ClientboundMapItemDataPacket;
@@ -19,6 +20,7 @@ use Bedriox\Protocol\Packet\MapInfoRequestPacket;
 use Bedriox\Protocol\Packet\MapPixel;
 use Bedriox\Protocol\Packet\MapTrackedObject;
 use Bedriox\Protocol\Packet\PacketIds;
+use Bedriox\Protocol\Packet\PackedMapColors;
 use Bedriox\Protocol\Packet\PlayerEnchantOptionsPacket;
 use Bedriox\Protocol\Packet\SetPlayerFurnaceOptionsPacket;
 use PHPUnit\Framework\TestCase;
@@ -73,6 +75,55 @@ final class ProcessingStationPacketTest extends TestCase
         );
         self::assertEquals($packet, ClientboundMapItemDataPacket::decode($packet->encode()));
         self::assertSame(PacketIds::CLIENTBOUND_MAP_ITEM_DATA, BedrockPacketCodec::packetId($packet));
+    }
+
+    public function testPackedMapColorsPreserveTheExistingWireRepresentation(): void
+    {
+        $colors = [0x01020304, 0x05060708];
+        $legacy = new ClientboundMapItemDataPacket(
+            42,
+            0,
+            false,
+            new BlockPosition(0, 0, 0),
+            width: 2,
+            height: 1,
+            xOffset: 0,
+            yOffset: 0,
+            colors: $colors,
+        );
+        $packed = new ClientboundMapItemDataPacket(
+            42,
+            0,
+            false,
+            new BlockPosition(0, 0, 0),
+            width: 2,
+            height: 1,
+            xOffset: 0,
+            yOffset: 0,
+            packedColors: new PackedMapColors("\x04\x03\x02\x01\x08\x07\x06\x05"),
+        );
+
+        self::assertSame($legacy->encode(), $packed->encode());
+        self::assertSame($colors, ClientboundMapItemDataPacket::decode($packed->encode())->colors);
+    }
+
+    public function testPackedMapColorsRejectMalformedAndAmbiguousInput(): void
+    {
+        $this->expectException(InvalidValueException::class);
+        new PackedMapColors("\0\0\0");
+    }
+
+    public function testMapPacketRejectsBothColorRepresentations(): void
+    {
+        $this->expectException(InvalidValueException::class);
+        new ClientboundMapItemDataPacket(
+            1,
+            0,
+            false,
+            new BlockPosition(0, 0, 0),
+            colors: [0],
+            packedColors: new PackedMapColors("\0\0\0\0"),
+        );
     }
 
     public function testEveryPacketRejectsTruncation(): void
