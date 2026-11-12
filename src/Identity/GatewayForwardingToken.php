@@ -42,7 +42,7 @@ final class GatewayForwardingToken
         if ($token === '' || strlen($token) > self::MAXIMUM_TOKEN_BYTES) {
             throw new MalformedDataException('Gateway forwarding token is empty or oversized.');
         }
-        $parts = explode('.', $token);
+        $parts = explode('.', $token, 3);
         if (count($parts) !== 2 || $parts[0] === '' || $parts[1] === '') {
             throw new MalformedDataException('Gateway forwarding token must contain two segments.');
         }

@@ -58,6 +58,12 @@ final class ControlHandshakeTokenTest extends TestCase
         ControlHandshakeToken::verify(substr($token, 0, -1) . ($token[-1] === 'A' ? 'B' : 'A'), $secret);
     }
 
+    public function testSeparatorFloodIsRejected(): void
+    {
+        $this->expectException(MalformedDataException::class);
+        ControlHandshakeToken::verify(str_repeat('x.', 1_000), str_repeat('s', 32));
+    }
+
     public function testEncryptedFramesAuthenticateMetadataAndPayload(): void
     {
         $key = random_bytes(32);

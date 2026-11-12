@@ -1,5 +1,7 @@
 # Changelog
 
+- Tighten untrusted token parsing with bounded segment splits and apply a narrow 16 KiB outer limit before block-actor NBT traversal.
+
 - Add a bounded packed-color representation for map updates so consumers can reuse canonical RGBA bytes without allocating one PHP integer per pixel.
 
 - Add bounded action, message, and modal form request/response packets, current cancellation reasons, and the clientbound close-form packet.

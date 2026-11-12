@@ -73,6 +73,12 @@ final class GatewayForwardingTokenTest extends TestCase
         GatewayForwardingToken::issue($claims, 'short');
     }
 
+    public function testSeparatorFloodIsRejected(): void
+    {
+        $this->expectException(MalformedDataException::class);
+        GatewayForwardingToken::verify(str_repeat('x.', 4_000), str_repeat('s', 32));
+    }
+
     public function testVerifiedClientDataCanBeResignedForDownstream(): void
     {
         $keys = $this->keys();

@@ -4,6 +4,8 @@ All network bytes are hostile. Codecs must enforce caller-supplied or protocol-d
 
 Readers accept an explicit maximum input size. Writers accept an explicit total capacity. String limits are byte limits, are checked before content reads, and are followed by UTF-8 validation. Callers remain responsible for selecting context-appropriate limits; using the largest transport frame as every field limit is unsafe.
 
+Delimiter-based parsing of network values must always use the smallest explicit split limit that can represent the expected grammar. Compact tokens reject additional segments without constructing an array proportional to attacker-controlled separator counts. Block-actor packets apply a narrow outer byte limit before generic network-NBT validation; typed block-actor schemas may impose smaller limits afterward.
+
 Cryptographic primitives must come from maintained platform libraries. Do not invent cryptography or log secrets, tokens, raw identity chains, or session keys.
 
 Verified client appearance data remains size-, signature-, and shape-bounded. `SkinGeometryData` accepts either a JSON object or the exact JSON `null` value used when retail clients have no custom geometry; every other scalar or array shape is rejected.

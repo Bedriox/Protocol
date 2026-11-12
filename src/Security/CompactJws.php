@@ -34,7 +34,7 @@ final class CompactJws
         if (strlen($compact) > $limits->maximumCompactJwsBytes) {
             throw new MalformedDataException('Compact JWS exceeds its size limit');
         }
-        $parts = explode('.', $compact);
+        $parts = explode('.', $compact, 4);
         if (count($parts) !== 3 || $parts[0] === '' || $parts[1] === '' || $parts[2] === '') {
             throw new MalformedDataException('Compact JWS must have three non-empty segments');
         }

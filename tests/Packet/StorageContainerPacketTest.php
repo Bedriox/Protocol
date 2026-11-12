@@ -261,4 +261,19 @@ final class StorageContainerPacketTest extends TestCase
             }
         }
     }
+
+    public function testBlockActorPacketRejectsNbtAboveItsNarrowerPacketLimit(): void
+    {
+        $oversized = str_repeat("\0", BlockActorDataPacket::MAXIMUM_NETWORK_NBT_BYTES + 1);
+
+        try {
+            new BlockActorDataPacket(new BlockPosition(0, 64, 0), $oversized);
+            self::fail('Oversized block-actor NBT was accepted by the value constructor.');
+        } catch (InvalidValueException) {
+            self::addToAssertionCount(1);
+        }
+
+        $this->expectException(CodecException::class);
+        BlockActorDataPacket::decode("\0\x80\x01\0" . $oversized);
+    }
 }

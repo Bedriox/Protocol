@@ -30,7 +30,7 @@ final readonly class ClientDataJwtVerifier
         }
 
         // Claims are deliberately inspected only after signature verification.
-        $segments = explode('.', $jws->signingInput);
+        $segments = explode('.', $jws->signingInput, 3);
         if (count($segments) !== 2) {
             throw new MalformedDataException('Client-data signing input is malformed.');
         }

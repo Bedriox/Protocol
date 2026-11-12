@@ -41,7 +41,7 @@ final class ControlHandshakeToken
         if ($token === '' || strlen($token) > self::MAXIMUM_TOKEN_BYTES) {
             throw new MalformedDataException('Gateway control handshake token is empty or oversized.');
         }
-        $parts = explode('.', $token);
+        $parts = explode('.', $token, 3);
         if (count($parts) !== 2 || $parts[0] === '' || $parts[1] === '') {
             throw new MalformedDataException('Gateway control handshake token must contain two segments.');
         }

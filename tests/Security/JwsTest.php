@@ -75,6 +75,12 @@ final class JwsTest extends TestCase
         CompactJws::parse(str_repeat('x', 40), new SecurityLimits(maximumCompactJwsBytes: 32));
     }
 
+    public function testSeparatorFloodIsRejectedWithoutUnboundedSplitting(): void
+    {
+        $this->expectException(MalformedDataException::class);
+        CompactJws::parse(str_repeat('x.', 4_000), new SecurityLimits(maximumCompactJwsBytes: 8_192));
+    }
+
     /** @param array<string, mixed> $object */
     private static function stringMember(array $object, string $name) : string
     {
